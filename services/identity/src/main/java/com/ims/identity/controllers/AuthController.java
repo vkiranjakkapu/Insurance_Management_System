@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.ims.identity.dto.LoginRequest;
 import com.ims.identity.dto.LoginResponse;
+import com.ims.identity.dto.LogoutRequest;
 import com.ims.identity.dto.RefreshTokenRequest;
 import com.ims.identity.dto.RefreshTokenResponse;
 import com.ims.identity.services.AuthenticationService;
@@ -25,7 +26,6 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(
             @Valid @RequestBody LoginRequest request) {
-        System.out.println(request);
         return ResponseEntity.ok(authenticationService.login(request));
     }
 
@@ -38,7 +38,7 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(
-            @Valid @RequestBody RefreshTokenRequest request) {
+            @Valid @RequestBody LogoutRequest request) {
 
         authenticationService.logout(request);
 
