@@ -1,0 +1,17 @@
+services:
+  pgserver:
+    image: postgres:latest
+    container_name: pgserver
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: ims_identity
+    ports:
+    - "5432:5432"
+    volumes:
+    - pgdata_lab:/var/lib/postgresql
+volumes:
+  pgdata_lab:
+networks:
+  shared-network:
+    external: true
