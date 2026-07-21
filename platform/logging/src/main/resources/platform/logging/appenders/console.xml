@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+    IMS Logging
+
+    Shared logging defaults.
+
+    Do not modify directly.
+    Override supported customization points instead.
+-->
+
+<included>
+
+    <appender
+        name="CONSOLE"
+        class="ch.qos.logback.core.ConsoleAppender">
+
+        <encoder>
+            <pattern>${CONSOLE_PATTERN}</pattern>
+        </encoder>
+
+    </appender>
+
+</included>
