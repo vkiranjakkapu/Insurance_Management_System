@@ -13,6 +13,9 @@ import com.ims.identity.dto.RefreshTokenRequest;
 import com.ims.identity.dto.RefreshTokenResponse;
 import com.ims.identity.services.AuthenticationService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -23,22 +26,33 @@ public class AuthController {
 
     private final AuthenticationService authenticationService;
 
+    @Operation(summary = "Authenticate user")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Login successful"),
+            @ApiResponse(responseCode = "401", description = "Invalid credentials")
+    })
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(
-            @Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authenticationService.login(request));
     }
 
+    @Operation(summary = "Refresh access token")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Token refreshed"),
+            @ApiResponse(responseCode = "401", description = "Invalid refresh token")
+    })
     @PostMapping("/refresh")
-    public ResponseEntity<RefreshTokenResponse> refresh(
-            @Valid @RequestBody RefreshTokenRequest request) {
+    public ResponseEntity<RefreshTokenResponse> refresh(@Valid @RequestBody RefreshTokenRequest request) {
 
         return ResponseEntity.ok(authenticationService.refresh(request));
     }
 
+    @Operation(summary = "Logout user")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Logged out successfully")
+    })
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(
-            @Valid @RequestBody LogoutRequest request) {
+    public ResponseEntity<Void> logout(@RequestBody LogoutRequest request) {
 
         authenticationService.logout(request);
 

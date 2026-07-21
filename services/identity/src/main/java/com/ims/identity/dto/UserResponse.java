@@ -11,15 +11,14 @@ import lombok.Builder;
 
 @Builder
 public record UserResponse(Long id,
-        String firstName,
-        String lastName,
-        String email,
-        String phone,
-        Address address,
-        LocalDate dob,
-        boolean enabled,
-        Set<RoleType> roles,
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt) {
-
+		String firstName,
+		String lastName,
+		String email,
+		String phone,
+		Address address,
+		LocalDate dob,
+		boolean enabled,
+		Set<RoleType> roles,
+		LocalDateTime createdAt,
+		LocalDateTime updatedAt) {
 }
