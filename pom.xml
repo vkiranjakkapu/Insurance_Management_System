@@ -38,6 +38,11 @@
                 <artifactId>web</artifactId>
                 <version>${version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.ims.platform</groupId>
+                <artifactId>logging</artifactId>
+                <version>${version}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
