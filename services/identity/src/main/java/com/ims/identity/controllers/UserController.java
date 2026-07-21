@@ -19,9 +19,14 @@ import com.ims.identity.dto.UpdateUserRequest;
 import com.ims.identity.dto.UserResponse;
 import com.ims.identity.services.UserService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
+@SecurityRequirement(name = "bearerAuth")
 @RestController
 @RequestMapping("/api/users")
 @RequiredArgsConstructor
@@ -29,6 +34,12 @@ public class UserController {
 
     private final UserService userService;
 
+    @Operation(summary = "Create User")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "User created"),
+            @ApiResponse(responseCode = "400", description = "Validation failed"),
+            @ApiResponse(responseCode = "403", description = "Access denied")
+    })
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','AGENT')")
     public ResponseEntity<UserResponse> createUser(
@@ -38,18 +49,21 @@ public class UserController {
                 .body(userService.createUser(request));
     }
 
+    @Operation(summary = "Get all users")
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
+    @Operation(summary = "Get user by id")
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
+    @Operation(summary = "Update user")
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponse> updateUser(
@@ -59,6 +73,7 @@ public class UserController {
         return ResponseEntity.ok(userService.updateUser(id, request));
     }
 
+    @Operation(summary = "Soft delete user")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
