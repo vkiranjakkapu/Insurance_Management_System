@@ -1,0 +1,12 @@
+server:
+  port: 8888
+spring:
+  application:
+    name: IMS-CONFIGSERVER
+  cloud:
+    config:
+      server:
+        git:
+          uri: file://Users/venkatakiranj/Softwares/Labmantix/InsuranceManagementSystem/cloud/repo
+          default-label: main
+          clone-on-start: true

@@ -21,6 +21,7 @@
 
     <properties>
         <java.version>21</java.version>
+        <spring-cloud.version>2025.0.0</spring-cloud.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -29,10 +30,18 @@
     <modules>
         <module>platform</module>
         <module>services</module>
+        <module>cloud</module>
     </modules>
 
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring-cloud.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>com.ims.platform</groupId>
                 <artifactId>web</artifactId>
@@ -41,6 +50,16 @@
             <dependency>
                 <groupId>com.ims.platform</groupId>
                 <artifactId>logging</artifactId>
+                <version>${version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ims.platform</groupId>
+                <artifactId>restclient</artifactId>
+                <version>${version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.ims.platform</groupId>
+                <artifactId>security</artifactId>
                 <version>${version}</version>
             </dependency>
         </dependencies>
