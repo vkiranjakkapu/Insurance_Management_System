@@ -21,25 +21,23 @@
     <modules>
         <module>web</module>
         <module>logging</module>
+        <module>security</module>
+        <module>restclient</module>
     </modules>
 
     <dependencies>
 
-        <!-- Auto Configuration -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-autoconfigure</artifactId>
         </dependency>
 
-
-        <!-- Configuration Properties Metadata -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
         </dependency>
 
-        <!-- Spring Boot Test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

@@ -1,0 +1,2 @@
+com.ims.platform.security.config.SecurityInfraAutoConfiguration
+com.ims.platform.security.config.SecurityWebAutoConfiguration

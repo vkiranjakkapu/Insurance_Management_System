@@ -178,7 +178,7 @@ release/v0.2.0
 
 # 13. Commit Convention
 
-Nalanda follows the Conventional Commits specification.
+IMS follows the Conventional Commits specification.
 
 ## Types
 
