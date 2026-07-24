@@ -1,0 +1,47 @@
+platform:
+    logging:
+        level: INFO
+        request:
+            enabled: true
+            include-query-string: true
+            include-client-ip: false
+            # excluded-paths:
+            #     - /api/**
+        exception-logging:
+            enabled: true
+        file:
+            directory: logs
+            name: application
+            max-size: 50MB
+            max-history: 30
+            total-size-cap: 512MB
+        # pattern:
+            # console: "%d %-5level[%X{correlationId}] [%thread] %logger{36} - %msg%n"
+            # file: ${platform.logging.pattern.console}
+    rest-client:
+        propagation:
+            context:
+                enabled: true
+            bearer-token:
+                enabled: true
+    security:
+        public-paths:
+            - "/api/auth/**"
+        admin-paths:
+            - "/actuator/**"
+        cors:
+            enabled: true
+            allowed-origin-patterns:
+                - http://localhost:3000
+        jwt:
+            enabled: true
+            issuer: IMS
+            authorities-claim: roles
+            authority-prefix: ROLE_
+            username-claim: email
+            secret: a-string-secret-at-least-256-bits-long
+            access-token-expiration: 15m
+            refresh-token-expiration: 7d
+            clock-skew: 60s
+    web:
+        enabled: true

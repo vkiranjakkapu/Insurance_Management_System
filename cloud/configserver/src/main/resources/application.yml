@@ -3,10 +3,10 @@ server:
 spring:
   application:
     name: IMS-CONFIGSERVER
+  profiles:
+    active: native
   cloud:
     config:
       server:
-        git:
-          uri: file://Users/venkatakiranj/Softwares/Labmantix/InsuranceManagementSystem/cloud/repo
-          default-label: main
-          clone-on-start: true
+        native:
+          search-locations: file:${user.dir}/../repo
