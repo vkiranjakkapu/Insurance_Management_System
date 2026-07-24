@@ -1,9 +1,11 @@
 spring:
     application:
-        name: identityservice
+        name: IMS-IDENTITY
+    config:
+        import: configserver:http://localhost:8888
     datasource:
         driver-class-name: org.postgresql.Driver
-        url: jdbc:postgresql://localhost:5432/ims_identity
+        url: jdbc:postgresql://${database.host}:${database.port}/${database.name}
         username: admin
         password: admin
     jpa:
@@ -12,7 +14,3 @@ spring:
     sql:
         init:
             mode: always
-    jwt:
-        secret: 1234567890123456789012345678901234567890123456789012345678901234
-        access-token-expiration: 900000      # 15 mins
-        refresh-token-expiration: 604800000  # 7 days

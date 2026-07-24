@@ -22,10 +22,10 @@
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
 
-        <!-- Spring Web (provides OncePerRequestFilter, AntPathMatcher, HttpStatusCode etc.) -->
+        <!-- provides OncePerRequestFilter, AntPathMatcher, HttpStatusCode etc. -->
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-web</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
         <!-- Servlet API (provided by the container) -->

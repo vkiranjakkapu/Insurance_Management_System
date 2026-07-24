@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -14,10 +15,10 @@ import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
 
 import com.ims.identity.dto.LoginRequest;
 import com.ims.identity.dto.LoginResponse;
@@ -27,178 +28,184 @@ import com.ims.identity.dto.RefreshTokenResponse;
 import com.ims.identity.entities.RefreshToken;
 import com.ims.identity.entities.User;
 import com.ims.identity.exceptions.InvalidRefreshTokenException;
-import com.ims.identity.properties.JwtProperties;
 import com.ims.identity.repository.RefreshTokenRepository;
 import com.ims.identity.repository.UserRepository;
 import com.ims.identity.services.JwtService;
+import com.ims.platform.security.properties.SecurityProperties;
 
 @ExtendWith(MockitoExtension.class)
 class AuthenticationServiceImpTest {
 
-    @Mock
-    private AuthenticationManager authenticationManager;
+	@Mock
+	private AuthenticationManager authenticationManager;
 
-    @Mock
-    private UserRepository userRepository;
+	@Mock
+	private UserRepository userRepository;
 
-    @Mock
-    private RefreshTokenRepository refreshTokenRepository;
+	@Mock
+	private RefreshTokenRepository refreshTokenRepository;
 
-    @Mock
-    private JwtService jwtService;
+	@Mock
+	private JwtService jwtService;
 
-    @Mock
-    private JwtProperties jwtProperties;
+	private SecurityProperties properties;
 
-    @InjectMocks
-    private AuthenticationServiceImp authenticationService;
+	private AuthenticationServiceImp authenticationService;
 
-    private User user;
+	private User user;
 
-    @BeforeEach
-    void setup() {
+	@BeforeEach
+	void setup() {
 
-        user = User.builder()
-                .id(1L)
-                .email("admin@test.com")
-                .password("password")
-                .build();
-    }
+		properties = new SecurityProperties();
+		authenticationService = new AuthenticationServiceImp(
+				authenticationManager,
+				refreshTokenRepository,
+				jwtService,
+				properties);
 
-    @Test
-    void login_ShouldReturnTokens() {
+		user = User.builder()
+				.id(1L)
+				.email("admin@test.com")
+				.password("password")
+				.build();
+	}
 
-        LoginRequest request = new LoginRequest(
-                "admin@test.com",
-                "password");
+	@Test
+	void login_ShouldReturnTokens() {
 
-        when(userRepository.findByEmail(request.email()))
-                .thenReturn(Optional.of(user));
+		LoginRequest request = new LoginRequest(
+				"admin@test.com",
+				"password");
 
-        when(jwtService.generateAccessToken(user))
-                .thenReturn("access-token");
+		Authentication authentication = mock(Authentication.class);
 
-        when(jwtService.generateRefreshToken())
-                .thenReturn("refresh-token");
+		when(authenticationManager.authenticate(any()))
+				.thenReturn(authentication);
 
-        when(jwtProperties.getRefreshTokenExpiration())
-                .thenReturn(86400000L);
+		when(authentication.getPrincipal())
+				.thenReturn(user);
 
-        LoginResponse response = authenticationService.login(request);
+		when(jwtService.generateAccessToken(user))
+				.thenReturn("access-token");
 
-        assertNotNull(response);
-        assertEquals("access-token", response.accessToken());
-        assertEquals("refresh-token", response.refreshToken());
-        assertEquals("Bearer", response.tokenType());
+		when(jwtService.generateRefreshToken())
+				.thenReturn("refresh-token");
 
-        verify(authenticationManager).authenticate(any());
-        verify(refreshTokenRepository).save(any());
-    }
+		LoginResponse response = authenticationService.login(request);
 
-    @Test
-    void refresh_ShouldGenerateNewAccessToken() {
+		assertNotNull(response);
+		assertEquals("access-token", response.accessToken());
+		assertEquals("refresh-token", response.refreshToken());
+		assertEquals("Bearer", response.tokenType());
 
-        RefreshToken token = new RefreshToken();
+		verify(authenticationManager).authenticate(any());
+		verify(refreshTokenRepository).save(any());
+	}
 
-        token.setToken("refresh-token");
-        token.setRevoked(false);
-        token.setExpiresAt(LocalDateTime.now().plusDays(1));
-        token.setUser(user);
+	@Test
+	void refresh_ShouldGenerateNewAccessToken() {
 
-        when(refreshTokenRepository.findByToken("refresh-token"))
-                .thenReturn(Optional.of(token));
+		RefreshToken token = new RefreshToken();
 
-        when(jwtService.generateAccessToken(user))
-                .thenReturn("new-access-token");
+		token.setToken("refresh-token");
+		token.setRevoked(false);
+		token.setExpiresAt(LocalDateTime.now().plusDays(1));
+		token.setUser(user);
 
-        RefreshTokenResponse response =
-                authenticationService.refresh(
-                        new RefreshTokenRequest("refresh-token"));
+		when(refreshTokenRepository.findByToken("refresh-token"))
+				.thenReturn(Optional.of(token));
 
-        assertEquals(
-                "new-access-token",
-                response.accessToken());
+		when(jwtService.generateAccessToken(user))
+				.thenReturn("new-access-token");
 
-        assertEquals(
-                "refresh-token",
-                response.refreshToken());
+		RefreshTokenResponse response = authenticationService.refresh(
+				new RefreshTokenRequest("refresh-token"));
 
-        verify(jwtService).generateAccessToken(user);
-    }
+		assertEquals(
+				"new-access-token",
+				response.accessToken());
 
-    @Test
-    void refresh_ShouldThrow_WhenTokenRevoked() {
+		assertEquals(
+				"refresh-token",
+				response.refreshToken());
 
-        RefreshToken token = new RefreshToken();
+		verify(jwtService).generateAccessToken(user);
+	}
 
-        token.setRevoked(true);
-        token.setExpiresAt(LocalDateTime.now().plusDays(1));
+	@Test
+	void refresh_ShouldThrow_WhenTokenRevoked() {
 
-        when(refreshTokenRepository.findByToken(any()))
-                .thenReturn(Optional.of(token));
+		RefreshToken token = new RefreshToken();
 
-        assertThrows(
-                InvalidRefreshTokenException.class,
-                () -> authenticationService.refresh(
-                        new RefreshTokenRequest("token")));
-    }
+		token.setRevoked(true);
+		token.setExpiresAt(LocalDateTime.now().plusDays(1));
 
-    @Test
-    void refresh_ShouldThrow_WhenExpired() {
+		when(refreshTokenRepository.findByToken(any()))
+				.thenReturn(Optional.of(token));
 
-        RefreshToken token = new RefreshToken();
+		assertThrows(
+				InvalidRefreshTokenException.class,
+				() -> authenticationService.refresh(
+						new RefreshTokenRequest("token")));
+	}
 
-        token.setRevoked(false);
-        token.setExpiresAt(LocalDateTime.now().minusMinutes(1));
+	@Test
+	void refresh_ShouldThrow_WhenExpired() {
 
-        when(refreshTokenRepository.findByToken(any()))
-                .thenReturn(Optional.of(token));
+		RefreshToken token = new RefreshToken();
 
-        assertThrows(
-                InvalidRefreshTokenException.class,
-                () -> authenticationService.refresh(
-                        new RefreshTokenRequest("token")));
-    }
+		token.setRevoked(false);
+		token.setExpiresAt(LocalDateTime.now().minusMinutes(1));
 
-    @Test
-    void refresh_ShouldThrow_WhenTokenNotFound() {
+		when(refreshTokenRepository.findByToken(any()))
+				.thenReturn(Optional.of(token));
 
-        when(refreshTokenRepository.findByToken(any()))
-                .thenReturn(Optional.empty());
+		assertThrows(
+				InvalidRefreshTokenException.class,
+				() -> authenticationService.refresh(
+						new RefreshTokenRequest("token")));
+	}
 
-        assertThrows(
-                InvalidRefreshTokenException.class,
-                () -> authenticationService.refresh(
-                        new RefreshTokenRequest("token")));
-    }
+	@Test
+	void refresh_ShouldThrow_WhenTokenNotFound() {
 
-    @Test
-    void logout_ShouldRevokeToken() {
+		when(refreshTokenRepository.findByToken(any()))
+				.thenReturn(Optional.empty());
 
-        RefreshToken token = new RefreshToken();
+		assertThrows(
+				InvalidRefreshTokenException.class,
+				() -> authenticationService.refresh(
+						new RefreshTokenRequest("token")));
+	}
 
-        token.setRevoked(false);
+	@Test
+	void logout_ShouldRevokeToken() {
 
-        when(refreshTokenRepository.findByToken(any()))
-                .thenReturn(Optional.of(token));
+		RefreshToken token = new RefreshToken();
 
-        authenticationService.logout(
-                new LogoutRequest("refresh-token"));
+		token.setRevoked(false);
 
-        assertTrue(token.isRevoked());
+		when(refreshTokenRepository.findByToken(any()))
+				.thenReturn(Optional.of(token));
 
-        verify(refreshTokenRepository).save(token);
-    }
+		authenticationService.logout(
+				new LogoutRequest("refresh-token"));
 
-    @Test
-    void logout_ShouldThrow_WhenTokenNotFound() {
+		assertTrue(token.isRevoked());
 
-        when(refreshTokenRepository.findByToken(any()))
-                .thenReturn(Optional.empty());
+		verify(refreshTokenRepository).save(token);
+	}
 
-        assertThrows(
-                InvalidRefreshTokenException.class,
-                () -> authenticationService.logout(
-                        new LogoutRequest("refresh-token")));
-    }
+	@Test
+	void logout_ShouldThrow_WhenTokenNotFound() {
+
+		when(refreshTokenRepository.findByToken(any()))
+				.thenReturn(Optional.empty());
+
+		assertThrows(
+				InvalidRefreshTokenException.class,
+				() -> authenticationService.logout(
+						new LogoutRequest("refresh-token")));
+	}
 }

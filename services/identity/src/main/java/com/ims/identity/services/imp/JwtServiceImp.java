@@ -12,8 +12,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.ims.identity.entities.User;
-import com.ims.identity.properties.JwtProperties;
 import com.ims.identity.services.JwtService;
+import com.ims.platform.security.properties.SecurityProperties;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class JwtServiceImp implements JwtService {
 
-    private final JwtProperties properties;
+    private final SecurityProperties properties;
 
     @Override
     public String generateAccessToken(User user) {
@@ -33,13 +33,14 @@ public class JwtServiceImp implements JwtService {
         return Jwts.builder()
                 .subject(user.getEmail())
                 .claim(
-                        "roles",
+                        properties.getJwt().getAuthoritiesClaim(),
                         user.getRoles()
                                 .stream()
                                 .map(role -> role.getName().name())
                                 .collect(Collectors.toList()))
+                .issuer(properties.getJwt().getIssuer())
                 .issuedAt(Date.from(now))
-                .expiration(Date.from(now.plusMillis(properties.getAccessTokenExpiration())))
+                .expiration(Date.from(now.plus(properties.getJwt().getAccessTokenExpiration())))
                 .signWith(getSigningKey())
                 .compact();
     }
@@ -78,6 +79,6 @@ public class JwtServiceImp implements JwtService {
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(
-                properties.getSecret().getBytes(StandardCharsets.UTF_8));
+                properties.getJwt().getSecret().getBytes(StandardCharsets.UTF_8));
     }
 }

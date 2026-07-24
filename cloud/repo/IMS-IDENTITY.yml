@@ -1,0 +1,18 @@
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: refresh,health
+
+database:
+  host: localhost
+  port: 5432
+  name: ims_identity
+
+platform:
+  security:
+    admin-paths:
+      - "/actuator/**"
+    public-paths:
+      - "/api/auth/**"
