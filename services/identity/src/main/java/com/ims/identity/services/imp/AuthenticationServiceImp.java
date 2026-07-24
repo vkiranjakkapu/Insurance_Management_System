@@ -1,10 +1,10 @@
 package com.ims.identity.services.imp;
 
-import java.time.Duration;
 import java.time.LocalDateTime;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,11 +16,11 @@ import com.ims.identity.dto.RefreshTokenResponse;
 import com.ims.identity.entities.RefreshToken;
 import com.ims.identity.entities.User;
 import com.ims.identity.exceptions.InvalidRefreshTokenException;
-import com.ims.identity.properties.JwtProperties;
 import com.ims.identity.repository.RefreshTokenRepository;
-import com.ims.identity.repository.UserRepository;
 import com.ims.identity.services.AuthenticationService;
 import com.ims.identity.services.JwtService;
+import com.ims.platform.security.constants.SecurityConstants;
+import com.ims.platform.security.properties.SecurityProperties;
 
 import lombok.RequiredArgsConstructor;
 
@@ -29,21 +29,19 @@ import lombok.RequiredArgsConstructor;
 public class AuthenticationServiceImp implements AuthenticationService {
 
 	private final AuthenticationManager authenticationManager;
-	private final UserRepository userRepository;
 	private final RefreshTokenRepository refreshTokenRepository;
 	private final JwtService jwtService;
-	private final JwtProperties jwtProperties;
+	private final SecurityProperties properties;
 
 	@Override
 	public LoginResponse login(LoginRequest request) {
 
-		authenticationManager.authenticate(
+		Authentication authenticate = authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(
 						request.email(),
 						request.password()));
 
-		User user = userRepository.findByEmail(request.email())
-				.orElseThrow();
+		User user = (User) authenticate.getPrincipal();
 
 		String accessToken = jwtService.generateAccessToken(user);
 		String refreshTokenValue = jwtService.generateRefreshToken();
@@ -54,14 +52,14 @@ public class AuthenticationServiceImp implements AuthenticationService {
 		refreshToken.setRevoked(false);
 		refreshToken.setExpiresAt(
 				LocalDateTime.now()
-						.plus(Duration.ofMillis(jwtProperties.getRefreshTokenExpiration())));
+						.plus(properties.getJwt().getRefreshTokenExpiration()));
 
 		refreshTokenRepository.save(refreshToken);
 
 		return new LoginResponse(
 				accessToken,
 				refreshTokenValue,
-				"Bearer");
+				SecurityConstants.BEARER_PREFIX.trim());
 	}
 
 	@Override

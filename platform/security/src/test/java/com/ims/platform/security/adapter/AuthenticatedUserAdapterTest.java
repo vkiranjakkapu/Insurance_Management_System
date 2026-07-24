@@ -39,7 +39,7 @@ class AuthenticatedUserAdapterTest {
         Jwt jwt = Jwt.withTokenValue("token")
                 .header("alg", "HS256")
                 .claim("sub", "1234567890")
-                .claim("preferred_username", "venkat")
+                .claim("username", "venkat")
                 .claim("roles", List.of("USER"))
                 .build();
 
@@ -65,7 +65,7 @@ class AuthenticatedUserAdapterTest {
         Jwt jwt = Jwt.withTokenValue("token")
                 .header("alg", "HS256")
                 .claim("sub", "1")
-                .claim("preferred_username", "venkat")
+                .claim("username", "venkat")
                 .build();
 
         JwtAuthenticationToken authentication = new JwtAuthenticationToken(jwt);

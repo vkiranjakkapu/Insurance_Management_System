@@ -4,7 +4,12 @@ import java.time.Duration;
 import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.convert.DurationUnit;
 import org.springframework.http.HttpHeaders;
+
+import java.time.temporal.ChronoUnit;
+
+import com.ims.platform.security.constants.SecurityConstants;
 
 @ConfigurationProperties(prefix = "platform.security")
 public class SecurityProperties {
@@ -18,9 +23,10 @@ public class SecurityProperties {
     private final JwtProperties jwt = new JwtProperties();
 
     private List<String> publicPaths = List.of(
-            "/actuator/**",
             "/swagger-ui/**",
             "/v3/api-docs/**");
+
+    private List<String> adminPaths = List.of("/actuator/**");
 
     private final CorsProperties cors = new CorsProperties();
 
@@ -54,7 +60,7 @@ public class SecurityProperties {
 
         private static final String headerName = HttpHeaders.AUTHORIZATION;
 
-        private static final String tokenPrefix = "Bearer";
+        private static final String tokenPrefix = SecurityConstants.BEARER_PREFIX.trim();
 
         /**
          * Secret used for HMAC verification.
@@ -72,11 +78,17 @@ public class SecurityProperties {
          */
         private Duration clockSkew = Duration.ofSeconds(30);
 
-        private String usernameClaim = "preferred_username";
+        private String usernameClaim = "username";
 
         private String authoritiesClaim = "roles";
 
         private String authorityPrefix = "ROLE_";
+
+        @DurationUnit(ChronoUnit.MILLIS)
+        private Duration accessTokenExpiration = Duration.ofMinutes(15);
+
+        @DurationUnit(ChronoUnit.MILLIS)
+        private Duration refreshTokenExpiration = Duration.ofDays(7);
 
         public boolean isEnabled() {
             return enabled;
@@ -140,6 +152,22 @@ public class SecurityProperties {
 
         public void setAuthorityPrefix(String authorityPrefix) {
             this.authorityPrefix = authorityPrefix;
+        }
+
+        public Duration getAccessTokenExpiration() {
+            return accessTokenExpiration;
+        }
+
+        public void setAccessTokenExpiration(Duration accessTokenExpiration) {
+            this.accessTokenExpiration = accessTokenExpiration;
+        }
+
+        public Duration getRefreshTokenExpiration() {
+            return refreshTokenExpiration;
+        }
+
+        public void setRefreshTokenExpiration(Duration refreshTokenExpiration) {
+            this.refreshTokenExpiration = refreshTokenExpiration;
         }
     }
 
@@ -247,6 +275,14 @@ public class SecurityProperties {
 
     public CorsProperties getCors() {
         return cors;
+    }
+
+    public List<String> getAdminPaths() {
+        return adminPaths;
+    }
+
+    public void setAdminPaths(List<String> adminPaths) {
+        this.adminPaths = adminPaths;
     }
 
 }

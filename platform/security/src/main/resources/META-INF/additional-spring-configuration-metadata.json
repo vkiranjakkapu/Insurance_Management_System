@@ -7,6 +7,16 @@
       "defaultValue": false
     },
     {
+      "name": "platform.security.public-paths",
+      "type": "java.util.List<java.lang.String>",
+      "description": "Public paths that do not require authentication."
+    },
+    {
+      "name": "platform.security.admin-paths",
+      "type": "java.util.List<java.lang.String>",
+      "description": "Admin paths that require ADMIN role."
+    },
+    {
       "name": "platform.security.authentication.enabled",
       "type": "java.lang.Boolean",
       "description": "Enable or disable authentication.",
@@ -35,9 +45,51 @@
       "description": "Prefix used for JWT tokens in the authorization header."
     },
     {
-      "name": "platform.security.public-paths",
-      "type": "java.util.List<java.lang.String>",
-      "description": "Public paths that do not require authentication."
+      "name": "platform.security.jwt.secret",
+      "type": "java.lang.String",
+      "description": "Secret key used for JWT signature verification."
+    },
+    {
+      "name": "platform.security.jwt.issuer",
+      "type": "java.lang.String",
+      "defaultValue": "ims",
+      "description": "Expected JWT issuer."
+    },
+    {
+      "name": "platform.security.jwt.clock-skew",
+      "type": "java.time.Duration",
+      "defaultValue": "30s",
+      "description": "Allowed JWT clock skew."
+    },
+    {
+      "name": "platform.security.jwt.username-claim",
+      "type": "java.lang.String",
+      "defaultValue": "username",
+      "description": "Secret key used for JWT signature verification."
+    },
+    {
+      "name": "platform.security.jwt.authorities-claim",
+      "type": "java.lang.String",
+      "defaultValue": "roles",
+      "description": "Authorities Claim used."
+    },
+    {
+      "name": "platform.security.jwt.authority-prefix",
+      "type": "java.lang.String",
+      "defaultValue": "ROLE_",
+      "description": "Authority Prefix used for Roles"
+    },
+    {
+      "name": "platform.security.jwt.access-token-expiration",
+      "type": "java.time.Duration",
+      "defaultValue": "15m",
+      "description": "Access Token Expiration Duration."
+    },
+    {
+      "name": "platform.security.jwt.refresh-token-expiration",
+      "type": "java.time.Duration",
+      "defaultValue": "7d",
+      "description": "Refresh Token Expiration Duration."
     },
     {
       "name": "platform.security.cors.enabled",
@@ -79,23 +131,6 @@
       "type": "java.lang.Long",
       "description": "Maximum age in seconds for CORS preflight responses.",
       "defaultValue": 3600
-    },
-    {
-      "name": "platform.security.jwt.secret",
-      "type": "java.lang.String",
-      "description": "Secret key used for JWT signature verification."
-    },
-    {
-      "name": "platform.security.jwt.issuer",
-      "type": "java.lang.String",
-      "defaultValue": "ims",
-      "description": "Expected JWT issuer."
-    },
-    {
-      "name": "platform.security.jwt.clock-skew",
-      "type": "java.time.Duration",
-      "defaultValue": "30s",
-      "description": "Allowed JWT clock skew."
     }
   ]
 }

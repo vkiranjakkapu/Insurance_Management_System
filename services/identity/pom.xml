@@ -32,6 +32,11 @@
 
 		<dependency>
 			<groupId>com.ims.platform</groupId>
+			<artifactId>security</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>com.ims.platform</groupId>
 			<artifactId>web</artifactId>
 		</dependency>
 

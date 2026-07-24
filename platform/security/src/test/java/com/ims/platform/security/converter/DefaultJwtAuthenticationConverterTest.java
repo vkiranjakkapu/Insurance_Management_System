@@ -35,7 +35,7 @@ class DefaultJwtAuthenticationConverterTest {
         Jwt jwt = Jwt.withTokenValue("token")
                 .header("alg", "HS256")
                 .claim("sub", "1234567890")
-                .claim("preferred_username", "venkat")
+                .claim("username", "venkat")
                 .claim("roles", List.of("USER", "ADMIN"))
                 .build();
 
@@ -56,7 +56,7 @@ class DefaultJwtAuthenticationConverterTest {
         Jwt jwt = Jwt.withTokenValue("token")
                 .header("alg", "HS256")
                 .claim("sub", "1234567890")
-                .claim("preferred_username", "venkat")
+                .claim("username", "venkat")
                 .build();
 
         AbstractAuthenticationToken authentication = converter.convert(jwt);

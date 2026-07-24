@@ -28,7 +28,6 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.ims.platform.logging.exception.ExceptionLogger;
 import com.ims.platform.logging.holder.RequestContextHolder;
-
 import com.ims.platform.security.adapter.AuthenticatedUserAdapter;
 import com.ims.platform.security.adapter.AuthenticationAdapter;
 import com.ims.platform.security.authentication.AuthenticationTokenProvider;

@@ -43,6 +43,7 @@ public class SecurityWebAutoConfiguration {
 				.authorizeHttpRequests(auth -> auth
 						.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 						.requestMatchers(properties.getPublicPaths().toArray(String[]::new)).permitAll()
+						.requestMatchers(properties.getAdminPaths().toArray(String[]::new)).hasRole("ADMIN")
 						.anyRequest()
 						.authenticated())
 				.oauth2ResourceServer(
@@ -54,5 +55,5 @@ public class SecurityWebAutoConfiguration {
 
 		return http.build();
 	}
-    
+
 }

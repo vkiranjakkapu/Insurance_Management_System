@@ -94,9 +94,12 @@ platform:
     enabled: true
 
     public-paths:
-      - /actuator/health
+      - /api/auth/**
       - /swagger-ui/**
       - /v3/api-docs/**
+
+    admin-paths:
+      - /actuator/**
 
     jwt:
       enabled: true
@@ -104,7 +107,7 @@ platform:
       issuer: IMS
       authorities-claim: roles
       authority-prefix: ROLE_
-      username-claim: preferred_username
+      username-claim: username
       user-id-claim: sub
 
     cors:
@@ -173,7 +176,7 @@ JWT Payload
 ```json
 {
   "sub": "1234567890",
-  "preferred_username": "venkat",
+  "username": "venkat",
   "roles": [
     "ADMIN",
     "USER"

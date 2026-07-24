@@ -8,15 +8,16 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Set;
+import java.time.Duration;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.ims.identity.entities.Role;
 import com.ims.identity.entities.RoleType;
-import com.ims.identity.properties.JwtProperties;
+import com.ims.identity.entities.User;
+import com.ims.platform.security.properties.SecurityProperties;
 
 import io.jsonwebtoken.JwtException;
 
@@ -24,28 +25,28 @@ class JwtServiceImpTest {
 
     private JwtServiceImp jwtService;
 
-    private JwtProperties properties;
+    private SecurityProperties properties;
 
-    private com.ims.identity.entities.User user;
+    private User user;
 
     @BeforeEach
     void setup() {
 
-        properties = new JwtProperties();
+        properties = new SecurityProperties();
 
-        properties.setSecret(
+        properties.getJwt().setSecret(
                 "ThisIsAVeryLongSecretKeyForJwtTestingPurposeOnly123456789");
 
-        properties.setAccessTokenExpiration(3600000L);
+        properties.getJwt().setAccessTokenExpiration(Duration.ofHours(1));
 
-        properties.setRefreshTokenExpiration(86400000L);
+        properties.getJwt().setRefreshTokenExpiration(Duration.ofDays(1));
 
         jwtService = new JwtServiceImp(properties);
 
         Role role = new Role();
         role.setName(RoleType.ADMIN);
 
-        user = com.ims.identity.entities.User.builder()
+        user = User.builder()
                 .email("admin@test.com")
                 .roles(Set.of(role))
                 .build();
@@ -84,12 +85,7 @@ class JwtServiceImpTest {
 
         String token = jwtService.generateAccessToken(user);
 
-        UserDetails userDetails = User.withUsername("admin@test.com")
-                .password("password")
-                .authorities("ROLE_ADMIN")
-                .build();
-
-        assertTrue(jwtService.isTokenValid(token, userDetails));
+        assertTrue(jwtService.isTokenValid(token, user));
     }
 
     @Test
@@ -97,9 +93,10 @@ class JwtServiceImpTest {
 
         String token = jwtService.generateAccessToken(user);
 
-        UserDetails userDetails = User.withUsername("another@test.com")
+        UserDetails userDetails = User.builder()
+                .email("another@test.com")
                 .password("password")
-                .authorities("ROLE_ADMIN")
+                .roles(user.getRoles())
                 .build();
 
         assertFalse(jwtService.isTokenValid(token, userDetails));

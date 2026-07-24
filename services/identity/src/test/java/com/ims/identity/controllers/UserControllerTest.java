@@ -4,7 +4,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -19,8 +19,10 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.JwtRequestPostProcessor;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -32,8 +34,8 @@ import com.ims.identity.entities.Address;
 import com.ims.identity.entities.RoleType;
 import com.ims.identity.services.UserService;
 
-@SpringBootTest
-@AutoConfigureMockMvc
+@WebMvcTest(UserController.class)
+@AutoConfigureMockMvc(addFilters = false)
 class UserControllerTest {
 
 	@Autowired
@@ -52,7 +54,7 @@ class UserControllerTest {
 				.thenReturn(response());
 
 		mockMvc.perform(post("/api/users")
-				.with(user("admin").roles("ADMIN"))
+				.with(adminJwt())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(createRequest())))
 				.andExpect(status().isCreated());
@@ -65,7 +67,7 @@ class UserControllerTest {
 				.thenReturn(List.of(response()));
 
 		mockMvc.perform(get("/api/users")
-				.with(user("admin").roles("ADMIN")))
+				.with(adminJwt()))
 				.andExpect(status().isOk());
 	}
 
@@ -76,7 +78,7 @@ class UserControllerTest {
 				.thenReturn(response());
 
 		mockMvc.perform(get("/api/users/1")
-				.with(user("admin").roles("ADMIN")))
+				.with(adminJwt()))
 				.andExpect(status().isOk());
 	}
 
@@ -87,7 +89,7 @@ class UserControllerTest {
 				.thenReturn(response());
 
 		mockMvc.perform(put("/api/users/1")
-				.with(user("admin").roles("ADMIN"))
+				.with(adminJwt())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(updateRequest())))
 				.andExpect(status().isOk());
@@ -99,7 +101,7 @@ class UserControllerTest {
 		doNothing().when(userService).deleteUser(1L);
 
 		mockMvc.perform(delete("/api/users/1")
-				.with(user("admin").roles("ADMIN")))
+				.with(adminJwt()))
 				.andExpect(status().isNoContent());
 	}
 
@@ -116,7 +118,7 @@ class UserControllerTest {
 				null);
 
 		mockMvc.perform(post("/api/users")
-				.with(user("admin").roles("ADMIN"))
+				.with(adminJwt())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isBadRequest());
@@ -172,5 +174,13 @@ class UserControllerTest {
 				Set.of(RoleType.CUSTOMER),
 				LocalDateTime.now(),
 				LocalDateTime.now());
+	}
+
+	private JwtRequestPostProcessor adminJwt() {
+		return jwt()
+				.jwt(jwt -> jwt
+						.subject("1")
+						.claim("username", "admin"))
+				.authorities(new SimpleGrantedAuthority("ROLE_ADMIN"));
 	}
 }
