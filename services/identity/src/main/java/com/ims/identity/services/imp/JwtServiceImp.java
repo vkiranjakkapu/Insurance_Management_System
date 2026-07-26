@@ -38,6 +38,8 @@ public class JwtServiceImp implements JwtService {
                                 .stream()
                                 .map(role -> role.getName().name())
                                 .collect(Collectors.toList()))
+                .claim("uid", user.getId())
+                .claim("name", user.getFirstName() + " " + user.getLastName())
                 .issuer(properties.getJwt().getIssuer())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plus(properties.getJwt().getAccessTokenExpiration())))
