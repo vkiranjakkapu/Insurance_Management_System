@@ -18,6 +18,8 @@ import com.ims.identity.dto.CreateUserRequest;
 import com.ims.identity.dto.UpdateUserRequest;
 import com.ims.identity.dto.UserResponse;
 import com.ims.identity.services.UserService;
+import com.ims.platform.security.context.AuthenticationContext;
+import com.ims.platform.security.model.AuthenticatedUser;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -33,6 +35,15 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
     private final UserService userService;
+    private final AuthenticationContext authContext;
+
+    @Operation(summary = "Get Loggedin User")
+    @PreAuthorize("hasAnyRole('ADMIN','AGENT','CUSTOMER')")
+    @GetMapping("/me")
+    public ResponseEntity<UserResponse> me() {
+        AuthenticatedUser user = authContext.getCurrentUser().orElse(null);
+        return ResponseEntity.ok(userService.getUserByEmail(user.getUserId()));
+    }
 
     @Operation(summary = "Create User")
     @ApiResponses({
@@ -51,21 +62,21 @@ public class UserController {
 
     @Operation(summary = "Get all users")
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','AGENT','CUSTOMER')")
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @Operation(summary = "Get user by id")
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','AGENT','CUSTOMER')")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
     @Operation(summary = "Update user")
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN','AGENT','CUSTOMER')")
     public ResponseEntity<UserResponse> updateUser(
             @PathVariable Long id,
             @Valid @RequestBody UpdateUserRequest request) {
