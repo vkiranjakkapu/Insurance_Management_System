@@ -1,6 +1,6 @@
 import { createContext, useContext } from "react";
-import type { Address } from "../services/AccountService";
-import type { LoginRequest } from "../services/AuthService";
+import type { LoginRequest, LoginResponse } from "../services/AuthService";
+import type { ErrorResponse } from "../api/api";
 
 export type Principal = {
     id: number;
@@ -9,28 +9,26 @@ export type Principal = {
     roles: string[];
     accessToken: string;
     refreshToken: string;
-    isLoggedIn: boolean;
 };
 
-export type UserProfile = {
-    id: number;
-    email: string;
-    name: string;
-    firstName: string;
-    lastName: string;
-    phone: string;
-    address: Address;
-    dob: string;
-};
+export const AuthStatus = {
+    INITIALIZING: "INITIALIZING",
+    AUTHENTICATED: "AUTHENTICATED",
+    UNAUTHENTICATED: "UNAUTHENTICATED",
+} as const;
+export type AuthStatus = (typeof AuthStatus)[keyof typeof AuthStatus];
 
 export type Authentication = {
     principal: Principal;
-    profile: UserProfile | null;
-    authenticate: (user: LoginRequest) => Promise<string>;
+    status: AuthStatus;
+    isLoggedIn: () => boolean;
+    authenticate: (
+        user: LoginRequest,
+    ) => Promise<ErrorResponse | LoginResponse | undefined>;
     logout: () => void;
     refresh: () => void;
     tokenLogin: () => void;
-    getHomeRoute: (routes: string[]) => string;
+    getHomeRoute: (routes: string[], uri?: string) => string;
 };
 
 export const AuthContext = createContext<Authentication | null>(null);

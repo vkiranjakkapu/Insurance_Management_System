@@ -1,5 +1,6 @@
 import api from "../api/api";
 import { AppConfig } from "../config/AppConfig";
+import type { Address } from "../context/useProfile";
 
 export interface UserResponse {
     id: number;
@@ -14,15 +15,6 @@ export interface UserResponse {
     createdAt: string;
     updatedAt: string;
 }
-
-export type Address = {
-    id: number;
-    street: string;
-    pinCode: string;
-    state: string;
-    country: string;
-    deleted: boolean;
-};
 
 class AccountService {
     async getMyProfile(): Promise<UserResponse> {

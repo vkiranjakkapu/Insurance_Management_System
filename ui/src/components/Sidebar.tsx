@@ -9,7 +9,7 @@ import {
 } from "react";
 
 import ProfileIcon from "../assets/undraw_finance-guy-avatar_vhop.svg";
-import Icon from "/public/icon.png";
+import Icon from "/icon.png";
 
 // Import the outline variants (24x24) from Heroicons v2
 import {
@@ -25,9 +25,10 @@ import {
     WalletIcon,
     XMarkIcon,
 } from "@heroicons/react/24/outline";
-import usePrincipal from "../context/usePrincipal";
-import { RoutePaths } from "../routes/RoutePaths";
 import { useNavigate } from "react-router-dom";
+import usePrincipal from "../context/usePrincipal";
+import useProfile from "../context/useProfile";
+import { RoutePaths } from "../routes/RoutePaths";
 
 interface SidebarLayoutProps {
     children?: ReactNode;
@@ -48,6 +49,7 @@ interface NavItem {
 
 export default function Sidebar({ children }: SidebarLayoutProps): JSX.Element {
     const auth = usePrincipal();
+    const { profile } = useProfile();
     const navigate = useNavigate();
 
     const [isOpen, setIsOpen] = useState<boolean>(false);
@@ -115,24 +117,7 @@ export default function Sidebar({ children }: SidebarLayoutProps): JSX.Element {
         },
     ];
 
-    const [navItems, setNavItems] = useState(navPaths);
-
     function loadPage(route: string) {
-        setNavItems((prev) =>
-            prev.map((item) => {
-                if (item.route == route) {
-                    return {
-                        ...item,
-                        active: true,
-                    };
-                } else {
-                    return {
-                        ...item,
-                        active: false,
-                    };
-                }
-            }),
-        );
         navigate(route);
     }
 
@@ -183,8 +168,11 @@ export default function Sidebar({ children }: SidebarLayoutProps): JSX.Element {
                     <p className="px-2 text-xs font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                         Workspace
                     </p>
-                    {navItems.map((item, idx) => {
+                    {navPaths.map((item, idx) => {
                         const IconComponent = item.icon;
+                        const isActive =
+                            location.pathname === item.route ||
+                            location.pathname.startsWith(`${item.route}/`);
                         return (
                             <button
                                 key={idx}
@@ -192,7 +180,7 @@ export default function Sidebar({ children }: SidebarLayoutProps): JSX.Element {
                                 onClick={() => loadPage(item.route)}
                                 className={`flex w-full cursor-pointer items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all group
                   ${
-                      item.active
+                      isActive
                           ? "bg-indigo-50 text-indigo-600 dark:bg-indigo-600/10 dark:text-indigo-400"
                           : "hover:bg-gray-100 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-900 dark:hover:text-gray-100"
                   }
@@ -200,7 +188,7 @@ export default function Sidebar({ children }: SidebarLayoutProps): JSX.Element {
                             >
                                 <IconComponent
                                     className={`h-5 w-5 transition-colors ${
-                                        item.active
+                                        isActive
                                             ? "text-indigo-600 dark:text-indigo-400"
                                             : "text-gray-400 group-hover:text-gray-600 dark:text-gray-500 dark:group-hover:text-gray-300"
                                     }`}
@@ -243,10 +231,10 @@ export default function Sidebar({ children }: SidebarLayoutProps): JSX.Element {
                             />
                             <div className="min-w-0 flex-1">
                                 <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-200">
-                                    {auth.profile?.name}
+                                    {profile?.name ?? "Loading..."}
                                 </p>
                                 <p className="truncate text-xs text-gray-400 dark:text-gray-500">
-                                    {auth.principal.email}
+                                    {profile?.email ?? ""}
                                 </p>
                             </div>
                         </div>

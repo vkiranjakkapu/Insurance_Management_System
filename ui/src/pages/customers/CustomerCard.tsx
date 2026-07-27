@@ -4,7 +4,7 @@ import Avatar from "../../assets/undraw_deep-thinker-avatar_6xg6.svg";
 export default function CustomerCard() {
     return (
         <div className="text-center">
-            <div className="flex flex-col gap-3 p-3 bg-gray-200/50 dark:bg-gray-800/70 rounded border border-gray-200/90 dark:border-gray-600 hover:drop-shadow-xs dark:hover:drop-shadow-gray-700/20">
+            <div className="flex flex-col gap-3 p-3 bg-gray-200/50 dark:bg-gray-800/70 rounded border border-slate-200/90 dark:border-slate-600 hover:drop-shadow-xs dark:hover:drop-shadow-gray-700/20">
                 <ul className="text-center flex flex-col gap-1">
                     <li>
                         <img

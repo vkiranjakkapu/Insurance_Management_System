@@ -49,7 +49,7 @@ export default function CustomTable<T extends object>({
 
     // Helper to render badges automatically if a column value matches a status
     const renderCellValue = (value: unknown) => {
-        if (value === PolicyStatus.Active) {
+        if (value === PolicyStatus.ACTIVE) {
             return (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">
                     <ShieldCheckIcon className="size-3.5 text-emerald-500" />
@@ -57,15 +57,15 @@ export default function CustomTable<T extends object>({
                 </span>
             );
         }
-        if (value === PolicyStatus.Pending) {
+        if (value === PolicyStatus.PENDING_APPROVAL) {
             return (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-700 dark:text-amber-400">
                     <ClockIcon className="size-3.5 text-amber-500" />
-                    Pending
+                    {PolicyStatus.PENDING_APPROVAL}
                 </span>
             );
         }
-        if (value === PolicyStatus.Override) {
+        if (value === PolicyStatus.OVERRIDE) {
             return (
                 <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-2.5 py-1 text-xs font-medium text-rose-700 dark:text-rose-400">
                     <ExclamationCircleIcon className="size-3.5 text-rose-500" />
@@ -108,7 +108,9 @@ export default function CustomTable<T extends object>({
                                         : "";
                             return (
                                 <button
+                                    key={idx}
                                     type="button"
+                                    onClick={btn.action}
                                     className={`text-sm font-medium px-3.5 py-2 text-white shadow-xs dark:text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:z-10 focus:ring-2 focus:ring-indigo-500/40 cursor-pointer transition-colors
                             ${roundedClass}`}
                                 >

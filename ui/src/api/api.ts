@@ -12,3 +12,17 @@ configureRequestInterceptor(api);
 configureResponseInterceptor(api);
 
 export default api;
+
+export type ErrorResponse = {
+    errorName: string;
+    errorCode: string;
+    errorMessage: string;
+    validationErrors: ValidationErrors[];
+    timestamp: string;
+};
+
+export type ValidationErrors = {
+    field: string;
+    rejectedValue: object;
+    message: string;
+};

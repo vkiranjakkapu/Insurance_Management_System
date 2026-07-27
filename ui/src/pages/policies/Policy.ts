@@ -1,7 +1,7 @@
 export const PolicyStatus = {
-    Active: "ACTIVE",
-    Pending: "PENDING_APPROVAL",
-    Override: "OVERRIDE",
+    ACTIVE: "Active",
+    PENDING_APPROVAL: "Pending",
+    OVERRIDE: "Override",
 } as const;
 
 // Extract a usable TypeScript type from the object values

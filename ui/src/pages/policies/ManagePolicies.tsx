@@ -14,7 +14,7 @@ const defaultPolicies: Policy[] = [
         customerName: "Sarah Jenkins",
         email: "sarah.j@example.com",
         policyType: "Comprehensive Family Life",
-        status: PolicyStatus.Active,
+        status: PolicyStatus.ACTIVE,
         premium: "$185.00/mo",
     },
     {
@@ -22,7 +22,7 @@ const defaultPolicies: Policy[] = [
         customerName: "Marcus Chen",
         email: "marcus.c@example.com",
         policyType: "Auto & Health Shield",
-        status: PolicyStatus.Pending,
+        status: PolicyStatus.PENDING_APPROVAL,
         premium: "$240.00/mo",
     },
     {
@@ -30,7 +30,7 @@ const defaultPolicies: Policy[] = [
         customerName: "Elena Rostova",
         email: "elena.r@example.com",
         policyType: "Home Protection Plan",
-        status: PolicyStatus.Override,
+        status: PolicyStatus.OVERRIDE,
         premium: "$95.00/mo",
     },
 ];

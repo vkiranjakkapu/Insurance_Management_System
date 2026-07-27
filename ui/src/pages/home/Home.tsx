@@ -1,9 +1,11 @@
 import { useState } from "react";
 
 import usePrincipal from "../../context/usePrincipal";
+import { useNavigate } from "react-router-dom";
 
 export default function Home() {
     const auth = usePrincipal();
+    const navigate = useNavigate();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -15,18 +17,16 @@ export default function Home() {
         setError("");
         setLoading(true);
 
-        try {
-            await auth.authenticate({
-                email,
-                password,
-            });
-
-        } catch (err: unknown) {
-            console.error(err);
-            setError("Invalid username or password.");
-        } finally {
-            setLoading(false);
+        const response = await auth.authenticate({
+            email,
+            password,
+        });
+        if (response != undefined && "errorMessage" in response) {
+            setError(response.errorMessage);
+        } else {
+            navigate(auth.getHomeRoute(auth.principal.roles));
         }
+        setLoading(false);
     }
 
     return (

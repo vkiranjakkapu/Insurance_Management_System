@@ -7,7 +7,7 @@ export default function Dashboard() {
         <div>
             <p>Dashboard</p>
             <p>Login Details: {JSON.stringify(auth.principal)}</p>
-            <p>Login Status: {JSON.stringify(auth.principal.isLoggedIn)}</p>
+            <p>Login Status: {JSON.stringify(auth.isLoggedIn())}</p>
             <button
                 className="bg-cyan-50"
                 onClick={() =>
