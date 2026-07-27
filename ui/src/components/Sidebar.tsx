@@ -86,18 +86,6 @@ export default function Sidebar({ children }: SidebarLayoutProps): JSX.Element {
             active: true,
         },
         {
-            label: "Employees",
-            route: RoutePaths.EMPLOYEES,
-            icon: IdentificationIcon,
-            active: false,
-        },
-        {
-            label: "Customers",
-            route: RoutePaths.CUSTOMERS,
-            icon: UsersIcon,
-            active: false,
-        },
-        {
             label: "Policies",
             route: RoutePaths.POLICIES,
             icon: WalletIcon,
@@ -107,6 +95,18 @@ export default function Sidebar({ children }: SidebarLayoutProps): JSX.Element {
             label: "Claims",
             route: RoutePaths.CLAIMS,
             icon: InboxArrowDownIcon,
+            active: false,
+        },
+        {
+            label: "Employees",
+            route: RoutePaths.EMPLOYEES,
+            icon: IdentificationIcon,
+            active: false,
+        },
+        {
+            label: "Customers",
+            route: RoutePaths.CUSTOMERS,
+            icon: UsersIcon,
             active: false,
         },
         {

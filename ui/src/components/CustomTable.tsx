@@ -1,50 +1,46 @@
 import {
+    ChevronLeftIcon,
     ChevronRightIcon,
     ClockIcon,
     ExclamationCircleIcon,
     ShieldCheckIcon,
 } from "@heroicons/react/24/outline";
 
-import type {
-    ForwardRefExoticComponent,
-    PropsWithoutRef,
-    SVGProps,
-} from "react";
 import { PolicyStatus } from "../pages/policies/Policy";
-
-export type TableData<T extends object> = {
-    title: string;
-    description: string;
-    actionButtons: ActionButton[];
-    data: TableContent<T>;
-};
-
-export type TableContent<T extends object> = {
-    headers: (keyof T | string)[];
-    body: T[];
-    footer?: T[];
-};
-
-export type ActionButton = {
-    text: string;
-    icon: ForwardRefExoticComponent<
-        PropsWithoutRef<SVGProps<SVGSVGElement>> & {
-            title?: string;
-            titleId?: string;
-        }
-    >;
-    action: () => void;
-};
+import { usePagination } from "./ClientPagination";
+import type { CustomTable } from "./common/Components";
+import { ThemedSearchInput } from "./ThemedSearchInput";
 
 interface CustomTableProps<T extends object> {
-    table: TableData<T>;
+    table: CustomTable<T>;
+    handleSearch?: (input: string) => void;
     onActionClick?: (item: T) => void;
+    loadMore?: () => void;
 }
 
-export default function CustomTable<T extends object>({
+export default function CustomTableComponent<T extends object>({
     table,
+    handleSearch,
     onActionClick,
 }: CustomTableProps<T>) {
+    const { title, description, tableData, actionButtons } = table;
+    const { headers, body, pagination, perPage, footer } = tableData;
+    let placeHolder: string = "";
+    if (body.length != 0) {
+        placeHolder += `${String(headers[0])}:${String(body[0][headers[0] as keyof T])},val2; `;
+        placeHolder += `${String(headers[1])}:${String(body[0][headers[1] as keyof T])}`;
+    } else {
+        placeHolder += "Search";
+    }
+
+    const {
+        currentPage,
+        totalPages,
+        currentItems,
+        goToNextPage,
+        goToPrevPage,
+    } = usePagination<T>(body, pagination ? perPage : body.length);
+
     if (!table) return null;
 
     // Helper to render badges automatically if a column value matches a status
@@ -79,32 +75,31 @@ export default function CustomTable<T extends object>({
     return (
         <div className="w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs transition-colors dark:border-slate-800 dark:bg-slate-900">
             {/* Header Bar */}
-            <div className="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-slate-800">
+            <div className="flex flex-col items-start gap-3 justify-start border-b border-slate-200 px-6 py-4 dark:border-slate-800 md:flex-row md:justify-between md:items-center">
                 <div>
                     <h3 className="text-base font-semibold text-slate-900 dark:text-slate-100">
-                        {table.title}
+                        {title}
                     </h3>
                     <p className="text-xs text-slate-500 dark:text-slate-400">
-                        {table.description}
+                        {description}
                     </p>
                 </div>
 
-                {table.actionButtons && (
+                {actionButtons?.length != 0 && (
                     <div
-                        className="inline-flex rounded-lg shadow-sm outline-1 outline-offset-2 outline-indigo-500"
+                        className="inline-flex flex-col rounded-lg shadow-sm outline-1 outline-offset-2 outline-indigo-500 md:flex-row"
                         role="group"
                     >
-                        {table.actionButtons.map((btn, idx) => {
+                        {actionButtons?.map((btn, idx) => {
                             const isFirst = idx === 0;
-                            const isLast =
-                                idx === table.actionButtons!.length - 1;
+                            const isLast = idx === actionButtons!.length - 1;
                             const roundedClass =
                                 isFirst && isLast
                                     ? "rounded-lg"
                                     : isFirst
-                                      ? "rounded-s-lg"
+                                      ? "rounded-t-lg md:rounded-s-lg md:rounded-tr-none"
                                       : isLast
-                                        ? "rounded-e-lg"
+                                        ? "rounded-b-lg md:rounded-e-lg md:rounded-bl-none"
                                         : "";
                             return (
                                 <button
@@ -124,14 +119,58 @@ export default function CustomTable<T extends object>({
                     </div>
                 )}
             </div>
-
+            {/* Search and Pagination section */}
+            {(pagination || handleSearch) && (
+                <div className="px-6 py-4 flex gap-2 flex-col items-start justify-between border-b border-slate-200 md:flex-row md:items-center">
+                    {handleSearch && (
+                        <ThemedSearchInput
+                            placeholder={placeHolder}
+                            onChange={(e) => handleSearch(e.target.value)}
+                            onClear={() => handleSearch("")}
+                        />
+                    )}
+                    {pagination && (
+                        <div className={`w-full md:w-auto`}>
+                            <div className="flex items-center gap-3 text-end">
+                                <span className="text-sm text-gray-800 dark:text-white">
+                                    Showing page {currentPage} of {totalPages}{" "}
+                                    pages
+                                </span>
+                                <div
+                                    className="inline-flex flex-col rounded-lg shadow-sm outline-1 outline-offset-2 outline-indigo-500 md:flex-row"
+                                    role="group"
+                                >
+                                    <button
+                                        disabled={currentPage == 1}
+                                        onClick={() => {
+                                            goToPrevPage();
+                                        }}
+                                        className="p-1.5 text-sm font-medium text-white shadow-xs dark:text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:z-10 focus:ring-2 focus:ring-indigo-500/40 cursor-pointer transition-colors dark:disabled:opacity-40 disabled:opacity-80 disabled:cursor-not-allowed rounded-s-lg"
+                                    >
+                                        <ChevronLeftIcon className="size-5" />
+                                    </button>
+                                    <button
+                                        disabled={currentPage == totalPages}
+                                        onClick={() => {
+                                            goToNextPage();
+                                        }}
+                                        className="p-1.5 text-sm font-medium text-white shadow-xs dark:text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:z-10 focus:ring-2 focus:ring-indigo-500/40 cursor-pointer transition-colors dark:disabled:opacity-40 disabled:opacity-80 disabled:cursor-not-allowed rounded-e-lg"
+                                    >
+                                        <ChevronRightIcon className="size-5" />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
             {/* Table Body */}
             <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
-                    {table.data.headers && (
+                    {headers && (
                         <thead className="border-b border-slate-200 bg-slate-50/50 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-400">
                             <tr>
-                                {table.data.headers.map((headerKey) => {
+                                {headers.map((headerKey) => {
                                     return (
                                         <th
                                             key={String(headerKey)}
@@ -154,14 +193,14 @@ export default function CustomTable<T extends object>({
                         </thead>
                     )}
                     <tbody className="divide-y divide-slate-200 transition-colors dark:divide-slate-800">
-                        {table.data.body &&
-                            table.data.body.map((item, idx) => (
+                        {currentItems &&
+                            currentItems.map((item, idx) => (
                                 <tr
                                     key={idx}
                                     className="hover:bg-slate-50/80 transition-colors dark:hover:bg-slate-800/40"
                                 >
                                     {/* Dynamically Map Object Keys to Table Cells */}
-                                    {table.data.headers.map((headerKey) => {
+                                    {headers.map((headerKey) => {
                                         const keyName = String(
                                             headerKey,
                                         ) as keyof T;
@@ -195,10 +234,20 @@ export default function CustomTable<T extends object>({
                                     )}
                                 </tr>
                             ))}
+                        {currentItems.length == 0 && (
+                            <tr>
+                                <td
+                                    colSpan={headers.length}
+                                    className="px-6 py-4"
+                                >
+                                    No Results for given search
+                                </td>
+                            </tr>
+                        )}
                     </tbody>
-                    {table.data.footer && (
+                    {footer && (
                         <footer>
-                            {table.data.footer.map((tr) => {
+                            {footer.map((tr) => {
                                 return <tr>{JSON.stringify(tr)}</tr>;
                             })}
                         </footer>

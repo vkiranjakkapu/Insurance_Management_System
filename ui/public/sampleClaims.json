@@ -1,0 +1,162 @@
+[
+  {
+    "id": "CLM-10001",
+    "customerName": "Sarah Jenkins",
+    "email": "sarah.j@example.com",
+    "policyType": "Comprehensive Family Life",
+    "status": "Active",
+    "premium": "$185.00/mo"
+  },
+  {
+    "id": "CLM-10002",
+    "customerName": "Marcus Chen",
+    "email": "marcus.c@example.com",
+    "policyType": "Auto & Health Shield",
+    "status": "Pending",
+    "premium": "$240.00/mo"
+  },
+  {
+    "id": "CLM-10003",
+    "customerName": "Elena Rostova",
+    "email": "elena.r@example.com",
+    "policyType": "Home Protection Plan",
+    "status": "Override",
+    "premium": "$95.00/mo"
+  },
+  {
+    "id": "CLM-10004",
+    "customerName": "Priya Nair",
+    "email": "priya.n@example.com",
+    "policyType": "Health Secure Premium",
+    "status": "Active",
+    "premium": "$210.00/mo"
+  },
+  {
+    "id": "CLM-10005",
+    "customerName": "Arjun Reddy",
+    "email": "arjun.r@example.com",
+    "policyType": "Vehicle Protection Plus",
+    "status": "Pending",
+    "premium": "$145.00/mo"
+  },
+  {
+    "id": "CLM-10006",
+    "customerName": "Rahul Verma",
+    "email": "rahul.v@example.com",
+    "policyType": "Term Life Secure",
+    "status": "Active",
+    "premium": "$74.00/mo"
+  },
+  {
+    "id": "CLM-10007",
+    "customerName": "Ananya Iyer",
+    "email": "ananya.i@example.com",
+    "policyType": "Health & Wellness Cover",
+    "status": "Override",
+    "premium": "$132.00/mo"
+  },
+  {
+    "id": "CLM-10008",
+    "customerName": "James Wilson",
+    "email": "james.w@example.com",
+    "policyType": "Business Liability Plan",
+    "status": "Active",
+    "premium": "$325.00/mo"
+  },
+  {
+    "id": "CLM-10009",
+    "customerName": "Meera Joshi",
+    "email": "meera.j@example.com",
+    "policyType": "Comprehensive Home Shield",
+    "status": "Pending",
+    "premium": "$88.00/mo"
+  },
+  {
+    "id": "CLM-10010",
+    "customerName": "Harish Naidu",
+    "email": "harish.n@example.com",
+    "policyType": "Personal Accident Cover",
+    "status": "Active",
+    "premium": "$49.00/mo"
+  },
+  {
+    "id": "CLM-10011",
+    "customerName": "Nikhil Jain",
+    "email": "nikhil.j@example.com",
+    "policyType": "Home Essentials Plan",
+    "status": "Override",
+    "premium": "$112.00/mo"
+  },
+  {
+    "id": "CLM-10012",
+    "customerName": "Emily Davis",
+    "email": "emily.d@example.com",
+    "policyType": "Family Health Shield",
+    "status": "Pending",
+    "premium": "$225.00/mo"
+  },
+  {
+    "id": "CLM-10013",
+    "customerName": "Robert King",
+    "email": "robert.k@example.com",
+    "policyType": "Auto Protect Max",
+    "status": "Active",
+    "premium": "$198.00/mo"
+  },
+  {
+    "id": "CLM-10014",
+    "customerName": "Deepa Rao",
+    "email": "deepa.r@example.com",
+    "policyType": "Child Education Plan",
+    "status": "Active",
+    "premium": "$98.00/mo"
+  },
+  {
+    "id": "CLM-10015",
+    "customerName": "Kavya Reddy",
+    "email": "kavya.r@example.com",
+    "policyType": "Women's Health Premium",
+    "status": "Pending",
+    "premium": "$168.00/mo"
+  },
+  {
+    "id": "CLM-10016",
+    "customerName": "Chris Anderson",
+    "email": "chris.a@example.com",
+    "policyType": "Travel Explorer Plan",
+    "status": "Active",
+    "premium": "$67.00/mo"
+  },
+  {
+    "id": "CLM-10017",
+    "customerName": "Sneha Patil",
+    "email": "sneha.p@example.com",
+    "policyType": "Motor Secure Elite",
+    "status": "Override",
+    "premium": "$154.00/mo"
+  },
+  {
+    "id": "CLM-10018",
+    "customerName": "Rohit Gupta",
+    "email": "rohit.g@example.com",
+    "policyType": "Family Protection Plus",
+    "status": "Active",
+    "premium": "$196.00/mo"
+  },
+  {
+    "id": "CLM-10019",
+    "customerName": "Jessica Moore",
+    "email": "jessica.m@example.com",
+    "policyType": "Home & Contents Shield",
+    "status": "Pending",
+    "premium": "$121.00/mo"
+  },
+  {
+    "id": "CLM-10020",
+    "customerName": "Vikram Singh",
+    "email": "vikram.s@example.com",
+    "policyType": "Senior Life Assurance",
+    "status": "Override",
+    "premium": "$143.00/mo"
+  }
+]

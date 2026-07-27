@@ -14,11 +14,13 @@ export type UserProfile = {
     phone: string;
     address: Address;
     dob: string;
+    roles: string[];
 };
 
 export type Address = {
     id: number;
     street: string;
+    city: string;
     pinCode: string;
     state: string;
     country: string;
