@@ -3,74 +3,44 @@ import { useNavigate } from "react-router-dom";
 import { RoutePaths } from "../../routes/RoutePaths";
 import { type Policy } from "./Policy";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import samplePolicies from "../../../public/samplePolicies.json";
 import type { ActionButtonProps } from "../../components/ActionButton";
 import CustomTableComponent from "../../components/CustomTable";
 import { LoadingPortal } from "../../components/LoadingPortal";
 import usePagination from "../../components/common/usePagination";
 
+const CLAIM_KEYS_MAP = samplePolicies[0]
+    ? Object.keys(samplePolicies[0]).reduce<Record<string, string>>(
+          (acc, key) => {
+              acc[key.toLowerCase()] = key;
+              return acc;
+          },
+          {},
+      )
+    : {};
+
 export default function ManagePolicies() {
     const navigate = useNavigate();
 
     const [allPolicies] = useState<Policy[]>(samplePolicies as Policy[]);
-    const [queryPolicies, setQueryPolicies] = useState<Policy[]>(
-        samplePolicies as Policy[],
-    );
-    // const defaultPolicies: Policy[] = [
-    //     {
-    //         id: 1,
-    //         customerName: "Sarah Jenkins",
-    //         email: "sarah.j@example.com",
-    //         policyType: "Comprehensive Family Life",
-    //         status: PolicyStatus.ACTIVE,
-    //         premium: "$185.00/mo",
-    //     },
-    //     {
-    //         id: 2,
-    //         customerName: "Marcus Chen",
-    //         email: "marcus.c@example.com",
-    //         policyType: "Auto & Health Shield",
-    //         status: PolicyStatus.PENDING_APPROVAL,
-    //         premium: "$240.00/mo",
-    //     },
-    //     {
-    //         id: 3,
-    //         customerName: "Elena Rostova",
-    //         email: "elena.r@example.com",
-    //         policyType: "Home Protection Plan",
-    //         status: PolicyStatus.OVERRIDE,
-    //         premium: "$95.00/mo",
-    //     },
-    // ];
+    const [searchQuery, setSearchQuery] = useState("");
 
-    function handleSearch(query: string) {
-        if (!query.trim()) {
-            setQueryPolicies(allPolicies);
-            return;
-        }
-
-        // Get a reference sample object to extract the real, correctly-cased keys
-        // Fallback to empty object if array is empty to prevent crashes
-        const sampleObject = allPolicies[0] || {};
-        const realKeys = Object.keys(sampleObject);
+    const filteredPolicies = useMemo(() => {
+        const query = searchQuery.trim();
+        if (!query) return allPolicies;
 
         const sections = query.split(";");
         const searchCriteria: { key: string; values: string[] }[] = [];
 
-        sections.forEach((sc) => {
-            if (!sc.includes(":")) return;
+        // Parse criteria
+        for (const section of sections) {
+            if (!section.includes(":")) continue;
 
-            const [rawKey, rawValues] = sc.split(":");
-            const userInputKey = rawKey.trim().toLowerCase(); // Lowercase the user's typed key
+            const [rawKey, rawValues] = section.split(":");
+            const matchedRealKey = CLAIM_KEYS_MAP[rawKey.trim().toLowerCase()];
 
-            // Dynamic key matching: Find the actual key that matches the lowercase user input
-            const matchedRealKey = realKeys.find(
-                (realKey) => realKey.toLowerCase() === userInputKey,
-            );
-
-            // If the key doesn't exist on our object at all, skip this criteria block
-            if (!matchedRealKey) return;
+            if (!matchedRealKey) continue;
 
             const values = rawValues
                 .split(",")
@@ -80,31 +50,33 @@ export default function ManagePolicies() {
             if (values.length > 0) {
                 searchCriteria.push({ key: matchedRealKey, values });
             }
-        });
-
-        // If no valid criteria could be parsed from the user input, return original list or empty
-        if (searchCriteria.length === 0) {
-            setQueryPolicies(allPolicies);
-            return;
         }
 
-        // 2. Filter using the verified, correctly-cased real keys
-        const filteredPolicies = allPolicies.filter((policy) => {
-            return searchCriteria.every((criterion) => {
-                const claimValue = policy[criterion.key as keyof typeof policy];
+        if (searchCriteria.length === 0) return allPolicies;
 
-                if (claimValue === undefined) return false;
+        // Optimized structural loop
+        return allPolicies.filter((claim) =>
+            searchCriteria.every((criterion) => {
+                const claimValue = claim[criterion.key as keyof Policy];
+                if (claimValue === undefined || claimValue === null)
+                    return false;
 
                 const normalizedClaimValue = String(claimValue).toLowerCase();
-
                 return criterion.values.some((val) =>
                     normalizedClaimValue.includes(val),
                 );
-            });
-        });
+            }),
+        );
+    }, [searchQuery, allPolicies]);
 
-        setQueryPolicies(filteredPolicies as Policy[]);
+    const pagination = usePagination<Policy>(filteredPolicies, 10);
+
+    function fetchPolicy(claim: Policy) {
+        navigate(`${RoutePaths.POLICIES}/${claim.id}`);
     }
+
+    // Safely check for headers fallback
+    const headers = allPolicies[0] ? Object.keys(allPolicies[0]) : [];
 
     const addPolicyButton: ActionButtonProps = {
         text: "New Policy",
@@ -114,12 +86,6 @@ export default function ManagePolicies() {
         },
     };
 
-    const pagination = usePagination<Policy>(queryPolicies, 10);
-
-    function fetchPolicy(policy: Policy) {
-        navigate(`${RoutePaths.POLICIES}/${policy.id}`);
-    }
-
     return (
         <>
             <LoadingPortal
@@ -128,14 +94,14 @@ export default function ManagePolicies() {
                 subMessage="please wait"
             />
             <CustomTableComponent
-                title="Customer Policies"
+                title="Our Policies"
                 description="Manage recent enrollments and active coverage."
                 actionButtons={[addPolicyButton]}
-                headers={Object.keys(allPolicies[0])}
+                headers={headers}
                 pagination={pagination}
-                body={queryPolicies}
+                body={filteredPolicies}
                 onActionClick={fetchPolicy}
-                searchField={{ handleSearch }}
+                searchField={{ handleSearch: setSearchQuery }}
             />
         </>
     );

@@ -61,7 +61,7 @@ export default function ManageEmployees() {
             title="Our Agents"
             description="manage agents registered with us"
             searchField={{
-                placeHolder: "Search Customers by Name or Email",
+                placeHolder: "Name or Email",
                 handleSearch: setSearchQuery,
                 matchInfo,
             }}

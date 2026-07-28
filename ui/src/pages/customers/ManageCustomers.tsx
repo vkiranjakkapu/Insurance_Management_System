@@ -58,7 +58,7 @@ export default function ManageCustomers() {
             title="Registered Customers"
             description="manage customers registered with our services"
             searchField={{
-                placeHolder: "Search Customers by Name or Email",
+                placeHolder: "Name or Email",
                 handleSearch: setSearchQuery,
             }}
             pagination={{

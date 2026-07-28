@@ -8,15 +8,15 @@ import ClaimDetails from "../pages/claims/ClaimDetails";
 import ManageClaims from "../pages/claims/ManageClaims";
 import CustomerDetails from "../pages/customers/CustomerDetails";
 import ManageCustomers from "../pages/customers/ManageCustomers";
-import DashboardLayout from "../pages/dashboard/Dashboard";
 import EmployeeDetails from "../pages/employees/EmployeeDetails";
 import ManageEmployees from "../pages/employees/ManageEmployees";
 import Home from "../pages/home/Home";
 
+import AdminDashboard from "../pages/admin/AdminDashboard";
+import ManagePolicies from "../pages/policies/ManagePolicies";
 import PolicyDetails from "../pages/policies/PolicyDetails";
 import ProtectedRoute from "./ProtectedRoute";
 import { RoutePaths } from "./RoutePaths";
-import ManagePolicies from "../pages/policies/ManagePolicies";
 
 export default function AppRoutes() {
     return (
@@ -31,7 +31,7 @@ export default function AppRoutes() {
                 <Route element={<AuthLayout />}>
                     <Route
                         path={RoutePaths.DASHBOARD}
-                        element={<DashboardLayout />}
+                        element={<AdminDashboard />}
                     />
 
                     <Route
