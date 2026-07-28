@@ -2,7 +2,7 @@ import { Navigate, Outlet, useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import usePrincipal, { AuthStatus } from "../context/usePrincipal";
 import { RoutePaths } from "../routes/RoutePaths";
-import { LoadingPortal } from "../components/common/LoadingPortal";
+import { LoadingPortal } from "../components/LoadingPortal";
 
 export default function HomeLayout() {
     const { principal, status, isLoggedIn, getHomeRoute } = usePrincipal();

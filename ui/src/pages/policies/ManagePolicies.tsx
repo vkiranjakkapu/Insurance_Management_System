@@ -1,16 +1,14 @@
-import { PlusIcon, UsersIcon } from "@heroicons/react/24/outline";
+import { PlusIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
-import type {
-    ActionButton,
-    CustomTable,
-    CustomTableData,
-} from "../../components/common/Components";
 import { RoutePaths } from "../../routes/RoutePaths";
 import { type Policy } from "./Policy";
 
 import { useState } from "react";
 import samplePolicies from "../../../public/samplePolicies.json";
+import type { ActionButtonProps } from "../../components/ActionButton";
 import CustomTableComponent from "../../components/CustomTable";
+import { LoadingPortal } from "../../components/LoadingPortal";
+import usePagination from "../../components/common/usePagination";
 
 export default function ManagePolicies() {
     const navigate = useNavigate();
@@ -105,49 +103,40 @@ export default function ManagePolicies() {
             });
         });
 
-        console.log("Filtered Results:", filteredPolicies);
         setQueryPolicies(filteredPolicies as Policy[]);
     }
 
-    const addPolicyButton: ActionButton = {
+    const addPolicyButton: ActionButtonProps = {
         text: "New Policy",
         icon: PlusIcon,
-        action: () => {
+        onClick: () => {
             console.log("Action Button");
         },
     };
 
-    const addPolicyButton2: ActionButton = {
-        text: "New Customer",
-        icon: UsersIcon,
-        action: () => {
-            console.log("Action Button 2");
-        },
-    };
-
-    const table: CustomTableData<Policy> = {
-        headers: Object.keys(allPolicies[0]),
-        body: queryPolicies,
-        pagination: true,
-        perPage: 10,
-    };
-
-    const policyTable: CustomTable<Policy> = {
-        title: "Customer Policies",
-        description: "Manage recent enrollments and active coverage.",
-        actionButtons: [addPolicyButton, addPolicyButton2],
-        tableData: table,
-    };
+    const pagination = usePagination<Policy>(queryPolicies, 10);
 
     function fetchPolicy(policy: Policy) {
         navigate(`${RoutePaths.POLICIES}/${policy.id}`);
     }
 
     return (
-        <CustomTableComponent
-            table={policyTable}
-            onActionClick={fetchPolicy}
-            handleSearch={handleSearch}
-        />
+        <>
+            <LoadingPortal
+                isLoading={false}
+                message="Loading Policies"
+                subMessage="please wait"
+            />
+            <CustomTableComponent
+                title="Customer Policies"
+                description="Manage recent enrollments and active coverage."
+                actionButtons={[addPolicyButton]}
+                headers={Object.keys(allPolicies[0])}
+                pagination={pagination}
+                body={queryPolicies}
+                onActionClick={fetchPolicy}
+                searchField={{ handleSearch }}
+            />
+        </>
     );
 }

@@ -1,24 +1,20 @@
 import { useNavigate } from "react-router-dom";
-import sampleClaims from "../../../public/sampleClaims.json";
 
 import { useState } from "react";
-import type {
-    CustomTable,
-    CustomTableData,
-} from "../../components/common/Components";
-import { LoadingPortal } from "../../components/common/LoadingPortal";
+import usePagination from "../../components/common/usePagination";
 import CustomTableComponent from "../../components/CustomTable";
+import { LoadingPortal } from "../../components/LoadingPortal";
 import { RoutePaths } from "../../routes/RoutePaths";
 import type { PolicyClaim } from "./PolicyClaims";
 
+import sampleClaims from "../../../public/sampleClaims.json";
 export default function ManageClaims() {
+    const navigate = useNavigate();
     const [allClaims] = useState<PolicyClaim[]>(sampleClaims as PolicyClaim[]);
 
     const [queryClaims, setQueryClaims] = useState<PolicyClaim[]>(
         sampleClaims as PolicyClaim[],
     );
-
-    const navigate = useNavigate();
 
     function handleSearch(query: string) {
         if (!query.trim()) {
@@ -79,23 +75,9 @@ export default function ManageClaims() {
             });
         });
 
-        console.log("Filtered Results:", filteredClaims);
         setQueryClaims(filteredClaims as PolicyClaim[]);
     }
-
-    const claimsData: CustomTableData<PolicyClaim> = {
-        headers: Object.keys(allClaims[0]),
-        pagination: true,
-        perPage: 10,
-        body: queryClaims,
-    };
-
-    const claimsTable: CustomTable<PolicyClaim> = {
-        title: "Policy Claims",
-        description: "Manage claims raised by customers",
-        actionButtons: [],
-        tableData: claimsData,
-    };
+    const pagination = usePagination<PolicyClaim>(queryClaims, 10);
 
     function fetchClaimDetails(claim: PolicyClaim) {
         navigate(`${RoutePaths.CLAIMS}/${claim.id}`);
@@ -109,10 +91,16 @@ export default function ManageClaims() {
                 subMessage="please wait"
             />
             <CustomTableComponent
-                table={claimsTable}
-                handleSearch={handleSearch}
+                title="Policy Claims"
+                description="Manage claims raised by customers"
+                headers={Object.keys(allClaims[0])}
+                pagination={pagination}
+                body={queryClaims}
                 onActionClick={fetchClaimDetails}
-            ></CustomTableComponent>
+                searchField={{
+                    handleSearch,
+                }}
+            />
         </>
     );
 }

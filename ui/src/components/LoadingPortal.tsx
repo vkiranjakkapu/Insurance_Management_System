@@ -1,15 +1,27 @@
-import { ShieldCheckIcon } from "@heroicons/react/24/outline";
-import React, { useEffect } from "react";
+import React, {
+    useEffect,
+    type ForwardRefExoticComponent,
+    type PropsWithoutRef,
+    type SVGProps,
+} from "react";
 import { createPortal } from "react-dom";
+import Logo from "/icon.png";
 
 interface LoadingPortalProps {
     isLoading: boolean;
+    icon?: ForwardRefExoticComponent<
+        PropsWithoutRef<SVGProps<SVGSVGElement>> & {
+            title?: string;
+            titleId?: string;
+        }
+    >;
     message?: string;
     subMessage?: string;
 }
 
 export const LoadingPortal: React.FC<LoadingPortalProps> = ({
     isLoading,
+    icon: Icon,
     message = "Processing Request...",
     subMessage = "Please wait while we update your policy data.",
 }) => {
@@ -45,7 +57,15 @@ export const LoadingPortal: React.FC<LoadingPortalProps> = ({
 
                     {/* Center Brand Icon */}
                     <div className="absolute flex items-center justify-center">
-                        <ShieldCheckIcon className="size-7 text-indigo-600 dark:text-indigo-400" />
+                        {Icon ? (
+                            <Icon className="size-7 text-indigo-600 dark:text-indigo-400" />
+                        ) : (
+                            <img
+                                src={Logo}
+                                alt="IMS"
+                                className="size-14 rounded-full outline-1 outline-indigo-500"
+                            />
+                        )}
                     </div>
                 </div>
 

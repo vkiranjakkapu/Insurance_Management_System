@@ -98,7 +98,7 @@ export default function Sidebar({ children }: SidebarLayoutProps): JSX.Element {
             active: false,
         },
         {
-            label: "Employees",
+            label: "Agents",
             route: RoutePaths.EMPLOYEES,
             icon: IdentificationIcon,
             active: false,

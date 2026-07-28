@@ -8,7 +8,7 @@ import ClaimDetails from "../pages/claims/ClaimDetails";
 import ManageClaims from "../pages/claims/ManageClaims";
 import CustomerDetails from "../pages/customers/CustomerDetails";
 import ManageCustomers from "../pages/customers/ManageCustomers";
-import Dashboard from "../pages/dashboard/Dashboard";
+import DashboardLayout from "../pages/dashboard/Dashboard";
 import EmployeeDetails from "../pages/employees/EmployeeDetails";
 import ManageEmployees from "../pages/employees/ManageEmployees";
 import Home from "../pages/home/Home";
@@ -31,7 +31,7 @@ export default function AppRoutes() {
                 <Route element={<AuthLayout />}>
                     <Route
                         path={RoutePaths.DASHBOARD}
-                        element={<Dashboard />}
+                        element={<DashboardLayout />}
                     />
 
                     <Route

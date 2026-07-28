@@ -1,5 +1,14 @@
-import type { UserCardData } from "./common/Components";
+import type { WithParamActionButtonProps } from "./ActionButton";
+import ActionButton from "./ActionButton";
 
+export type UserCardData = {
+    id: number;
+    dp: string;
+    name: string;
+    email: string;
+    phone: string;
+    actionButtons: WithParamActionButtonProps[];
+};
 type UserCardProps = {
     card: UserCardData;
 };
@@ -38,19 +47,16 @@ export default function UserCard({ card }: UserCardProps) {
                                       : isLast
                                         ? "rounded-e-lg"
                                         : "";
-                            const IconComponent = btn.icon;
+
                             return (
-                                <button
+                                <ActionButton
                                     key={idx}
-                                    onClick={() => {
-                                        btn.action(card.id);
-                                    }}
                                     type="button"
+                                    onClick={() => btn.onClick(card.id)}
+                                    icon={btn.icon}
                                     className={`px-4 py-2 text-sm font-medium text-indigo-900 dark:text-white bg-indigo-200/80 hover:bg-indigo-400/80 dark:bg-indigo-600/40 dark:border-indigo-300/50 dark:hover:bg-indigo-900/50 focus:z-10 focus:ring-2 focus:ring-indigo-500 cursor-pointer transition-colors 
                                         ${roundedClass}`}
-                                >
-                                    <IconComponent className="size-4" />
-                                </button>
+                                />
                             );
                         })}
                 </div>

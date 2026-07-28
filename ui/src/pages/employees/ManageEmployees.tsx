@@ -1,15 +1,27 @@
-import {
-    PencilIcon,
-    TrashIcon,
-    UserPlusIcon,
-} from "@heroicons/react/24/outline";
+import { PencilIcon, TrashIcon, UserGroupIcon } from "@heroicons/react/24/outline";
 import UserCard from "../../components/UserCard";
-import type { UserCardData } from "../../components/common/Components";
 
+import { useMemo, useState } from "react";
+import sampleUsers from "../../../public/sampleUsers.json";
+import usePagination from "../../components/common/usePagination";
+import { LoadingPortal } from "../../components/LoadingPortal";
 import type { UserProfile } from "../../context/useProfile";
-import sampleList from "../../../public/sampleUsers.json";
+import DashboardLayout from "../dashboard/Dashboard";
 
 export default function ManageEmployees() {
+    const [allEmployees] = useState<UserProfile[]>(sampleUsers);
+    const [searchQuery, setSearchQuery] = useState("");
+
+    const queryProfiles: UserProfile[] = useMemo(() => {
+        if (!searchQuery.trim()) return allEmployees;
+        return allEmployees.filter((user) => {
+            return (
+                user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                user.name.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+        });
+    }, [searchQuery, allEmployees]);
+
     function editCustomer(id: number) {
         console.log("Editing: " + id);
     }
@@ -17,50 +29,71 @@ export default function ManageEmployees() {
         console.log("Deleting: " + id);
     }
 
-    const userCards: UserCardData[] = [];
-
-    const usersList = sampleList as UserProfile[];
-    usersList.map((user) => {
-        userCards.push({
-            id: user.id,
+    const employeeCards = useMemo(() => {
+        return queryProfiles.map((customer) => ({
+            id: customer.id,
             dp: "src/assets/undraw_deep-thinker-avatar_6xg6.svg",
-            name: `${user.firstName} ${user.lastName}`,
-            email: user.email,
-            phone: user.phone,
+            name: `${customer.firstName} ${customer.lastName}`,
+            email: customer.email,
+            phone: customer.phone,
             actionButtons: [
-                {
-                    text: "",
-                    icon: PencilIcon,
-                    action: editCustomer,
-                },
-                {
-                    text: "",
-                    icon: TrashIcon,
-                    action: deleteCustomer,
-                },
+                { text: "", icon: PencilIcon, onClick: editCustomer },
+                { text: "", icon: TrashIcon, onClick: deleteCustomer },
             ],
-        });
-    });
+        }));
+    }, [queryProfiles]);
+
+    const {
+        currentPage,
+        totalPages,
+        currentItems: currentEmployees,
+        goToNextPage,
+        goToPrevPage,
+        changePage,
+    } = usePagination(employeeCards, 8);
+
+    const matchInfo = useMemo(() => {
+        return "Matches: " + queryProfiles.length;
+    }, [queryProfiles]);
 
     return (
-        <>
-            <div className="flex justify-between w-full">
-                <h1 className="text-indigo-600 dark:text-white">
-                    Manage Employees
-                </h1>
-                <button className="inline-flex outline-1 outline-indigo-500 outline-offset-1 rounded">
-                    <button className="flex gap-2 px-2 py-1 rounded cursor-pointer bg-indigo-600 hover:bg-indigo-700 text-white">
-                        <UserPlusIcon className="h-4 w-4 my-auto" />
-                        <span className="">Add</span>
-                    </button>
-                </button>
-            </div>
-            <hr className="my-3" />
-            <div className="container grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {userCards.map((cardData, idx) => (
+        <DashboardLayout
+            title="Our Agents"
+            description="manage agents registered with us"
+            searchField={{
+                placeHolder: "Search Customers by Name or Email",
+                handleSearch: setSearchQuery,
+                matchInfo,
+            }}
+            pagination={{
+                currentPage,
+                totalPages,
+                currentItems: currentEmployees,
+                goToNextPage,
+                goToPrevPage,
+                changePage,
+            }}
+        >
+            <LoadingPortal
+                isLoading={false}
+                icon={UserGroupIcon}
+                message="Fetching Employees"
+                subMessage="please wait"
+            />
+            <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {currentEmployees.length == 0 && (
+                    <div className="col-span-4">
+                        <h3 className="text-base text-slate-900 dark:text-slate-100 capitalize">
+                            {searchQuery != ""
+                                ? "No Employees found with given search query"
+                                : "No Employee Registered with us"}
+                        </h3>
+                    </div>
+                )}
+                {currentEmployees.map((cardData, idx) => (
                     <UserCard key={idx} card={cardData} />
                 ))}
             </div>
-        </>
+        </DashboardLayout>
     );
 }

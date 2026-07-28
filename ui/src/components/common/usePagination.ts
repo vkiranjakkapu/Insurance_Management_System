@@ -9,7 +9,7 @@ export interface UsePaginationReturn<T> {
     changePage: (pageNumber: number) => void;
 }
 
-export function usePagination<T>(
+export default function usePagination<T>(
     items: T[],
     itemsPerPage: number = 10,
 ): UsePaginationReturn<T> {
