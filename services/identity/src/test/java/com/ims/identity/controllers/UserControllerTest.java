@@ -14,8 +14,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -33,6 +35,9 @@ import com.ims.identity.dto.UserResponse;
 import com.ims.identity.entities.Address;
 import com.ims.identity.entities.RoleType;
 import com.ims.identity.services.UserService;
+import com.ims.platform.security.context.AuthenticationContext;
+import com.ims.platform.security.model.AuthenticatedUser;
+import com.ims.platform.security.model.DefaultAuthenticatedUser;
 
 @WebMvcTest(UserController.class)
 @AutoConfigureMockMvc(addFilters = false)
@@ -46,6 +51,32 @@ class UserControllerTest {
 
 	@MockitoBean
 	private UserService userService;
+
+	@MockitoBean
+	private AuthenticationContext authenticationContext;
+
+	@BeforeEach
+	void setup() {
+
+		AuthenticatedUser authenticatedUser = new DefaultAuthenticatedUser(
+				"john@test.com",
+				"admin",
+				List.of("ROLE_ADMIN"));
+
+		when(authenticationContext.getCurrentUser())
+				.thenReturn(Optional.of(authenticatedUser));
+	}
+
+	@Test
+	void me_ShouldReturn200() throws Exception {
+
+		when(userService.getUserByEmail("john@test.com"))
+				.thenReturn(response());
+
+		mockMvc.perform(get("/api/users/me")
+				.with(adminJwt()))
+				.andExpect(status().isOk());
+	}
 
 	@Test
 	void createUser_ShouldReturn201() throws Exception {
@@ -107,14 +138,15 @@ class UserControllerTest {
 
 	@Test
 	void createUser_InvalidRequest_ShouldReturn400() throws Exception {
+
 		CreateUserRequest request = new CreateUserRequest(
-				"", // @NotBlank
-				"", // @NotBlank
-				"invalid-email", // @Email
-				"", // @NotBlank
-				null, // @NotNull
-				"", // @NotBlank
-				null, // @NotNull
+				"",
+				"",
+				"invalid-email",
+				"",
+				null,
+				"",
+				null,
 				null);
 
 		mockMvc.perform(post("/api/users")
@@ -168,7 +200,7 @@ class UserControllerTest {
 				"Doe",
 				"john@test.com",
 				"9999999999",
-				null, // Address
+				null,
 				LocalDate.of(2000, 1, 1),
 				true,
 				Set.of(RoleType.CUSTOMER),
@@ -177,6 +209,7 @@ class UserControllerTest {
 	}
 
 	private JwtRequestPostProcessor adminJwt() {
+
 		return jwt()
 				.jwt(jwt -> jwt
 						.subject("1")
