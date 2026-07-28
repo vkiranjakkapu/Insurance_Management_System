@@ -1,0 +1,16 @@
+spring:
+    application:
+        name: IMS-POLICIES
+    config:
+        import: configserver:http://localhost:8888
+    datasource:
+        driver-class-name: org.postgresql.Driver
+        url: jdbc:postgresql://${database.host}:${database.port}/${database.name}
+        username: admin
+        password: admin
+    jpa:
+        hibernate:
+            ddl-auto: update
+    sql:
+        init:
+            mode: always

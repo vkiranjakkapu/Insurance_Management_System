@@ -20,6 +20,7 @@
 
     <modules>
         <module>identity</module>
+        <module>policies</module>
     </modules>
 
     <dependencies>

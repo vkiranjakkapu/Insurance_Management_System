@@ -1,4 +1,4 @@
 database:
     host: localhost
     port: 5432
-    name: ims_identity
+    name: ims_policies
