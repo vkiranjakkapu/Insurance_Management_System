@@ -1,9 +1,10 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import type { ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import type { ActionButtonProps } from "../../components/ActionButton";
 import ActionButton from "../../components/ActionButton";
-import { ThemedSearchInput } from "../../components/ThemedSearchInput";
 import { type UsePaginationReturn } from "../../components/common/usePagination";
+import SearchInputComponent from "../../components/SearchInputComponent";
 
 type DashboardLayoutProps<T> = {
     children: ReactNode;
@@ -29,6 +30,7 @@ export default function DashboardLayout<T>({
     pagination,
     searchField: handleSearch,
 }: DashboardLayoutProps<T>) {
+    const navigate = useNavigate();
     return (
         <>
             <div className="w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs transition-colors dark:border-slate-800 dark:bg-slate-900">
@@ -42,30 +44,28 @@ export default function DashboardLayout<T>({
                                           idx ===
                                           breadCrumbs.anchors.length - 1;
                                       return (
-                                          <>
-                                              <a
-                                                  href={path.uri}
-                                                  className={`text-indigo-600 dark:text-slate-100 transition-colors duration-200 capitalize ${
-                                                      isLast
-                                                          ? "font-semibold text-slate-800 dark:text-slate-100 pointer-events-none"
-                                                          : "hover:text-indigo-500 dark:hover:text-indigo-400"
-                                                  }`}
-                                                  aria-current={
-                                                      isLast
-                                                          ? "page"
-                                                          : undefined
-                                                  }
-                                              >
-                                                  {path.text}
-                                              </a>
-
+                                          <a
+                                              key={idx}
+                                              onClick={() => {
+                                                  navigate(path.uri);
+                                              }}
+                                              className={`text-indigo-600 cursor-pointer dark:text-slate-100 transition-colors duration-75 capitalize ${
+                                                  isLast
+                                                      ? "font-semibold text-slate-800 dark:text-slate-100 pointer-events-none"
+                                                      : "hover:text-indigo-500 dark:hover:text-indigo-400"
+                                              }`}
+                                              aria-current={
+                                                  isLast ? "page" : undefined
+                                              }
+                                          >
+                                              {path.text}
                                               {/* Render the structural separator ONLY if it is not the last item */}
                                               {!isLast && (
                                                   <span className="text-slate-400 dark:text-white mx-1 select-none">
                                                       /
                                                   </span>
                                               )}
-                                          </>
+                                          </a>
                                       );
                                   })
                                 : title}
@@ -88,7 +88,9 @@ export default function DashboardLayout<T>({
                                     isFirst && isLast
                                         ? "rounded-lg"
                                         : isFirst
-                                          ? "rounded-t-lg md:rounded-s-lg md:rounded-tr-none"
+                                          ? actionButtons.length == 2
+                                              ? "border-e border-indigo-900 rounded-t-lg md:rounded-s-lg md:rounded-tr-none"
+                                              : "rounded-t-lg md:rounded-s-lg md:rounded-tr-none"
                                           : isLast
                                             ? "rounded-b-lg md:rounded-e-lg md:rounded-bl-none"
                                             : "border-s border-e border-indigo-900";
@@ -109,7 +111,7 @@ export default function DashboardLayout<T>({
                 {(pagination || handleSearch) && (
                     <div className="px-6 py-4 flex gap-2 flex-col items-start justify-between border-b border-slate-200 dark:border-slate-800 md:flex-row md:items-center">
                         {handleSearch && (
-                            <ThemedSearchInput
+                            <SearchInputComponent
                                 matchInfo={handleSearch.matchInfo}
                                 placeholder={handleSearch.placeHolder}
                                 onChange={(e) =>

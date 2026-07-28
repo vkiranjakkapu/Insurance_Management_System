@@ -1,6 +1,5 @@
 import { jwtDecode } from "jwt-decode";
 
-
 type JwtPayload = {
     uid: number;
     name: string;

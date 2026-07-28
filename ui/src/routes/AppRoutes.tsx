@@ -2,8 +2,7 @@ import { Route, Routes } from "react-router-dom";
 import AuthLayout from "../layouts/AuthLayout";
 import HomeLayout from "../layouts/HomeLayout";
 import SystemSettings from "../pages/admin/SystemSettings";
-import AgentDetails from "../pages/agents/AgentDetails";
-import ManageAgents from "../pages/agents/ManageAgents";
+import AgentDashboard from "../pages/agents/AgentDashboard";
 import ClaimDetails from "../pages/claims/ClaimDetails";
 import ManageClaims from "../pages/claims/ManageClaims";
 import CustomerDetails from "../pages/customers/CustomerDetails";
@@ -70,10 +69,9 @@ export default function AppRoutes() {
                         element={<PolicyDetails />}
                     />
 
-                    <Route path={RoutePaths.AGENT} element={<ManageAgents />} />
                     <Route
-                        path={RoutePaths.AGENT_DETAILS}
-                        element={<AgentDetails />}
+                        path={RoutePaths.AGENT}
+                        element={<AgentDashboard />}
                     />
 
                     <Route

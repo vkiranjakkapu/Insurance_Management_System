@@ -30,7 +30,7 @@ export default function ActionButton({
     icon: Icon,
     iconAfter,
     className,
-    unsetClass,
+    unsetClass = false,
     onClick,
     ...props
 }: ActionButtonProps) {
@@ -39,16 +39,14 @@ export default function ActionButton({
             onClick={() => onClick()}
             className={
                 unsetClass
-                    ? className && ""
-                    : `text-sm font-medium p-1.5 text-white shadow-xs dark:text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:z-10 focus:ring-2 focus:ring-indigo-500/40 cursor-pointer transition-colors dark:disabled:opacity-40 disabled:opacity-80 disabled:cursor-not-allowed ${className}`
+                    ? (className ?? "")
+                    : `flex flex-row gap-1.5 items-center justify-center text-sm font-medium p-1.5 text-white shadow-xs dark:text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:z-10 focus:ring-2 focus:ring-indigo-500/40 cursor-pointer transition-colors dark:disabled:opacity-40 disabled:opacity-80 disabled:cursor-not-allowed ${className}`
             }
             {...props}
         >
-            <span className="flex gap-1.5 items-center cursor-pointer">
-                {Icon && !iconAfter && <Icon className="size-4" />}
-                {text && <span>{text}</span>}
-                {Icon && iconAfter && <Icon className="size-4" />}
-            </span>
+            {Icon && !iconAfter && <Icon className="size-4" />}
+            {text && <span>{text}</span>}
+            {Icon && iconAfter && <Icon className="size-4" />}
         </button>
     );
 }

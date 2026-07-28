@@ -3,8 +3,8 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App.tsx";
 import AuthContextProvider from "./context/AuthContextProvider.tsx";
-import "./index.css";
 import ProfileContextProvider from "./context/ProfileContextProvider.tsx";
+import "./index.css";
 
 createRoot(document.getElementById("root")!).render(
     <StrictMode>

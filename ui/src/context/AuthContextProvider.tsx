@@ -72,6 +72,7 @@ export default function AuthContextProvider({
     async function authenticate(
         credentials: LoginRequest,
     ): Promise<ErrorResponse | LoginResponse | undefined> {
+        setAuthStatus(AuthStatus.INITIALIZING);
         try {
             const response = await AuthService.login(credentials);
 

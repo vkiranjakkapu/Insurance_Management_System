@@ -1,4 +1,4 @@
-import React, {
+import {
     useEffect,
     type ForwardRefExoticComponent,
     type PropsWithoutRef,
@@ -19,12 +19,12 @@ interface LoadingPortalProps {
     subMessage?: string;
 }
 
-export const LoadingPortal: React.FC<LoadingPortalProps> = ({
+export default function LoadingPortalComponent({
     isLoading,
     icon: Icon,
     message = "Processing Request...",
     subMessage = "Please wait while we update your policy data.",
-}) => {
+}: LoadingPortalProps) {
     // Prevent scroll when loader is active
     useEffect(() => {
         if (isLoading) {
@@ -87,4 +87,4 @@ export const LoadingPortal: React.FC<LoadingPortalProps> = ({
         </div>,
         document.body,
     );
-};
+}

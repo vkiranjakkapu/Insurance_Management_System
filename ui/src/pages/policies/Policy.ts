@@ -4,7 +4,6 @@ export const PolicyStatus = {
     OVERRIDE: "Override",
 } as const;
 
-// Extract a usable TypeScript type from the object values
 export type PolicyStatus = (typeof PolicyStatus)[keyof typeof PolicyStatus];
 
 export interface Policy {

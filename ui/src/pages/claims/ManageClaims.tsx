@@ -1,11 +1,12 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import sampleClaims from "../../../public/sampleClaims.json";
+import sampleClaims from "../../data/sampleClaims.json";
 import usePagination from "../../components/common/usePagination";
-import type { PolicyClaim } from "./PolicyClaims";
-import CustomTableComponent from "../../components/CustomTable";
+import type { PolicyClaim } from "./Claims";
+import CustomTableComponent from "../../components/CustomTableComponent";
 import { RoutePaths } from "../../routes/RoutePaths";
-import { LoadingPortal } from "../../components/LoadingPortal";
+import LoadingPortalComponent from "../../components/LoadingPortalComponent";
+import { PlusIcon } from "@heroicons/react/24/outline";
 
 const CLAIM_KEYS_MAP = sampleClaims[0]
     ? Object.keys(sampleClaims[0]).reduce<Record<string, string>>(
@@ -77,18 +78,25 @@ export default function ManageClaims() {
 
     return (
         <>
-            <LoadingPortal
+            <LoadingPortalComponent
                 isLoading={false}
                 message="Loading Policies"
                 subMessage="please wait"
             />
             <CustomTableComponent
-                title="Policy Claims"
+                title="Claims"
                 description="Manage claims raised by customers"
                 headers={headers}
                 pagination={pagination}
                 body={filteredClaims} // Pass memoized result here
                 onActionClick={fetchClaimDetails}
+                actionButtons={[
+                    {
+                        text: "New Claim",
+                        icon: PlusIcon,
+                        onClick: () => {},
+                    },
+                ]}
                 searchField={{
                     handleSearch: setSearchQuery,
                     matchInfo: searchQuery.trim()

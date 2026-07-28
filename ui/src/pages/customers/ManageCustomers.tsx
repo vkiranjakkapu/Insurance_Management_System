@@ -1,9 +1,8 @@
 import { PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
-import UserCard from "../../components/UserCard";
-
 import { useMemo, useState } from "react";
-import sampleUsers from "../../../public/sampleUsers.json";
+import sampleUsers from "../../data/sampleUsers.json";
 import usePagination from "../../components/common/usePagination";
+import UserCardComponent from "../../components/UserCardComponent";
 import type { UserProfile } from "../../context/useProfile";
 import DashboardLayout from "../dashboard/Dashboard";
 
@@ -81,7 +80,7 @@ export default function ManageCustomers() {
                     </div>
                 )}
                 {currentCustomers.map((cardData, idx) => (
-                    <UserCard key={idx} card={cardData} />
+                    <UserCardComponent key={idx} card={cardData} />
                 ))}
             </div>
         </DashboardLayout>

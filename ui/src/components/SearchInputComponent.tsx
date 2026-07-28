@@ -11,7 +11,7 @@ interface SearchInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     onClear?: () => void;
 }
 
-export const ThemedSearchInput: React.FC<SearchInputProps> = ({
+export default function SearchInputComponent({
     value,
     matchInfo,
     onChange,
@@ -19,7 +19,7 @@ export const ThemedSearchInput: React.FC<SearchInputProps> = ({
     onClear,
     placeholder = "Search items, users, or logs...",
     ...props
-}) => {
+}: SearchInputProps) {
     const [internalValue, setInternalValue] = useState("");
 
     // Support both controlled and uncontrolled states safely
@@ -88,4 +88,4 @@ export const ThemedSearchInput: React.FC<SearchInputProps> = ({
             )}
         </div>
     );
-};
+}

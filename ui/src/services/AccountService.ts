@@ -18,9 +18,7 @@ export interface UserResponse {
 
 class AccountService {
     async getMyProfile(): Promise<UserResponse> {
-        const response = await api.get(
-            AppConfig.API_BASE_URL + "api/users/me",
-        );
+        const response = await api.get(AppConfig.API_BASE_URL + "api/users/me");
 
         if (response.status != 200) {
             console.log("Failed to fetch UserDetails");

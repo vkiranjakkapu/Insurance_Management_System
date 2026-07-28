@@ -1,10 +1,13 @@
-import { PencilIcon, TrashIcon, UserGroupIcon } from "@heroicons/react/24/outline";
-import UserCard from "../../components/UserCard";
-
+import {
+    PencilIcon,
+    TrashIcon,
+    UserGroupIcon,
+} from "@heroicons/react/24/outline";
 import { useMemo, useState } from "react";
-import sampleUsers from "../../../public/sampleUsers.json";
+import sampleUsers from "../../data/sampleUsers.json";
 import usePagination from "../../components/common/usePagination";
-import { LoadingPortal } from "../../components/LoadingPortal";
+import LoadingPortalComponent from "../../components/LoadingPortalComponent";
+import UserCardComponent from "../../components/UserCardComponent";
 import type { UserProfile } from "../../context/useProfile";
 import DashboardLayout from "../dashboard/Dashboard";
 
@@ -74,7 +77,7 @@ export default function ManageEmployees() {
                 changePage,
             }}
         >
-            <LoadingPortal
+            <LoadingPortalComponent
                 isLoading={false}
                 icon={UserGroupIcon}
                 message="Fetching Employees"
@@ -91,7 +94,7 @@ export default function ManageEmployees() {
                     </div>
                 )}
                 {currentEmployees.map((cardData, idx) => (
-                    <UserCard key={idx} card={cardData} />
+                    <UserCardComponent key={idx} card={cardData} />
                 ))}
             </div>
         </DashboardLayout>

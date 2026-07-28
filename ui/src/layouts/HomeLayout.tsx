@@ -1,8 +1,8 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
+import LoadingPortalComponent from "../components/LoadingPortalComponent";
 import Navbar from "../components/Navbar";
 import usePrincipal, { AuthStatus } from "../context/usePrincipal";
 import { RoutePaths } from "../routes/RoutePaths";
-import { LoadingPortal } from "../components/LoadingPortal";
 
 export default function HomeLayout() {
     const { principal, status, isLoggedIn, getHomeRoute } = usePrincipal();
@@ -23,7 +23,7 @@ export default function HomeLayout() {
 
     return (
         <>
-            <LoadingPortal
+            <LoadingPortalComponent
                 isLoading={status == AuthStatus.INITIALIZING}
                 message="Restoring your session..."
                 subMessage="Please wait while we update your policy data."
