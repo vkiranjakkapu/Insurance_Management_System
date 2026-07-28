@@ -1,26 +1,23 @@
-import { useParams } from "react-router-dom";
 import { RoutePaths } from "../../routes/RoutePaths";
 import DashboardLayout from "../dashboard/Dashboard";
 
-export default function PolicyDetails() {
-    const { id } = useParams<{ id: string }>();
-
+export default function AdminDashboard() {
     return (
         <DashboardLayout
-            title="Policy Details"
+            title="Dashboard"
             breadCrumbs={{
                 anchors: [
                     {
-                        text: "Policies",
-                        uri: RoutePaths.POLICIES,
+                        text: "Dashboard",
+                        uri: RoutePaths.DASHBOARD,
                     },
                     {
-                        text: `Policy: ${id}`,
-                        uri: "#",
+                        text: "Reports",
+                        uri: RoutePaths.REPORTS,
                     },
                 ],
             }}
-            description={`Details about ${id}`}
+            description="reports from IMS"
         >
             <div className="w-full"></div>
         </DashboardLayout>

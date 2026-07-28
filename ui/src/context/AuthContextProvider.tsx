@@ -1,10 +1,14 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { RoutePaths } from "../routes/RoutePaths";
-import AccountService from "../services/AccountService";
-import AuthService, { type LoginRequest } from "../services/AuthService";
+import AuthService, {
+    type LoginRequest,
+    type LoginResponse,
+} from "../services/AuthService";
 import TokenStorage from "../storage/TokenStorage";
 import { decodedToken } from "../utils/JwtUtils";
-import { AuthContext, type Principal, type UserProfile } from "./usePrincipal";
+import { AuthContext, AuthStatus, type Principal } from "./usePrincipal";
+import type { AxiosError } from "axios";
+import type { ErrorResponse } from "../api/api";
 
 const principal: Principal = {
     id: 0,
@@ -13,7 +17,6 @@ const principal: Principal = {
     roles: [],
     accessToken: "",
     refreshToken: "",
-    isLoggedIn: false,
 };
 
 type AuthContextProviderProps = {
@@ -23,10 +26,10 @@ type AuthContextProviderProps = {
 export default function AuthContextProvider({
     children,
 }: AuthContextProviderProps) {
-    console.log("AuthContext");
-
     const [authContext, setAuthContext] = useState<Principal>(principal);
-    const [profile, setProfile] = useState<UserProfile | null>(null);
+    const [authStatus, setAuthStatus] = useState<AuthStatus>(
+        AuthStatus.INITIALIZING,
+    );
 
     useEffect(() => {
         initializeAuthentication();
@@ -36,18 +39,14 @@ export default function AuthContextProvider({
         const refreshToken = TokenStorage.getRefreshToken();
 
         if (!refreshToken) {
+            setAuthStatus(AuthStatus.UNAUTHENTICATED);
             return;
         }
+        setAuthStatus(AuthStatus.INITIALIZING);
 
         try {
             const response = await AuthService.refresh(refreshToken);
             const jwt = decodedToken(response.accessToken);
-
-            const userProfile = await AccountService.getMyProfile();
-            setProfile(() => ({
-                ...userProfile,
-                name: `${userProfile.firstName} ${userProfile.lastName}`,
-            }));
 
             TokenStorage.save(response.accessToken, response.refreshToken);
 
@@ -61,30 +60,25 @@ export default function AuthContextProvider({
                 refreshToken: response.refreshToken,
                 isLoggedIn: true,
             }));
+            setAuthStatus(AuthStatus.AUTHENTICATED);
         } catch (error) {
             console.error(error);
             TokenStorage.clear();
             setAuthContext(principal);
+            setAuthStatus(AuthStatus.UNAUTHENTICATED);
         }
     }
 
-    async function loadProfile() {
-        const response = await AccountService.getMyProfile();
-        const userProfile: UserProfile = {
-            ...response,
-            name: `${response.firstName} ${response.lastName}`,
-        };
-        setProfile(userProfile);
-    }
-
-    async function authenticate(credentials: LoginRequest): Promise<string> {
+    async function authenticate(
+        credentials: LoginRequest,
+    ): Promise<ErrorResponse | LoginResponse | undefined> {
+        setAuthStatus(AuthStatus.INITIALIZING);
         try {
             const response = await AuthService.login(credentials);
 
             const jwt = decodedToken(response.accessToken);
 
             TokenStorage.save(response.accessToken, response.refreshToken);
-            loadProfile();
 
             setAuthContext((prev) => ({
                 ...prev,
@@ -95,12 +89,14 @@ export default function AuthContextProvider({
                 isLoggedIn: true,
             }));
 
-            return getHomeRoute(jwt.roles);
-        } catch (error) {
-            console.error(error);
+            setAuthStatus(AuthStatus.AUTHENTICATED);
+            return response;
+        } catch (axiosError) {
+            const error = axiosError as AxiosError<ErrorResponse>;
             TokenStorage.clear();
             setAuthContext(principal);
-            return getHomeRoute([]);
+            setAuthStatus(AuthStatus.UNAUTHENTICATED);
+            return error.response && error.response?.data;
         }
     }
 
@@ -108,36 +104,45 @@ export default function AuthContextProvider({
         const status = await AuthService.logout(authContext.refreshToken);
         if (status == 204) {
             TokenStorage.clear();
-            setProfile(null);
-            setAuthContext((prev) => ({
-                ...prev,
-                isLoggedIn: false,
-            }));
+            setAuthContext(principal);
+            setAuthStatus(AuthStatus.UNAUTHENTICATED);
         }
     }
 
     async function refresh() {
-        const response = await AuthService.refresh(authContext.accessToken);
-        TokenStorage.save(response.accessToken, response.refreshToken);
-        setAuthContext((prev) => ({
-            ...prev,
-            accessToken: response.accessToken,
-            refreshToken: response.refreshToken,
-            isLoggedIn: true,
-        }));
+        setAuthStatus(AuthStatus.INITIALIZING);
+        try {
+            const response = await AuthService.refresh(authContext.accessToken);
+            TokenStorage.save(response.accessToken, response.refreshToken);
+            setAuthContext((prev) => ({
+                ...prev,
+                accessToken: response.accessToken,
+                refreshToken: response.refreshToken,
+                isLoggedIn: true,
+            }));
+            setAuthStatus(AuthStatus.AUTHENTICATED);
+        } catch (error) {
+            const axiosError = error as AxiosError<ErrorResponse>;
+            console.log(axiosError.response?.data);
+            setAuthStatus(AuthStatus.UNAUTHENTICATED);
+        }
     }
 
-    function getHomeRoute(roles: string[]) {
+    function isLoggedIn() {
+        return authStatus == AuthStatus.AUTHENTICATED;
+    }
+
+    function getHomeRoute(roles: string[], uri?: string) {
         if (roles.includes("ADMIN")) {
-            return RoutePaths.DASHBOARD;
+            return uri && uri != RoutePaths.HOME ? uri : RoutePaths.DASHBOARD;
         }
 
         if (roles.includes("AGENT")) {
-            return RoutePaths.AGENT;
+            return uri && uri != RoutePaths.HOME ? uri : RoutePaths.AGENT;
         }
 
         if (roles.includes("CUSTOMER")) {
-            return RoutePaths.POLICIES;
+            return uri && uri != RoutePaths.HOME ? uri : RoutePaths.POLICIES;
         }
 
         return RoutePaths.HOME;
@@ -147,7 +152,8 @@ export default function AuthContextProvider({
         <AuthContext
             value={{
                 principal: authContext,
-                profile,
+                status: authStatus,
+                isLoggedIn,
                 authenticate,
                 logout,
                 refresh,

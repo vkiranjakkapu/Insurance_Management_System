@@ -1,5 +1,6 @@
 import api from "../api/api";
 import { AppConfig } from "../config/AppConfig";
+import type { Address } from "../context/useProfile";
 
 export interface UserResponse {
     id: number;
@@ -15,20 +16,9 @@ export interface UserResponse {
     updatedAt: string;
 }
 
-export type Address = {
-    id: number;
-    street: string;
-    pinCode: string;
-    state: string;
-    country: string;
-    deleted: boolean;
-};
-
 class AccountService {
     async getMyProfile(): Promise<UserResponse> {
-        const response = await api.get(
-            AppConfig.API_BASE_URL + "api/users/me",
-        );
+        const response = await api.get(AppConfig.API_BASE_URL + "api/users/me");
 
         if (response.status != 200) {
             console.log("Failed to fetch UserDetails");

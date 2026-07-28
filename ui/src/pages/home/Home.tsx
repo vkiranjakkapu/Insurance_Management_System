@@ -1,9 +1,13 @@
 import { useState } from "react";
 
+import { useNavigate } from "react-router-dom";
+import ActionButton from "../../components/ActionButton";
 import usePrincipal from "../../context/usePrincipal";
+import { LockClosedIcon } from "@heroicons/react/24/outline";
 
 export default function Home() {
     const auth = usePrincipal();
+    const navigate = useNavigate();
 
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
@@ -15,18 +19,16 @@ export default function Home() {
         setError("");
         setLoading(true);
 
-        try {
-            await auth.authenticate({
-                email,
-                password,
-            });
-
-        } catch (err: unknown) {
-            console.error(err);
-            setError("Invalid username or password.");
-        } finally {
-            setLoading(false);
+        const response = await auth.authenticate({
+            email,
+            password,
+        });
+        if (response != undefined && "errorMessage" in response) {
+            setError(response.errorMessage);
+        } else {
+            navigate(auth.getHomeRoute(auth.principal.roles));
         }
+        setLoading(false);
     }
 
     return (
@@ -57,7 +59,7 @@ export default function Home() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="Enter username"
-                            className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500"
+                            className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none transition focus:border-indigo-500"
                         />
                     </div>
 
@@ -71,18 +73,18 @@ export default function Home() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="Enter password"
-                            className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none transition focus:border-blue-500"
+                            className="w-full rounded-lg border border-slate-300 px-4 py-3 outline-none transition focus:border-indigo-500"
                         />
                     </div>
 
-                    <button
+                    <ActionButton
                         type="button"
+                        text={loading ? "Signing In..." : "Sign In"}
                         onClick={handleLogin}
                         disabled={loading}
-                        className="w-full rounded-lg bg-blue-600 py-3 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                        {loading ? "Signing In..." : "Sign In"}
-                    </button>
+                        icon={LockClosedIcon}
+                        className="w-full text-right p-3 rounded-lg outline-1 outline-offset-1 outline-indigo-600 cursor-pointer justify-around"
+                    />
                 </div>
             </div>
         </div>

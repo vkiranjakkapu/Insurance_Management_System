@@ -4,7 +4,7 @@ export const RoutePaths = {
     AGENT: "/agent",
     CUSTOMERS: "/customers",
     EMPLOYEES: "/employees",
-    
+
     AGENT_DETAILS: "/agent/:id",
     EMPLOYEE_DETAILS: "/employees/:id",
     CUSTOMER_DETAILS: "/customers/:id",

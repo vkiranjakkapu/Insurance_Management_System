@@ -1,4 +1,4 @@
-import Icon from "/public/icon.png";
+import Icon from "/icon.png";
 
 export default function Navbar() {
     return (

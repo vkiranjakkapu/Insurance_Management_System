@@ -2,21 +2,20 @@ import { Route, Routes } from "react-router-dom";
 import AuthLayout from "../layouts/AuthLayout";
 import HomeLayout from "../layouts/HomeLayout";
 import SystemSettings from "../pages/admin/SystemSettings";
-import AgentDetails from "../pages/agents/AgentDetails";
-import ManageAgents from "../pages/agents/ManageAgents";
+import AgentDashboard from "../pages/agents/AgentDashboard";
 import ClaimDetails from "../pages/claims/ClaimDetails";
 import ManageClaims from "../pages/claims/ManageClaims";
 import CustomerDetails from "../pages/customers/CustomerDetails";
 import ManageCustomers from "../pages/customers/ManageCustomers";
-import Dashboard from "../pages/dashboard/Dashboard";
 import EmployeeDetails from "../pages/employees/EmployeeDetails";
 import ManageEmployees from "../pages/employees/ManageEmployees";
 import Home from "../pages/home/Home";
 
+import AdminDashboard from "../pages/admin/AdminDashboard";
+import ManagePolicies from "../pages/policies/ManagePolicies";
 import PolicyDetails from "../pages/policies/PolicyDetails";
 import ProtectedRoute from "./ProtectedRoute";
 import { RoutePaths } from "./RoutePaths";
-import ManagePolicies from "../pages/policies/ManagePolicies";
 
 export default function AppRoutes() {
     return (
@@ -31,7 +30,7 @@ export default function AppRoutes() {
                 <Route element={<AuthLayout />}>
                     <Route
                         path={RoutePaths.DASHBOARD}
-                        element={<Dashboard />}
+                        element={<AdminDashboard />}
                     />
 
                     <Route
@@ -70,10 +69,9 @@ export default function AppRoutes() {
                         element={<PolicyDetails />}
                     />
 
-                    <Route path={RoutePaths.AGENT} element={<ManageAgents />} />
                     <Route
-                        path={RoutePaths.AGENT_DETAILS}
-                        element={<AgentDetails />}
+                        path={RoutePaths.AGENT}
+                        element={<AgentDashboard />}
                     />
 
                     <Route
