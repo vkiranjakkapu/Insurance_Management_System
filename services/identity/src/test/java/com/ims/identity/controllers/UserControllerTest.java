@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,6 +60,7 @@ class UserControllerTest {
 	void setup() {
 
 		AuthenticatedUser authenticatedUser = new DefaultAuthenticatedUser(
+				UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3").toString(),
 				"john@test.com",
 				"admin",
 				List.of("ROLE_ADMIN"));
@@ -105,10 +107,10 @@ class UserControllerTest {
 	@Test
 	void getUserById_ShouldReturn200() throws Exception {
 
-		when(userService.getUserById(1L))
+		when(userService.getUserById(UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3")))
 				.thenReturn(response());
 
-		mockMvc.perform(get("/api/users/1")
+		mockMvc.perform(get("/api/users/" + UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"))
 				.with(adminJwt()))
 				.andExpect(status().isOk());
 	}
@@ -116,10 +118,10 @@ class UserControllerTest {
 	@Test
 	void updateUser_ShouldReturn200() throws Exception {
 
-		when(userService.updateUser(eq(1L), any()))
+		when(userService.updateUser(eq(UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3")), any()))
 				.thenReturn(response());
 
-		mockMvc.perform(put("/api/users/1")
+		mockMvc.perform(put("/api/users/" + UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"))
 				.with(adminJwt())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(updateRequest())))
@@ -129,9 +131,9 @@ class UserControllerTest {
 	@Test
 	void deleteUser_ShouldReturn204() throws Exception {
 
-		doNothing().when(userService).deleteUser(1L);
+		doNothing().when(userService).deleteUser(UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"));
 
-		mockMvc.perform(delete("/api/users/1")
+		mockMvc.perform(delete("/api/users/" + UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"))
 				.with(adminJwt()))
 				.andExpect(status().isNoContent());
 	}
@@ -195,7 +197,7 @@ class UserControllerTest {
 	private UserResponse response() {
 
 		return new UserResponse(
-				1L,
+				UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"),
 				"John",
 				"Doe",
 				"john@test.com",
@@ -212,8 +214,10 @@ class UserControllerTest {
 
 		return jwt()
 				.jwt(jwt -> jwt
-						.subject("1")
-						.claim("username", "admin"))
+						.subject(UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3").toString())
+						.claim("username", "admin")
+						.claim("email", "admin@email.com")
+					)
 				.authorities(new SimpleGrantedAuthority("ROLE_ADMIN"));
 	}
 }

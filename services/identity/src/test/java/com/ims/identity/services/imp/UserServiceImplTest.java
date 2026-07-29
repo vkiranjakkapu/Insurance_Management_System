@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -14,6 +13,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -60,8 +60,12 @@ class UserServiceImplTest {
 
 	private Address address;
 
+	private UUID USER_ID;
+
 	@BeforeEach
 	void setup() {
+
+		USER_ID = UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3");
 
 		adminRole = new Role();
 		adminRole.setId(1L);
@@ -75,7 +79,7 @@ class UserServiceImplTest {
 				.build();
 
 		admin = User.builder()
-				.id(1L)
+				.id(USER_ID)
 				.firstName("Admin")
 				.lastName("User")
 				.email("admin@test.com")
@@ -263,26 +267,26 @@ class UserServiceImplTest {
 	@Test
 	void getUserById_ShouldReturnUser() {
 
-		when(userRepository.findById(1L))
+		when(userRepository.findById(USER_ID))
 				.thenReturn(Optional.of(admin));
 
-		UserResponse response = userService.getUserById(1L);
+		UserResponse response = userService.getUserById(USER_ID);
 
-		assertEquals(1L, response.id());
+		assertEquals(USER_ID, response.id());
 		assertEquals("admin@test.com", response.email());
 
-		verify(userRepository).findById(1L);
+		verify(userRepository).findById(USER_ID);
 	}
 
 	@Test
 	void getUserById_ShouldThrow_WhenUserNotFound() {
 
-		when(userRepository.findById(anyLong()))
+		when(userRepository.findById(any(UUID.class)))
 				.thenReturn(Optional.empty());
 
 		assertThrows(
 				ResourceNotFoundException.class,
-				() -> userService.getUserById(100L));
+				() -> userService.getUserById(USER_ID));
 	}
 
 	@Test
@@ -296,13 +300,13 @@ class UserServiceImplTest {
 				LocalDate.of(1998, 1, 1),
 				true);
 
-		when(userRepository.findById(1L))
+		when(userRepository.findById(USER_ID))
 				.thenReturn(Optional.of(admin));
 
 		when(userRepository.save(any(User.class)))
 				.thenAnswer(i -> i.getArgument(0));
 
-		UserResponse response = userService.updateUser(1L, request);
+		UserResponse response = userService.updateUser(USER_ID, request);
 
 		assertEquals("Updated", response.firstName());
 		assertEquals("User", response.lastName());
@@ -322,12 +326,12 @@ class UserServiceImplTest {
 				LocalDate.now(),
 				true);
 
-		when(userRepository.findById(anyLong()))
+		when(userRepository.findById(any(UUID.class)))
 				.thenReturn(Optional.empty());
 
 		assertThrows(
 				ResourceNotFoundException.class,
-				() -> userService.updateUser(1L, request));
+				() -> userService.updateUser(USER_ID, request));
 	}
 
 	@Test
@@ -335,10 +339,10 @@ class UserServiceImplTest {
 
 		admin.setAddress(address);
 
-		when(userRepository.findById(1L))
+		when(userRepository.findById(USER_ID))
 				.thenReturn(Optional.of(admin));
 
-		userService.deleteUser(1L);
+		userService.deleteUser(USER_ID);
 
 		assertTrue(admin.isDeleted());
 		assertTrue(admin.getAddress().isDeleted());
@@ -351,10 +355,10 @@ class UserServiceImplTest {
 
 		admin.setAddress(null);
 
-		when(userRepository.findById(1L))
+		when(userRepository.findById(USER_ID))
 				.thenReturn(Optional.of(admin));
 
-		userService.deleteUser(1L);
+		userService.deleteUser(USER_ID);
 
 		assertTrue(admin.isDeleted());
 
@@ -364,12 +368,12 @@ class UserServiceImplTest {
 	@Test
 	void deleteUser_ShouldThrow_WhenUserNotFound() {
 
-		when(userRepository.findById(anyLong()))
+		when(userRepository.findById(any(UUID.class)))
 				.thenReturn(Optional.empty());
 
 		assertThrows(
 				ResourceNotFoundException.class,
-				() -> userService.deleteUser(1L));
+				() -> userService.deleteUser(USER_ID));
 
 		verify(userRepository, never()).save(any());
 	}

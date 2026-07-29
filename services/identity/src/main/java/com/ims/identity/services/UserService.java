@@ -1,6 +1,7 @@
 package com.ims.identity.services;
 
 import java.util.List;
+import java.util.UUID;
 
 import com.ims.identity.dto.CreateUserRequest;
 import com.ims.identity.dto.UpdateUserRequest;
@@ -11,11 +12,11 @@ public interface UserService {
 
     List<UserResponse> getAllUsers();
 
-    UserResponse getUserById(Long id);
+    UserResponse getUserById(UUID id);
 
     UserResponse getUserByEmail(String email);
 
-    UserResponse updateUser(Long id, UpdateUserRequest request);
+    UserResponse updateUser(UUID id, UpdateUserRequest request);
 
-    void deleteUser(Long id);
+    void deleteUser(UUID id);
 }

@@ -1,6 +1,7 @@
 package com.ims.identity.controllers;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,7 +43,7 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<UserResponse> me() {
         AuthenticatedUser user = authContext.getCurrentUser().orElse(null);
-        return ResponseEntity.ok(userService.getUserByEmail(user.getUserId()));
+        return ResponseEntity.ok(userService.getUserById(UUID.fromString(user.getUserId())));
     }
 
     @Operation(summary = "Create User")
@@ -70,7 +71,7 @@ public class UserController {
     @Operation(summary = "Get user by id")
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','AGENT','CUSTOMER')")
-    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
+    public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.getUserById(id));
     }
 
@@ -78,7 +79,7 @@ public class UserController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','AGENT','CUSTOMER')")
     public ResponseEntity<UserResponse> updateUser(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody UpdateUserRequest request) {
 
         return ResponseEntity.ok(userService.updateUser(id, request));
@@ -87,7 +88,7 @@ public class UserController {
     @Operation(summary = "Soft delete user")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
 
         userService.deleteUser(id);
 

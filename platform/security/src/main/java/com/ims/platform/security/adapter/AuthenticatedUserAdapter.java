@@ -33,6 +33,7 @@ public final class AuthenticatedUserAdapter
 		return new DefaultAuthenticatedUser(
 				jwt.getSubject(),
 				jwt.getClaimAsString(properties.getJwt().getUsernameClaim()),
+				jwt.getClaimAsString(properties.getJwt().getEmailClaim()),
 				token.getAuthorities()
 						.stream()
 						.map(authority -> authority.getAuthority())

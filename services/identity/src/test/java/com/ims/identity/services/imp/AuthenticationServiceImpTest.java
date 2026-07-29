@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -65,7 +66,7 @@ class AuthenticationServiceImpTest {
 				properties);
 
 		user = User.builder()
-				.id(1L)
+				.id(UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"))
 				.email("admin@test.com")
 				.password("password")
 				.build();

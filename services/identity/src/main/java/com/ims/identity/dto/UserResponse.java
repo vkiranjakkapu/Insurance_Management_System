@@ -3,6 +3,7 @@ package com.ims.identity.dto;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Set;
+import java.util.UUID;
 
 import com.ims.identity.entities.Address;
 import com.ims.identity.entities.RoleType;
@@ -10,7 +11,7 @@ import com.ims.identity.entities.RoleType;
 import lombok.Builder;
 
 @Builder
-public record UserResponse(Long id,
+public record UserResponse(UUID id,
 		String firstName,
 		String lastName,
 		String email,
