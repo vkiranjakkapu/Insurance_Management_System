@@ -1,4 +1,4 @@
-# ADR-003: JWT Authentication Strategy
+# ADR-002: JWT Authentication Strategy
 
 ## Status
 
