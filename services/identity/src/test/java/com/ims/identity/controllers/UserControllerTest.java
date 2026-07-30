@@ -31,11 +31,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ims.identity.dto.AddressDto;
-import com.ims.identity.dto.CreateUserRequest;
-import com.ims.identity.dto.FetchUsersRequest;
+import com.ims.identity.dto.CreateUserRequestDto;
+import com.ims.identity.dto.FetchUsersRequestDto;
 import com.ims.identity.dto.UpdateUserRequest;
 import com.ims.identity.dto.UserResponse;
-import com.ims.identity.entities.Address;
 import com.ims.identity.entities.RoleType;
 import com.ims.identity.services.UserService;
 import com.ims.platform.security.context.AuthenticationContext;
@@ -145,7 +144,7 @@ class UserControllerTest {
 	@Test
 	void createUser_InvalidRequest_ShouldReturn400() throws Exception {
 
-		CreateUserRequest request = new CreateUserRequest(
+		CreateUserRequestDto request = new CreateUserRequestDto(
 				"",
 				"",
 				"invalid-email",
@@ -167,7 +166,7 @@ class UserControllerTest {
 
 		UUID id = UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3");
 
-		FetchUsersRequest request = new FetchUsersRequest(List.of(id));
+		FetchUsersRequestDto request = new FetchUsersRequestDto(List.of(id));
 
 		when(userService.getAllUsersWithIds(List.of(id)))
 				.thenReturn(List.of(response()));
@@ -198,9 +197,9 @@ class UserControllerTest {
 				.andExpect(status().isBadRequest());
 	}
 
-	private CreateUserRequest createRequest() {
+	private CreateUserRequestDto createRequest() {
 
-		return new CreateUserRequest(
+		return new CreateUserRequestDto(
 				"john@test.com",
 				"John",
 				"Doe",
@@ -221,13 +220,12 @@ class UserControllerTest {
 				"John",
 				"Doe",
 				"8888888888",
-				new Address(
-						null,
-						"New Street",
-						"534237",
-						"AP",
-						"India",
-						false),
+				AddressDto.builder()
+						.street("New Street")
+						.pinCode("534237")
+						.state("AP")
+						.country("India")
+						.build(),
 				LocalDate.of(2000, 1, 1),
 				true);
 	}

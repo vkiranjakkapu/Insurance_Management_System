@@ -21,9 +21,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;
 
-import com.ims.identity.dto.LoginRequest;
-import com.ims.identity.dto.LoginResponse;
-import com.ims.identity.dto.LogoutRequest;
+import com.ims.identity.dto.LoginRequestDto;
+import com.ims.identity.dto.LoginResponseDto;
+import com.ims.identity.dto.LogoutRequestDto;
 import com.ims.identity.dto.RefreshTokenRequest;
 import com.ims.identity.dto.RefreshTokenResponse;
 import com.ims.identity.entities.RefreshToken;
@@ -75,7 +75,7 @@ class AuthenticationServiceImpTest {
 	@Test
 	void login_ShouldReturnTokens() {
 
-		LoginRequest request = new LoginRequest(
+		LoginRequestDto request = new LoginRequestDto(
 				"admin@test.com",
 				"password");
 
@@ -93,7 +93,7 @@ class AuthenticationServiceImpTest {
 		when(jwtService.generateRefreshToken())
 				.thenReturn("refresh-token");
 
-		LoginResponse response = authenticationService.login(request);
+		LoginResponseDto response = authenticationService.login(request);
 
 		assertNotNull(response);
 		assertEquals("access-token", response.accessToken());
@@ -191,7 +191,7 @@ class AuthenticationServiceImpTest {
 				.thenReturn(Optional.of(token));
 
 		authenticationService.logout(
-				new LogoutRequest("refresh-token"));
+				new LogoutRequestDto("refresh-token"));
 
 		assertTrue(token.isRevoked());
 
@@ -207,6 +207,6 @@ class AuthenticationServiceImpTest {
 		assertThrows(
 				InvalidRefreshTokenException.class,
 				() -> authenticationService.logout(
-						new LogoutRequest("refresh-token")));
+						new LogoutRequestDto("refresh-token")));
 	}
 }

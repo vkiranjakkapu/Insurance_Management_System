@@ -10,7 +10,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ims.identity.dto.CreateUserRequest;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ims.identity.dto.CreateUserRequestDto;
+import com.ims.identity.dto.PasswordChangeRequestDto;
 import com.ims.identity.dto.UpdateUserRequest;
 import com.ims.identity.dto.UserResponse;
 import com.ims.identity.entities.Address;
@@ -32,159 +34,180 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class UserServiceImpl implements UserService {
 
-    private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
-    private final PasswordEncoder passwordEncoder;
-    private final AuthenticationContext authenticationContext;
+	private final UserRepository userRepository;
+	private final RoleRepository roleRepository;
+	private final PasswordEncoder passwordEncoder;
+	private final AuthenticationContext authenticationContext;
 
-    @Override
-    public UserResponse createUser(CreateUserRequest request) {
+	private ObjectMapper mapper = new ObjectMapper();
 
-        AuthenticatedUser currentUser = authenticationContext.getCurrentUser().orElse(null);
-        validatePermission(currentUser);
+	@Override
+	public UserResponse createUser(CreateUserRequestDto request) {
 
-        if (userRepository.existsByEmail(request.email())) {
-            throw new EmailAlreadyUsedException("Email already exists");
-        }
+		AuthenticatedUser currentUser = authenticationContext.getCurrentUser().orElse(null);
+		validatePermission(currentUser);
 
-        Role role = roleRepository.findByName(request.role())
-                .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
+		if (userRepository.existsByEmail(request.email())) {
+			throw new EmailAlreadyUsedException("Email already exists");
+		}
 
-        User user = User.builder()
-                .firstName(request.firstName())
-                .lastName(request.lastName())
-                .email(request.email())
-                .password(passwordEncoder.encode(request.password()))
-                .dob(request.dob())
-                .phone(request.phone())
-                .address(Address.builder()
-                        .street(request.address().street())
-                        .pinCode(request.address().pinCode())
-                        .state(request.address().state())
-                        .country(request.address().country())
-                        .build())
-                .enabled(true)
-                .roles(Set.of(role))
-                .build();
+		Role role = roleRepository.findByName(request.role())
+				.orElseThrow(() -> new ResourceNotFoundException("Role not found"));
 
-        User saved = userRepository.save(user);
+		User user = User.builder()
+				.firstName(request.firstName())
+				.lastName(request.lastName())
+				.email(request.email())
+				.password(passwordEncoder.encode(request.password()))
+				.dob(request.dob())
+				.phone(request.phone())
+				.address(Address.builder()
+						.street(request.address().street())
+						.pinCode(request.address().pinCode())
+						.state(request.address().state())
+						.country(request.address().country())
+						.build())
+				.enabled(true)
+				.roles(Set.of(role))
+				.build();
 
-        return mapToResponse(saved, true);
-    }
+		User saved = userRepository.save(user);
 
-    private void validatePermission(AuthenticatedUser user) {
-        if (user.getAuthorities().size() == 1
-                && user.getAuthorities().stream().toList().getFirst().equalsIgnoreCase("ROLE_CUSTOMER"))
-            throw new ForbiddenException("You are not allowed to create this user.");
-    }
+		return mapToResponse(saved, true);
+	}
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<UserResponse> getAllUsers() {
+	private void validatePermission(AuthenticatedUser user) {
+		if (user.getAuthorities().size() == 1
+				&& user.getAuthorities().stream().toList().getFirst().equalsIgnoreCase("ROLE_CUSTOMER"))
+			throw new ForbiddenException("You are not allowed to create this user.");
+	}
 
-        return userRepository.findAll()
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
+	@Override
+	@Transactional(readOnly = true)
+	public List<UserResponse> getAllUsers() {
 
-    @Override
-    @Transactional(readOnly = true)
-    public List<UserResponse> getAllUsersWithIds(Collection<UUID> ids) {
+		return userRepository.findAll()
+				.stream()
+				.map(this::mapToResponse)
+				.toList();
+	}
 
-        return userRepository.findByIdIn(ids)
-                .stream()
-                .map(this::mapToResponse)
-                .toList();
-    }
+	@Override
+	@Transactional(readOnly = true)
+	public List<UserResponse> getAllUsersWithIds(Collection<UUID> ids) {
 
-    @Override
-    @Transactional(readOnly = true)
-    public UserResponse getUserById(UUID id) {
+		return userRepository.findByIdIn(ids)
+				.stream()
+				.map(this::mapToResponse)
+				.toList();
+	}
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+	@Override
+	@Transactional(readOnly = true)
+	public UserResponse getUserById(UUID id) {
 
-        return mapToResponse(user);
-    }
+		User user = userRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-    @Override
-    @Transactional(readOnly = true)
-    public UserResponse getUserByEmail(String email) {
+		return mapToResponse(user);
+	}
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+	@Override
+	@Transactional(readOnly = true)
+	public UserResponse getUserByEmail(String email) {
 
-        return mapToResponse(user);
-    }
+		User user = userRepository.findByEmail(email)
+				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-    @Override
-    public UserResponse updateUser(UUID id, UpdateUserRequest request) {
+		return mapToResponse(user);
+	}
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+	@Override
+	public UserResponse updateUser(UUID id, UpdateUserRequest request) {
 
-        user.setFirstName(request.firstName());
-        user.setLastName(request.lastName());
-        user.setPhone(request.phone());
-        user.setAddress(request.address());
-        user.setDob(request.dob());
-        user.setEnabled(request.enabled());
+		User user = userRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        return mapToResponse(userRepository.save(user));
-    }
+		user.setFirstName(request.firstName());
+		user.setLastName(request.lastName());
+		user.setPhone(request.phone());
+		Address address = mapper.convertValue(request.address(), Address.class);
+		address.setId(user.getAddress().getId());
+		address.setDeleted(false);
+		user.setAddress(address);
+		user.setDob(request.dob());
+		user.setEnabled(request.enabled());
 
-    @Override
-    @Transactional
-    public void deleteUser(UUID id) {
+		return mapToResponse(userRepository.save(user));
+	}
 
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+	@Override
+	public UserResponse changePassword(PasswordChangeRequestDto request) {
 
-        user.setDeleted(true);
+		AuthenticatedUser currentUser = authenticationContext.getCurrentUser().orElse(null);
 
-        if (user.getAddress() != null) {
-            user.getAddress().setDeleted(true);
-        }
+		User user = userRepository.findById(UUID.fromString(currentUser.getUserId()))
+				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        userRepository.save(user);
-    }
+		if (!passwordEncoder.matches(request.oldPassword(), user.getPassword()))
+			throw new ForbiddenException("Incorrect old password.");
 
-    private UserResponse mapToResponse(User user) {
+		user.setPassword(passwordEncoder.encode(request.newPassword()));
 
-        return UserResponse.builder()
-                .id(user.getId())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .address(user.getAddress())
-                .dob(user.getDob())
-                .enabled(user.isEnabled())
-                .roles(
-                        user.getRoles().stream()
-                                .map(role -> role.getName())
-                                .collect(Collectors.toSet()))
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
-                .build();
-    }
+		return mapToResponse(userRepository.save(user));
+	}
 
-    private UserResponse mapToResponse(User user, boolean ignoreTimeStamps) {
+	@Override
+	@Transactional
+	public void deleteUser(UUID id) {
 
-        return UserResponse.builder()
-                .id(user.getId())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .email(user.getEmail())
-                .phone(user.getPhone())
-                .address(user.getAddress())
-                .dob(user.getDob())
-                .enabled(user.isEnabled())
-                .roles(
-                        user.getRoles().stream()
-                                .map(role -> role.getName())
-                                .collect(Collectors.toSet()))
-                .build();
-    }
+		User user = userRepository.findById(id)
+				.orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+		user.setDeleted(true);
+
+		if (user.getAddress() != null) {
+			user.getAddress().setDeleted(true);
+		}
+
+		userRepository.save(user);
+	}
+
+	private UserResponse mapToResponse(User user) {
+
+		return UserResponse.builder()
+				.id(user.getId())
+				.firstName(user.getFirstName())
+				.lastName(user.getLastName())
+				.email(user.getEmail())
+				.phone(user.getPhone())
+				.address(user.getAddress())
+				.dob(user.getDob())
+				.enabled(user.isEnabled())
+				.roles(
+						user.getRoles().stream()
+								.map(role -> role.getName())
+								.collect(Collectors.toSet()))
+				.createdAt(user.getCreatedAt())
+				.updatedAt(user.getUpdatedAt())
+				.build();
+	}
+
+	private UserResponse mapToResponse(User user, boolean ignoreTimeStamps) {
+
+		return UserResponse.builder()
+				.id(user.getId())
+				.firstName(user.getFirstName())
+				.lastName(user.getLastName())
+				.email(user.getEmail())
+				.phone(user.getPhone())
+				.address(user.getAddress())
+				.dob(user.getDob())
+				.enabled(user.isEnabled())
+				.roles(
+						user.getRoles().stream()
+								.map(role -> role.getName())
+								.collect(Collectors.toSet()))
+				.build();
+	}
 }

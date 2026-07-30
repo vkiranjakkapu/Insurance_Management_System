@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ims.identity.dto.LoginRequest;
-import com.ims.identity.dto.LoginResponse;
-import com.ims.identity.dto.LogoutRequest;
+import com.ims.identity.dto.LoginRequestDto;
+import com.ims.identity.dto.LoginResponseDto;
+import com.ims.identity.dto.LogoutRequestDto;
 import com.ims.identity.dto.RefreshTokenRequest;
 import com.ims.identity.dto.RefreshTokenResponse;
 import com.ims.identity.services.AuthenticationService;
@@ -32,7 +32,7 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "Invalid credentials")
     })
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponseDto> login(@Valid @RequestBody LoginRequestDto request) {
         return ResponseEntity.ok(authenticationService.login(request));
     }
 
@@ -52,7 +52,7 @@ public class AuthController {
             @ApiResponse(responseCode = "204", description = "Logged out successfully")
     })
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestBody LogoutRequest request) {
+    public ResponseEntity<Void> logout(@RequestBody LogoutRequestDto request) {
 
         authenticationService.logout(request);
 

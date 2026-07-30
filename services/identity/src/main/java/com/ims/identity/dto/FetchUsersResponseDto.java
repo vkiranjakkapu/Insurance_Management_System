@@ -5,6 +5,6 @@ import java.util.List;
 import lombok.Builder;
 
 @Builder
-public record FetchUsersResponse(List<UserResponse> users) {
+public record FetchUsersResponseDto(List<UserResponse> users) {
 
 }

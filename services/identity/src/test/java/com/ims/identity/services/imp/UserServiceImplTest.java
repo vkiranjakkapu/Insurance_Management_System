@@ -25,7 +25,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ims.identity.dto.AddressDto;
-import com.ims.identity.dto.CreateUserRequest;
+import com.ims.identity.dto.CreateUserRequestDto;
 import com.ims.identity.dto.UpdateUserRequest;
 import com.ims.identity.dto.UserResponse;
 import com.ims.identity.entities.Address;
@@ -108,7 +108,7 @@ class UserServiceImplTest {
 	@Test
 	void createUser_ShouldCreateSuccessfully() {
 
-		CreateUserRequest request = new CreateUserRequest(
+		CreateUserRequestDto request = new CreateUserRequestDto(
 				"john@test.com",
 				"John",
 				"Doe",
@@ -149,7 +149,7 @@ class UserServiceImplTest {
 	@Test
 	void createUser_ShouldThrow_WhenEmailAlreadyExists() {
 
-		CreateUserRequest request = new CreateUserRequest(
+		CreateUserRequestDto request = new CreateUserRequestDto(
 				"John",
 				"Doe",
 				"john@test.com",
@@ -175,7 +175,7 @@ class UserServiceImplTest {
 	@Test
 	void createUser_ShouldAllowAgentToCreateUser() {
 
-		CreateUserRequest request = new CreateUserRequest(
+		CreateUserRequestDto request = new CreateUserRequestDto(
 				"Customer",
 				"One",
 				"customer@test.com",
@@ -213,7 +213,7 @@ class UserServiceImplTest {
 	@Test
 	void createUser_ShouldThrow_WhenCurrentUserIsCustomer() {
 
-		CreateUserRequest request = new CreateUserRequest(
+		CreateUserRequestDto request = new CreateUserRequestDto(
 				"John",
 				"Doe",
 				"john@test.com",
@@ -313,11 +313,15 @@ class UserServiceImplTest {
 	@Test
 	void updateUser_ShouldUpdateSuccessfully() {
 
+		Address existingAddress = new Address();
+		existingAddress.setId(1L);
+		admin.setAddress(existingAddress);
+
 		UpdateUserRequest request = new UpdateUserRequest(
 				"Updated",
 				"User",
 				"8888888888",
-				address,
+				addressDto,
 				LocalDate.of(1998, 1, 1),
 				true);
 
@@ -343,7 +347,7 @@ class UserServiceImplTest {
 				"Updated",
 				"User",
 				"9999999999",
-				address,
+				addressDto,
 				LocalDate.now(),
 				true);
 

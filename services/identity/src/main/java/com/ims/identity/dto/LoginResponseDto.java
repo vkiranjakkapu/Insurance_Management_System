@@ -1,6 +1,6 @@
 package com.ims.identity.dto;
 
-public record LoginResponse(
+public record LoginResponseDto(
 		String accessToken,
 		String refreshToken,
 		String tokenType) {

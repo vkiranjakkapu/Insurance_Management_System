@@ -16,9 +16,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ims.identity.dto.LoginRequest;
-import com.ims.identity.dto.LoginResponse;
-import com.ims.identity.dto.LogoutRequest;
+import com.ims.identity.dto.LoginRequestDto;
+import com.ims.identity.dto.LoginResponseDto;
+import com.ims.identity.dto.LogoutRequestDto;
 import com.ims.identity.dto.RefreshTokenRequest;
 import com.ims.identity.dto.RefreshTokenResponse;
 import com.ims.identity.services.AuthenticationService;
@@ -39,11 +39,11 @@ class AuthControllerTest {
 	@Test
 	void login_ShouldReturn200() throws Exception {
 
-		LoginRequest request = new LoginRequest(
+		LoginRequestDto request = new LoginRequestDto(
 				"admin@test.com",
 				"password");
 
-		LoginResponse response = new LoginResponse(
+		LoginResponseDto response = new LoginResponseDto(
 				"access-token",
 				"refresh-token",
 				"Bearer");
@@ -80,7 +80,7 @@ class AuthControllerTest {
 	@Test
 	void logout_ShouldReturn204() throws Exception {
 
-		LogoutRequest request = new LogoutRequest("refresh-token");
+		LogoutRequestDto request = new LogoutRequestDto("refresh-token");
 
 		doNothing().when(authenticationService)
 				.logout(any());
