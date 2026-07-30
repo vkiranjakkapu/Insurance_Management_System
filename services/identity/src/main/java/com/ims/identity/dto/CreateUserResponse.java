@@ -7,16 +7,13 @@ import com.ims.identity.entities.RoleType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Builder;
 
-@Builder
-public record CreateUserRequest(
-
-		@Email @NotBlank String email,
-
+public record CreateUserResponse(
 		@NotBlank String firstName,
 
 		@NotBlank String lastName,
+
+		@Email @NotBlank String email,
 
 		@NotBlank String password,
 

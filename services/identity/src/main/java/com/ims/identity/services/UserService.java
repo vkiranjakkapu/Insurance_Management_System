@@ -1,5 +1,6 @@
 package com.ims.identity.services;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
@@ -11,6 +12,8 @@ public interface UserService {
     UserResponse createUser(CreateUserRequest request);
 
     List<UserResponse> getAllUsers();
+
+    List<UserResponse> getAllUsersWithIds(Collection<UUID> ids);
 
     UserResponse getUserById(UUID id);
 

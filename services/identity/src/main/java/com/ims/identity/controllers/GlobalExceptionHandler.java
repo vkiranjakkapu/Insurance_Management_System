@@ -7,9 +7,9 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.ims.identity.enums.IdentityExceptions;
 import com.ims.identity.exceptions.EmailAlreadyUsedException;
 import com.ims.identity.exceptions.ForbiddenException;
-import com.ims.identity.exceptions.IdentityExceptions;
 import com.ims.identity.exceptions.InvalidRefreshTokenException;
 import com.ims.identity.exceptions.ResourceNotFoundException;
 import com.ims.platform.web.exception.SecurityExceptions;

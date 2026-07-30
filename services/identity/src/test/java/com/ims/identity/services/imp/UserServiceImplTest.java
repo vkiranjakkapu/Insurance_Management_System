@@ -15,17 +15,16 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.authentication.TestingAuthenticationToken;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ims.identity.dto.AddressDto;
 import com.ims.identity.dto.CreateUserRequest;
 import com.ims.identity.dto.UpdateUserRequest;
 import com.ims.identity.dto.UserResponse;
@@ -38,6 +37,9 @@ import com.ims.identity.exceptions.ForbiddenException;
 import com.ims.identity.exceptions.ResourceNotFoundException;
 import com.ims.identity.repository.RoleRepository;
 import com.ims.identity.repository.UserRepository;
+import com.ims.platform.security.context.AuthenticationContext;
+import com.ims.platform.security.model.AuthenticatedUser;
+import com.ims.platform.security.model.DefaultAuthenticatedUser;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
@@ -51,16 +53,19 @@ class UserServiceImplTest {
 	@Mock
 	private PasswordEncoder passwordEncoder;
 
+	@Mock
+	private AuthenticationContext authenticationContext;
+
 	@InjectMocks
 	private UserServiceImpl userService;
 
 	private User admin;
-
 	private Role adminRole;
-
+	private AddressDto addressDto;
 	private Address address;
-
 	private UUID USER_ID;
+
+	private final ObjectMapper mapper = new ObjectMapper();
 
 	@BeforeEach
 	void setup() {
@@ -71,12 +76,14 @@ class UserServiceImplTest {
 		adminRole.setId(1L);
 		adminRole.setName(RoleType.ADMIN);
 
-		address = Address.builder()
+		addressDto = AddressDto.builder()
 				.street("MG Road")
 				.state("Karnataka")
 				.country("India")
 				.pinCode("560001")
 				.build();
+
+		address = mapper.convertValue(addressDto, Address.class);
 
 		admin = User.builder()
 				.id(USER_ID)
@@ -87,40 +94,38 @@ class UserServiceImplTest {
 				.enabled(true)
 				.roles(Set.of(adminRole))
 				.build();
-
-		SecurityContextHolder.getContext()
-				.setAuthentication(
-						new TestingAuthenticationToken(
-								"admin@test.com",
-								null));
 	}
 
-	@AfterEach
-	void cleanup() {
-		SecurityContextHolder.clearContext();
+	private AuthenticatedUser authenticatedUser(String... authorities) {
+
+		return new DefaultAuthenticatedUser(
+				USER_ID.toString(),
+				"admin@test.com",
+				"admin",
+				List.of(authorities));
 	}
 
 	@Test
 	void createUser_ShouldCreateSuccessfully() {
 
 		CreateUserRequest request = new CreateUserRequest(
+				"john@test.com",
 				"John",
 				"Doe",
-				"john@test.com",
 				"password",
 				LocalDate.of(2000, 1, 1),
 				"9999999999",
-				address,
+				addressDto,
 				RoleType.CUSTOMER);
 
 		Role customerRole = new Role();
 		customerRole.setName(RoleType.CUSTOMER);
 
+		when(authenticationContext.getCurrentUser())
+				.thenReturn(Optional.of(authenticatedUser("ROLE_ADMIN")));
+
 		when(userRepository.existsByEmail(request.email()))
 				.thenReturn(false);
-
-		when(userRepository.findByEmail("admin@test.com"))
-				.thenReturn(Optional.of(admin));
 
 		when(roleRepository.findByName(RoleType.CUSTOMER))
 				.thenReturn(Optional.of(customerRole));
@@ -129,7 +134,7 @@ class UserServiceImplTest {
 				.thenReturn("encoded-password");
 
 		when(userRepository.save(any(User.class)))
-				.thenAnswer(invocation -> invocation.getArgument(0));
+				.thenAnswer(i -> i.getArgument(0));
 
 		UserResponse response = userService.createUser(request);
 
@@ -151,8 +156,11 @@ class UserServiceImplTest {
 				"password",
 				LocalDate.now(),
 				"9999999999",
-				address,
+				addressDto,
 				RoleType.CUSTOMER);
+
+		when(authenticationContext.getCurrentUser())
+				.thenReturn(Optional.of(authenticatedUser("ROLE_ADMIN")));
 
 		when(userRepository.existsByEmail(request.email()))
 				.thenReturn(true);
@@ -165,18 +173,7 @@ class UserServiceImplTest {
 	}
 
 	@Test
-	void createUser_ShouldAllowAgentToCreateCustomer() {
-
-		Role agentRole = new Role();
-		agentRole.setName(RoleType.AGENT);
-
-		User agent = User.builder()
-				.email("agent@test.com")
-				.roles(Set.of(agentRole))
-				.build();
-
-		SecurityContextHolder.getContext().setAuthentication(
-				new TestingAuthenticationToken("agent@test.com", null));
+	void createUser_ShouldAllowAgentToCreateUser() {
 
 		CreateUserRequest request = new CreateUserRequest(
 				"Customer",
@@ -185,17 +182,17 @@ class UserServiceImplTest {
 				"password",
 				LocalDate.now(),
 				"9999999999",
-				address,
+				addressDto,
 				RoleType.CUSTOMER);
 
 		Role customerRole = new Role();
 		customerRole.setName(RoleType.CUSTOMER);
 
+		when(authenticationContext.getCurrentUser())
+				.thenReturn(Optional.of(authenticatedUser("ROLE_AGENT")));
+
 		when(userRepository.existsByEmail(any()))
 				.thenReturn(false);
-
-		when(userRepository.findByEmail("agent@test.com"))
-				.thenReturn(Optional.of(agent));
 
 		when(roleRepository.findByName(RoleType.CUSTOMER))
 				.thenReturn(Optional.of(customerRole));
@@ -214,34 +211,20 @@ class UserServiceImplTest {
 	}
 
 	@Test
-	void createUser_ShouldThrow_WhenAgentCreatesAdmin() {
-
-		Role agentRole = new Role();
-		agentRole.setName(RoleType.AGENT);
-
-		User agent = User.builder()
-				.email("agent@test.com")
-				.roles(Set.of(agentRole))
-				.build();
-
-		SecurityContextHolder.getContext().setAuthentication(
-				new TestingAuthenticationToken("agent@test.com", null));
+	void createUser_ShouldThrow_WhenCurrentUserIsCustomer() {
 
 		CreateUserRequest request = new CreateUserRequest(
-				"Admin",
-				"User",
-				"newadmin@test.com",
+				"John",
+				"Doe",
+				"john@test.com",
 				"password",
 				LocalDate.now(),
 				"9999999999",
-				address,
-				RoleType.ADMIN);
+				addressDto,
+				RoleType.CUSTOMER);
 
-		when(userRepository.existsByEmail(any()))
-				.thenReturn(false);
-
-		when(userRepository.findByEmail("agent@test.com"))
-				.thenReturn(Optional.of(agent));
+		when(authenticationContext.getCurrentUser())
+				.thenReturn(Optional.of(authenticatedUser("ROLE_CUSTOMER")));
 
 		assertThrows(
 				ForbiddenException.class,
@@ -259,9 +242,23 @@ class UserServiceImplTest {
 		List<UserResponse> users = userService.getAllUsers();
 
 		assertEquals(1, users.size());
-		assertEquals("admin@test.com", users.get(0).email());
+		assertEquals("admin@test.com", users.getFirst().email());
 
 		verify(userRepository).findAll();
+	}
+
+	@Test
+	void getAllUsersWithIds_ShouldReturnUsers() {
+
+		when(userRepository.findByIdIn(List.of(USER_ID)))
+				.thenReturn(List.of(admin));
+
+		List<UserResponse> users = userService.getAllUsersWithIds(List.of(USER_ID));
+
+		assertEquals(1, users.size());
+		assertEquals(USER_ID, users.getFirst().id());
+
+		verify(userRepository).findByIdIn(List.of(USER_ID));
 	}
 
 	@Test
@@ -281,12 +278,36 @@ class UserServiceImplTest {
 	@Test
 	void getUserById_ShouldThrow_WhenUserNotFound() {
 
-		when(userRepository.findById(any(UUID.class)))
+		when(userRepository.findById(USER_ID))
 				.thenReturn(Optional.empty());
 
 		assertThrows(
 				ResourceNotFoundException.class,
 				() -> userService.getUserById(USER_ID));
+	}
+
+	@Test
+	void getUserByEmail_ShouldReturnUser() {
+
+		when(userRepository.findByEmail("admin@test.com"))
+				.thenReturn(Optional.of(admin));
+
+		UserResponse response = userService.getUserByEmail("admin@test.com");
+
+		assertEquals("admin@test.com", response.email());
+
+		verify(userRepository).findByEmail("admin@test.com");
+	}
+
+	@Test
+	void getUserByEmail_ShouldThrow_WhenUserNotFound() {
+
+		when(userRepository.findByEmail("admin@test.com"))
+				.thenReturn(Optional.empty());
+
+		assertThrows(
+				ResourceNotFoundException.class,
+				() -> userService.getUserByEmail("admin@test.com"));
 	}
 
 	@Test
@@ -326,7 +347,7 @@ class UserServiceImplTest {
 				LocalDate.now(),
 				true);
 
-		when(userRepository.findById(any(UUID.class)))
+		when(userRepository.findById(USER_ID))
 				.thenReturn(Optional.empty());
 
 		assertThrows(
@@ -368,7 +389,7 @@ class UserServiceImplTest {
 	@Test
 	void deleteUser_ShouldThrow_WhenUserNotFound() {
 
-		when(userRepository.findById(any(UUID.class)))
+		when(userRepository.findById(USER_ID))
 				.thenReturn(Optional.empty());
 
 		assertThrows(
@@ -377,5 +398,4 @@ class UserServiceImplTest {
 
 		verify(userRepository, never()).save(any());
 	}
-
 }

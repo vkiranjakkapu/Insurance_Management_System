@@ -4,10 +4,12 @@ import java.time.LocalDate;
 
 import com.ims.identity.entities.Address;
 
-public record UpdateUserRequest(String firstName,
-		String lastName,
-		String phone,
-		Address address,
+import jakarta.validation.constraints.NotNull;
+
+public record UpdateUserRequest(@NotNull String firstName,
+		@NotNull String lastName,
+		@NotNull String phone,
+		@NotNull Address address,
 		LocalDate dob,
 		boolean enabled) {
 }

@@ -1,12 +1,11 @@
 package com.ims.identity.services.imp;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,8 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.ims.identity.dto.CreateUserRequest;
 import com.ims.identity.dto.UpdateUserRequest;
 import com.ims.identity.dto.UserResponse;
+import com.ims.identity.entities.Address;
 import com.ims.identity.entities.Role;
-import com.ims.identity.entities.RoleType;
 import com.ims.identity.entities.User;
 import com.ims.identity.exceptions.EmailAlreadyUsedException;
 import com.ims.identity.exceptions.ForbiddenException;
@@ -23,6 +22,8 @@ import com.ims.identity.exceptions.ResourceNotFoundException;
 import com.ims.identity.repository.RoleRepository;
 import com.ims.identity.repository.UserRepository;
 import com.ims.identity.services.UserService;
+import com.ims.platform.security.context.AuthenticationContext;
+import com.ims.platform.security.model.AuthenticatedUser;
 
 import lombok.RequiredArgsConstructor;
 
@@ -34,20 +35,17 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationContext authenticationContext;
 
     @Override
     public UserResponse createUser(CreateUserRequest request) {
 
+        AuthenticatedUser currentUser = authenticationContext.getCurrentUser().orElse(null);
+        validatePermission(currentUser);
+
         if (userRepository.existsByEmail(request.email())) {
             throw new EmailAlreadyUsedException("Email already exists");
         }
-
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        User creator = userRepository.findByEmail(authentication.getName())
-                .orElseThrow(() -> new ForbiddenException("Authenticated user not found"));
-
-        validatePermission(creator, request.role());
 
         Role role = roleRepository.findByName(request.role())
                 .orElseThrow(() -> new ResourceNotFoundException("Role not found"));
@@ -59,33 +57,25 @@ public class UserServiceImpl implements UserService {
                 .password(passwordEncoder.encode(request.password()))
                 .dob(request.dob())
                 .phone(request.phone())
-                .address(request.address())
+                .address(Address.builder()
+                        .street(request.address().street())
+                        .pinCode(request.address().pinCode())
+                        .state(request.address().state())
+                        .country(request.address().country())
+                        .build())
                 .enabled(true)
                 .roles(Set.of(role))
                 .build();
 
         User saved = userRepository.save(user);
 
-        return mapToResponse(saved);
+        return mapToResponse(saved, true);
     }
 
-    private void validatePermission(User creator, RoleType requestedRole) {
-
-        boolean admin = creator.getRoles().stream()
-                .anyMatch(r -> r.getName() == RoleType.ADMIN);
-
-        boolean agent = creator.getRoles().stream()
-                .anyMatch(r -> r.getName() == RoleType.AGENT);
-
-        if (admin) {
-            return;
-        }
-
-        if (agent && requestedRole == RoleType.CUSTOMER) {
-            return;
-        }
-
-        throw new ForbiddenException("You are not allowed to create this user.");
+    private void validatePermission(AuthenticatedUser user) {
+        if (user.getAuthorities().size() == 1
+                && user.getAuthorities().stream().toList().getFirst().equalsIgnoreCase("ROLE_CUSTOMER"))
+            throw new ForbiddenException("You are not allowed to create this user.");
     }
 
     @Override
@@ -93,6 +83,16 @@ public class UserServiceImpl implements UserService {
     public List<UserResponse> getAllUsers() {
 
         return userRepository.findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<UserResponse> getAllUsersWithIds(Collection<UUID> ids) {
+
+        return userRepository.findByIdIn(ids)
                 .stream()
                 .map(this::mapToResponse)
                 .toList();
@@ -167,6 +167,24 @@ public class UserServiceImpl implements UserService {
                                 .collect(Collectors.toSet()))
                 .createdAt(user.getCreatedAt())
                 .updatedAt(user.getUpdatedAt())
+                .build();
+    }
+
+    private UserResponse mapToResponse(User user, boolean ignoreTimeStamps) {
+
+        return UserResponse.builder()
+                .id(user.getId())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .address(user.getAddress())
+                .dob(user.getDob())
+                .enabled(user.isEnabled())
+                .roles(
+                        user.getRoles().stream()
+                                .map(role -> role.getName())
+                                .collect(Collectors.toSet()))
                 .build();
     }
 }

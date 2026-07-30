@@ -60,9 +60,11 @@ public class User implements UserDetails {
     @JoinColumn(name = "address_id")
     private Address address;
 
-    private boolean enabled;
+    @Builder.Default
+    private boolean enabled = true;
 
-    private boolean deleted;
+    @Builder.Default
+    private boolean deleted = false;
 
     @CreationTimestamp
     private LocalDateTime createdAt;

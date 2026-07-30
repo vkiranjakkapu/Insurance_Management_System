@@ -30,7 +30,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.ims.identity.dto.AddressDto;
 import com.ims.identity.dto.CreateUserRequest;
+import com.ims.identity.dto.FetchUsersRequest;
 import com.ims.identity.dto.UpdateUserRequest;
 import com.ims.identity.dto.UserResponse;
 import com.ims.identity.entities.Address;
@@ -72,10 +74,12 @@ class UserControllerTest {
 	@Test
 	void me_ShouldReturn200() throws Exception {
 
-		when(userService.getUserByEmail("john@test.com"))
+		UUID id = UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3");
+
+		when(userService.getUserById(id))
 				.thenReturn(response());
 
-		mockMvc.perform(get("/api/users/me")
+		mockMvc.perform(get("/api/v1/users/me")
 				.with(adminJwt()))
 				.andExpect(status().isOk());
 	}
@@ -86,7 +90,7 @@ class UserControllerTest {
 		when(userService.createUser(any()))
 				.thenReturn(response());
 
-		mockMvc.perform(post("/api/users")
+		mockMvc.perform(post("/api/v1/users/")
 				.with(adminJwt())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(createRequest())))
@@ -99,7 +103,7 @@ class UserControllerTest {
 		when(userService.getAllUsers())
 				.thenReturn(List.of(response()));
 
-		mockMvc.perform(get("/api/users")
+		mockMvc.perform(get("/api/v1/users/")
 				.with(adminJwt()))
 				.andExpect(status().isOk());
 	}
@@ -110,7 +114,7 @@ class UserControllerTest {
 		when(userService.getUserById(UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3")))
 				.thenReturn(response());
 
-		mockMvc.perform(get("/api/users/" + UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"))
+		mockMvc.perform(get("/api/v1/users/" + UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"))
 				.with(adminJwt()))
 				.andExpect(status().isOk());
 	}
@@ -121,7 +125,7 @@ class UserControllerTest {
 		when(userService.updateUser(eq(UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3")), any()))
 				.thenReturn(response());
 
-		mockMvc.perform(put("/api/users/" + UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"))
+		mockMvc.perform(put("/api/v1/users/" + UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"))
 				.with(adminJwt())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(updateRequest())))
@@ -133,7 +137,7 @@ class UserControllerTest {
 
 		doNothing().when(userService).deleteUser(UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"));
 
-		mockMvc.perform(delete("/api/users/" + UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"))
+		mockMvc.perform(delete("/api/v1/users/" + UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"))
 				.with(adminJwt()))
 				.andExpect(status().isNoContent());
 	}
@@ -151,7 +155,43 @@ class UserControllerTest {
 				null,
 				null);
 
-		mockMvc.perform(post("/api/users")
+		mockMvc.perform(post("/api/v1/users/")
+				.with(adminJwt())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isBadRequest());
+	}
+
+	@Test
+	void getAllUsersWithIds_ShouldReturn200() throws Exception {
+
+		UUID id = UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3");
+
+		FetchUsersRequest request = new FetchUsersRequest(List.of(id));
+
+		when(userService.getAllUsersWithIds(List.of(id)))
+				.thenReturn(List.of(response()));
+
+		mockMvc.perform(post("/api/v1/users/search")
+				.with(adminJwt())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	void updateUser_InvalidRequest_ShouldReturn400() throws Exception {
+
+		UpdateUserRequest request = new UpdateUserRequest(
+				"",
+				"",
+				"",
+				null,
+				null,
+				true);
+
+		mockMvc.perform(put("/api/v1/users/" +
+				UUID.fromString("c0186249-1111-4927-97b3-a08a21febfe3"))
 				.with(adminJwt())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
@@ -161,19 +201,17 @@ class UserControllerTest {
 	private CreateUserRequest createRequest() {
 
 		return new CreateUserRequest(
+				"john@test.com",
 				"John",
 				"Doe",
-				"john@test.com",
 				"password",
 				LocalDate.of(2000, 1, 1),
 				"9999999999",
-				new Address(
-						null,
+				new AddressDto(
 						"Street",
 						"534237",
 						"AP",
-						"India",
-						false),
+						"India"),
 				RoleType.CUSTOMER);
 	}
 
@@ -216,8 +254,7 @@ class UserControllerTest {
 				.jwt(jwt -> jwt
 						.subject(UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3").toString())
 						.claim("username", "admin")
-						.claim("email", "admin@email.com")
-					)
+						.claim("email", "admin@email.com"))
 				.authorities(new SimpleGrantedAuthority("ROLE_ADMIN"));
 	}
 }

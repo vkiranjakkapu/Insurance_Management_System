@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ims.identity.dto.CreateUserRequest;
+import com.ims.identity.dto.FetchUsersRequest;
+import com.ims.identity.dto.FetchUsersResponse;
 import com.ims.identity.dto.UpdateUserRequest;
 import com.ims.identity.dto.UserResponse;
 import com.ims.identity.services.UserService;
@@ -31,7 +33,7 @@ import lombok.RequiredArgsConstructor;
 
 @SecurityRequirement(name = "bearerAuth")
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -52,7 +54,7 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Validation failed"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    @PostMapping
+    @PostMapping("/")
     @PreAuthorize("hasAnyRole('ADMIN','AGENT')")
     public ResponseEntity<UserResponse> createUser(
             @Valid @RequestBody CreateUserRequest request) {
@@ -62,17 +64,25 @@ public class UserController {
     }
 
     @Operation(summary = "Get all users")
-    @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','AGENT','CUSTOMER')")
+    @GetMapping("/")
+    @PreAuthorize("hasAnyRole('ADMIN','AGENT')")
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @Operation(summary = "Get user by id")
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','AGENT','CUSTOMER')")
+    @PreAuthorize("hasAnyRole('ADMIN','AGENT')")
     public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    @Operation(summary = "Get all users with ids")
+    @PostMapping("/search")
+    @PreAuthorize("hasAnyRole('ADMIN','AGENT','CUSTOMER')")
+    public ResponseEntity<FetchUsersResponse> getAllUsersWithIds(@RequestBody FetchUsersRequest request) {
+        return ResponseEntity
+                .ok(FetchUsersResponse.builder().users(userService.getAllUsersWithIds(request.ids())).build());
     }
 
     @Operation(summary = "Update user")
