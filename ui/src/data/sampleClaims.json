@@ -4,7 +4,7 @@
     "customerName": "Sarah Jenkins",
     "email": "sarah.j@example.com",
     "policyType": "Comprehensive Family Life",
-    "status": "Active",
+    "status": "ACCEPTED",
     "premium": "$185.00/mo"
   },
   {
@@ -12,7 +12,7 @@
     "customerName": "Marcus Chen",
     "email": "marcus.c@example.com",
     "policyType": "Auto & Health Shield",
-    "status": "Pending",
+    "status": "PENDING",
     "premium": "$240.00/mo"
   },
   {
@@ -20,7 +20,7 @@
     "customerName": "Elena Rostova",
     "email": "elena.r@example.com",
     "policyType": "Home Protection Plan",
-    "status": "Override",
+    "status": "REJECTED",
     "premium": "$95.00/mo"
   },
   {
@@ -28,7 +28,7 @@
     "customerName": "Priya Nair",
     "email": "priya.n@example.com",
     "policyType": "Health Secure Premium",
-    "status": "Active",
+    "status": "ACCEPTED",
     "premium": "$210.00/mo"
   },
   {
@@ -36,7 +36,7 @@
     "customerName": "Arjun Reddy",
     "email": "arjun.r@example.com",
     "policyType": "Vehicle Protection Plus",
-    "status": "Pending",
+    "status": "PENDING",
     "premium": "$145.00/mo"
   },
   {
@@ -44,7 +44,7 @@
     "customerName": "Rahul Verma",
     "email": "rahul.v@example.com",
     "policyType": "Term Life Secure",
-    "status": "Active",
+    "status": "ACCEPTED",
     "premium": "$74.00/mo"
   },
   {
@@ -52,7 +52,7 @@
     "customerName": "Ananya Iyer",
     "email": "ananya.i@example.com",
     "policyType": "Health & Wellness Cover",
-    "status": "Override",
+    "status": "REJECTED",
     "premium": "$132.00/mo"
   },
   {
@@ -60,7 +60,7 @@
     "customerName": "James Wilson",
     "email": "james.w@example.com",
     "policyType": "Business Liability Plan",
-    "status": "Active",
+    "status": "ACCEPTED",
     "premium": "$325.00/mo"
   },
   {
@@ -68,7 +68,7 @@
     "customerName": "Meera Joshi",
     "email": "meera.j@example.com",
     "policyType": "Comprehensive Home Shield",
-    "status": "Pending",
+    "status": "PENDING",
     "premium": "$88.00/mo"
   },
   {
@@ -76,7 +76,7 @@
     "customerName": "Harish Naidu",
     "email": "harish.n@example.com",
     "policyType": "Personal Accident Cover",
-    "status": "Active",
+    "status": "ACCEPTED",
     "premium": "$49.00/mo"
   },
   {
@@ -84,7 +84,7 @@
     "customerName": "Nikhil Jain",
     "email": "nikhil.j@example.com",
     "policyType": "Home Essentials Plan",
-    "status": "Override",
+    "status": "REJECTED",
     "premium": "$112.00/mo"
   },
   {
@@ -92,7 +92,7 @@
     "customerName": "Emily Davis",
     "email": "emily.d@example.com",
     "policyType": "Family Health Shield",
-    "status": "Pending",
+    "status": "PENDING",
     "premium": "$225.00/mo"
   },
   {
@@ -100,7 +100,7 @@
     "customerName": "Robert King",
     "email": "robert.k@example.com",
     "policyType": "Auto Protect Max",
-    "status": "Active",
+    "status": "ACCEPTED",
     "premium": "$198.00/mo"
   },
   {
@@ -108,7 +108,7 @@
     "customerName": "Deepa Rao",
     "email": "deepa.r@example.com",
     "policyType": "Child Education Plan",
-    "status": "Active",
+    "status": "ACCEPTED",
     "premium": "$98.00/mo"
   },
   {
@@ -116,7 +116,7 @@
     "customerName": "Kavya Reddy",
     "email": "kavya.r@example.com",
     "policyType": "Women's Health Premium",
-    "status": "Pending",
+    "status": "PENDING",
     "premium": "$168.00/mo"
   },
   {
@@ -124,7 +124,7 @@
     "customerName": "Chris Anderson",
     "email": "chris.a@example.com",
     "policyType": "Travel Explorer Plan",
-    "status": "Active",
+    "status": "ACCEPTED",
     "premium": "$67.00/mo"
   },
   {
@@ -132,7 +132,7 @@
     "customerName": "Sneha Patil",
     "email": "sneha.p@example.com",
     "policyType": "Motor Secure Elite",
-    "status": "Override",
+    "status": "REJECTED",
     "premium": "$154.00/mo"
   },
   {
@@ -140,7 +140,7 @@
     "customerName": "Rohit Gupta",
     "email": "rohit.g@example.com",
     "policyType": "Family Protection Plus",
-    "status": "Active",
+    "status": "ACCEPTED",
     "premium": "$196.00/mo"
   },
   {
@@ -148,7 +148,7 @@
     "customerName": "Jessica Moore",
     "email": "jessica.m@example.com",
     "policyType": "Home & Contents Shield",
-    "status": "Pending",
+    "status": "PENDING",
     "premium": "$121.00/mo"
   },
   {
@@ -156,7 +156,7 @@
     "customerName": "Vikram Singh",
     "email": "vikram.s@example.com",
     "policyType": "Senior Life Assurance",
-    "status": "Override",
+    "status": "REJECTED",
     "premium": "$143.00/mo"
   }
 ]

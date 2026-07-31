@@ -31,7 +31,7 @@ export default function ManagePolicies() {
     const [allPolicies] = useState<Policy[]>(samplePolicies as Policy[]);
     const [searchQuery, setSearchQuery] = useState("");
 
-    const [isModalOpen, setIsModalOpen] = useState(true);
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     const filteredPolicies = useMemo(() => {
         const query = searchQuery.trim();
@@ -138,7 +138,7 @@ export default function ManagePolicies() {
                             onClick={() => setIsModalOpen(false)}
                             icon={XMarkIcon}
                             unsetClass={true}
-                            className="p-1.5 border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                            className="p-1.5 flex flex-row items-center gap-2 cursor-pointer border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                         />
                         <ActionButton
                             text="Submit Policy"

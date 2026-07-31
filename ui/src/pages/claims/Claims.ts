@@ -1,7 +1,7 @@
 export const ClaimStatus = {
-    ACTIVE: "Active",
-    PENDING_APPROVAL: "Pending",
-    OVERRIDE: "Override",
+    ACCEPTED: "ACCEPTED",
+    PENDING: "PENDING",
+    REJECTED: "REJECTED",
 } as const;
 
 // Extract a usable TypeScript type from the object values
