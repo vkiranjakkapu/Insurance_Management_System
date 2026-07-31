@@ -90,7 +90,7 @@ export default function Home() {
                             type="button"
                             text={loading ? "Signing In..." : "Sign In"}
                             onClick={handleLogin}
-                            disabled={loading}
+                            // disabled={loading}
                             icon={LockClosedIcon}
                             className="w-full text-right p-3 rounded-lg outline-1 outline-offset-1 outline-indigo-600 cursor-pointer justify-around"
                         />

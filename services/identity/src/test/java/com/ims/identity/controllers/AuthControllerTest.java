@@ -51,7 +51,7 @@ class AuthControllerTest {
 		when(authenticationService.login(any()))
 				.thenReturn(response);
 
-		mockMvc.perform(post("/api/v1/auth/login")
+		mockMvc.perform(post("/identity/api/v1/auth/login")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isOk());
@@ -70,7 +70,7 @@ class AuthControllerTest {
 		when(authenticationService.refresh(any()))
 				.thenReturn(response);
 
-		mockMvc.perform(post("/api/v1/auth/refresh")
+		mockMvc.perform(post("/identity/api/v1/auth/refresh")
 				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
@@ -85,7 +85,7 @@ class AuthControllerTest {
 		doNothing().when(authenticationService)
 				.logout(any());
 
-		mockMvc.perform(post("/api/v1/auth/logout")
+		mockMvc.perform(post("/identity/api/v1/auth/logout")
 				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))

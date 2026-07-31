@@ -1,4 +1,5 @@
 import api from "../api/api";
+import { AppConfig } from "../config/AppConfig";
 import TokenStorage from "../storage/TokenStorage";
 
 export interface LoginRequest {
@@ -20,7 +21,7 @@ export interface Response {
 class AuthService {
     async login(request: LoginRequest): Promise<LoginResponse> {
         const response = await api.post<LoginResponse>(
-            "/api/auth/login",
+            AppConfig.IDENTITY_AUTH_URL + "/login",
             request,
         );
 
@@ -37,7 +38,7 @@ class AuthService {
     async refresh(refreshToken: string): Promise<LoginResponse> {
         try {
             const response = await api.post<LoginResponse>(
-                "/api/auth/refresh",
+                AppConfig.IDENTITY_AUTH_URL + "/refresh",
                 {
                     refreshToken,
                 },
@@ -57,7 +58,9 @@ class AuthService {
     }
 
     async logout(refreshToken: string): Promise<number> {
-        const response = await api.post("/api/auth/logout", { refreshToken });
+        const response = await api.post(AppConfig.IDENTITY_AUTH_URL + "/logout", {
+            refreshToken,
+        });
 
         if (response.status == 200) {
             TokenStorage.clear();

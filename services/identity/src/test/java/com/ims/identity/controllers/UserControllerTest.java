@@ -78,7 +78,7 @@ class UserControllerTest {
 		when(userService.getUserById(id))
 				.thenReturn(response());
 
-		mockMvc.perform(get("/api/v1/users/me")
+		mockMvc.perform(get("/identity/api/v1/users/me")
 				.with(adminJwt()))
 				.andExpect(status().isOk());
 	}
@@ -89,7 +89,7 @@ class UserControllerTest {
 		when(userService.createUser(any()))
 				.thenReturn(response());
 
-		mockMvc.perform(post("/api/v1/users/")
+		mockMvc.perform(post("/identity/api/v1/users/")
 				.with(adminJwt())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(createRequest())))
@@ -102,7 +102,7 @@ class UserControllerTest {
 		when(userService.getAllUsers())
 				.thenReturn(List.of(response()));
 
-		mockMvc.perform(get("/api/v1/users/")
+		mockMvc.perform(get("/identity/api/v1/users/")
 				.with(adminJwt()))
 				.andExpect(status().isOk());
 	}
@@ -113,7 +113,7 @@ class UserControllerTest {
 		when(userService.getUserById(UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3")))
 				.thenReturn(response());
 
-		mockMvc.perform(get("/api/v1/users/" + UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"))
+		mockMvc.perform(get("/identity/api/v1/users/" + UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"))
 				.with(adminJwt()))
 				.andExpect(status().isOk());
 	}
@@ -124,7 +124,7 @@ class UserControllerTest {
 		when(userService.updateUser(eq(UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3")), any()))
 				.thenReturn(response());
 
-		mockMvc.perform(put("/api/v1/users/" + UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"))
+		mockMvc.perform(put("/identity/api/v1/users/" + UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"))
 				.with(adminJwt())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(updateRequest())))
@@ -136,7 +136,7 @@ class UserControllerTest {
 
 		doNothing().when(userService).deleteUser(UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"));
 
-		mockMvc.perform(delete("/api/v1/users/" + UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"))
+		mockMvc.perform(delete("/identity/api/v1/users/" + UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"))
 				.with(adminJwt()))
 				.andExpect(status().isNoContent());
 	}
@@ -154,7 +154,7 @@ class UserControllerTest {
 				null,
 				null);
 
-		mockMvc.perform(post("/api/v1/users/")
+		mockMvc.perform(post("/identity/api/v1/users/")
 				.with(adminJwt())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
@@ -171,7 +171,7 @@ class UserControllerTest {
 		when(userService.getAllUsersWithIds(List.of(id)))
 				.thenReturn(List.of(response()));
 
-		mockMvc.perform(post("/api/v1/users/search")
+		mockMvc.perform(post("/identity/api/v1/users/search")
 				.with(adminJwt())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
@@ -189,7 +189,7 @@ class UserControllerTest {
 				null,
 				true);
 
-		mockMvc.perform(put("/api/v1/users/" +
+		mockMvc.perform(put("/identity/api/v1/users/" +
 				UUID.fromString("c0186249-1111-4927-97b3-a08a21febfe3"))
 				.with(adminJwt())
 				.contentType(MediaType.APPLICATION_JSON)
