@@ -11,7 +11,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <name>RestClient</name>
+    <name>RestClient Module</name>
     <artifactId>restclient</artifactId>
     <packaging>jar</packaging>
 
