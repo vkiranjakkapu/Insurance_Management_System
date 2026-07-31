@@ -1,7 +1,6 @@
 export const PolicyStatus = {
     ACTIVE: "Active",
-    PENDING_APPROVAL: "Pending",
-    OVERRIDE: "Override",
+    TERMINATED: "Terminated",
 } as const;
 
 export type PolicyStatus = (typeof PolicyStatus)[keyof typeof PolicyStatus];

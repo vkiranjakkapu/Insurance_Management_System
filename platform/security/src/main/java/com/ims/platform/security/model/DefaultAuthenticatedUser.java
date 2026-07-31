@@ -7,15 +7,18 @@ public final class DefaultAuthenticatedUser implements AuthenticatedUser {
 
     private final String userId;
     private final String username;
+    private final String email;
     private final Collection<String> authorities;
 
     public DefaultAuthenticatedUser(
             String userId,
             String username,
+            String email,
             Collection<String> authorities) {
 
         this.userId = userId;
         this.username = username;
+        this.email = email;
         this.authorities = List.copyOf(authorities);
     }
 
@@ -27,6 +30,11 @@ public final class DefaultAuthenticatedUser implements AuthenticatedUser {
     @Override
     public String getUsername() {
         return username;
+    }
+
+    @Override
+    public String getEmail() {
+        return email;
     }
 
     @Override

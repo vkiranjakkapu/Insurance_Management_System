@@ -1,12 +1,14 @@
 package com.ims.identity.controllers;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -14,7 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ims.identity.dto.CreateUserRequest;
+import com.ims.identity.dto.CreateUserRequestDto;
+import com.ims.identity.dto.FetchUsersRequestDto;
+import com.ims.identity.dto.FetchUsersResponseDto;
+import com.ims.identity.dto.PasswordChangeRequestDto;
 import com.ims.identity.dto.UpdateUserRequest;
 import com.ims.identity.dto.UserResponse;
 import com.ims.identity.services.UserService;
@@ -30,7 +35,7 @@ import lombok.RequiredArgsConstructor;
 
 @SecurityRequirement(name = "bearerAuth")
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/identity/api/v1/users")
 @RequiredArgsConstructor
 public class UserController {
 
@@ -42,7 +47,7 @@ public class UserController {
     @GetMapping("/me")
     public ResponseEntity<UserResponse> me() {
         AuthenticatedUser user = authContext.getCurrentUser().orElse(null);
-        return ResponseEntity.ok(userService.getUserByEmail(user.getUserId()));
+        return ResponseEntity.ok(userService.getUserById(UUID.fromString(user.getUserId())));
     }
 
     @Operation(summary = "Create User")
@@ -51,43 +56,60 @@ public class UserController {
             @ApiResponse(responseCode = "400", description = "Validation failed"),
             @ApiResponse(responseCode = "403", description = "Access denied")
     })
-    @PostMapping
+    @PostMapping("/")
     @PreAuthorize("hasAnyRole('ADMIN','AGENT')")
     public ResponseEntity<UserResponse> createUser(
-            @Valid @RequestBody CreateUserRequest request) {
+            @Valid @RequestBody CreateUserRequestDto request) {
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(userService.createUser(request));
     }
 
     @Operation(summary = "Get all users")
-    @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN','AGENT','CUSTOMER')")
+    @GetMapping("/")
+    @PreAuthorize("hasAnyRole('ADMIN','AGENT')")
     public ResponseEntity<List<UserResponse>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @Operation(summary = "Get user by id")
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN','AGENT','CUSTOMER')")
-    public ResponseEntity<UserResponse> getUserById(@PathVariable Long id) {
+    @PreAuthorize("hasAnyRole('ADMIN','AGENT')")
+    public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
         return ResponseEntity.ok(userService.getUserById(id));
+    }
+
+    @Operation(summary = "Get all users with ids")
+    @PostMapping("/search")
+    @PreAuthorize("hasAnyRole('ADMIN','AGENT','CUSTOMER')")
+    public ResponseEntity<FetchUsersResponseDto> getAllUsersWithIds(@RequestBody FetchUsersRequestDto request) {
+        return ResponseEntity
+                .ok(FetchUsersResponseDto.builder().users(userService.getAllUsersWithIds(request.ids())).build());
     }
 
     @Operation(summary = "Update user")
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','AGENT','CUSTOMER')")
     public ResponseEntity<UserResponse> updateUser(
-            @PathVariable Long id,
+            @PathVariable UUID id,
             @Valid @RequestBody UpdateUserRequest request) {
 
         return ResponseEntity.ok(userService.updateUser(id, request));
     }
 
+    @Operation(summary = "Change Password")
+    @PatchMapping("/")
+    @PreAuthorize("hasAnyRole('ADMIN','AGENT','CUSTOMER')")
+    public ResponseEntity<UserResponse> changePassword(
+            @Valid @RequestBody PasswordChangeRequestDto request) {
+
+        return ResponseEntity.ok(userService.changePassword(request));
+    }
+
     @Operation(summary = "Soft delete user")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
 
         userService.deleteUser(id);
 

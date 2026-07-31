@@ -10,8 +10,10 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
+import com.ims.platform.web.exception.SecurityExceptions;
 import com.ims.platform.web.exception.ValidationExceptions;
 import com.ims.platform.web.exception.WebExceptions;
 import com.ims.platform.web.model.ErrorResponse;
@@ -66,6 +68,17 @@ public class DefaultWebExceptionHandler {
 				.badRequest()
 				.body(new ErrorResponse(
 						WebExceptions.BAD_REQUEST,
+						exception.getMessage()));
+	}
+
+	@ExceptionHandler(HttpClientErrorException.class)
+	public ResponseEntity<ErrorResponse> handleHttpClientErrorException(
+			HttpClientErrorException exception) {
+
+		return ResponseEntity
+				.badRequest()
+				.body(new ErrorResponse(
+						SecurityExceptions.UNAUTHORIZED_INTERNAL_ACCESS,
 						exception.getMessage()));
 	}
 

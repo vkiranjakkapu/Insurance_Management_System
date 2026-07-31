@@ -80,6 +80,8 @@ public class SecurityProperties {
 
         private String usernameClaim = "username";
 
+        private String emailClaim = "email";
+
         private String authoritiesClaim = "roles";
 
         private String authorityPrefix = "ROLE_";
@@ -136,6 +138,14 @@ public class SecurityProperties {
 
         public void setUsernameClaim(String usernameClaim) {
             this.usernameClaim = usernameClaim;
+        }
+
+        public String getEmailClaim() {
+            return emailClaim;
+        }
+
+        public void setEmailClaim(String emailClaim) {
+            this.emailClaim = emailClaim;
         }
 
         public String getAuthoritiesClaim() {

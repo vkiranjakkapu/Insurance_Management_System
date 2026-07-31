@@ -8,9 +8,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ims.identity.dto.LoginRequest;
-import com.ims.identity.dto.LoginResponse;
-import com.ims.identity.dto.LogoutRequest;
+import com.ims.identity.dto.LoginRequestDto;
+import com.ims.identity.dto.LoginResponseDto;
+import com.ims.identity.dto.LogoutRequestDto;
 import com.ims.identity.dto.RefreshTokenRequest;
 import com.ims.identity.dto.RefreshTokenResponse;
 import com.ims.identity.entities.RefreshToken;
@@ -34,7 +34,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
 	private final SecurityProperties properties;
 
 	@Override
-	public LoginResponse login(LoginRequest request) {
+	public LoginResponseDto login(LoginRequestDto request) {
 
 		Authentication authenticate = authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(
@@ -56,7 +56,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
 
 		refreshTokenRepository.save(refreshToken);
 
-		return new LoginResponse(
+		return new LoginResponseDto(
 				accessToken,
 				refreshTokenValue,
 				SecurityConstants.BEARER_PREFIX.trim());
@@ -81,7 +81,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
 
 	@Override
 	@Transactional
-	public void logout(LogoutRequest request) {
+	public void logout(LogoutRequestDto request) {
 
 		RefreshToken refreshToken = refreshTokenRepository
 				.findByToken(request.refreshToken())

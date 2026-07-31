@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Set;
+import java.util.UUID;
 import java.time.Duration;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -29,8 +30,12 @@ class JwtServiceImpTest {
 
     private User user;
 
+    private UUID USER_ID;
+
     @BeforeEach
     void setup() {
+
+        USER_ID = UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3");
 
         properties = new SecurityProperties();
 
@@ -47,7 +52,10 @@ class JwtServiceImpTest {
         role.setName(RoleType.ADMIN);
 
         user = User.builder()
+                .id(USER_ID)
                 .email("admin@test.com")
+                .firstName("Admin")
+                .lastName("User")
                 .roles(Set.of(role))
                 .build();
     }

@@ -22,6 +22,8 @@
     <properties>
         <java.version>21</java.version>
         <spring-cloud.version>2025.0.0</spring-cloud.version>
+        <springdoc-swagger.version>2.8.9</springdoc-swagger.version>
+        <jjwt.version>0.12.7</jjwt.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -45,22 +47,27 @@
             <dependency>
                 <groupId>com.ims.platform</groupId>
                 <artifactId>web</artifactId>
-                <version>${version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.ims.platform</groupId>
                 <artifactId>logging</artifactId>
-                <version>${version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.ims.platform</groupId>
                 <artifactId>restclient</artifactId>
-                <version>${version}</version>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.ims.platform</groupId>
                 <artifactId>security</artifactId>
-                <version>${version}</version>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc-swagger.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

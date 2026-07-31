@@ -1,6 +1,6 @@
 spring:
     application:
-        name: IMS-IDENTITY
+        name: ims-identity-service
     config:
         import: configserver:http://localhost:8888
     datasource:
@@ -14,3 +14,4 @@ spring:
     sql:
         init:
             mode: always
+

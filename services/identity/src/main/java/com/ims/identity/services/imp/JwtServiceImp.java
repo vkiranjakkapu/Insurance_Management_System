@@ -31,15 +31,15 @@ public class JwtServiceImp implements JwtService {
         Instant now = Instant.now();
 
         return Jwts.builder()
-                .subject(user.getEmail())
+                .subject(user.getId().toString())
                 .claim(
                         properties.getJwt().getAuthoritiesClaim(),
                         user.getRoles()
                                 .stream()
                                 .map(role -> role.getName().name())
                                 .collect(Collectors.toList()))
-                .claim("uid", user.getId())
-                .claim("name", user.getFirstName() + " " + user.getLastName())
+                .claim(properties.getJwt().getEmailClaim(), user.getEmail())
+                .claim(properties.getJwt().getUsernameClaim(), user.getFirstName() + " " + user.getLastName())
                 .issuer(properties.getJwt().getIssuer())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plus(properties.getJwt().getAccessTokenExpiration())))
@@ -54,7 +54,7 @@ public class JwtServiceImp implements JwtService {
 
     @Override
     public String extractEmail(String token) {
-        return extractClaims(token).getSubject();
+        return extractClaims(token).get(properties.getJwt().getEmailClaim()).toString();
     }
 
     @Override

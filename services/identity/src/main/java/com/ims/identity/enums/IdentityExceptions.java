@@ -1,4 +1,4 @@
-package com.ims.identity.exceptions;
+package com.ims.identity.enums;
 
 import com.ims.platform.web.exception.ErrorDefinition;
 

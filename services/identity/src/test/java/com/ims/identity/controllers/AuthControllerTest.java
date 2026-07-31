@@ -16,9 +16,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ims.identity.dto.LoginRequest;
-import com.ims.identity.dto.LoginResponse;
-import com.ims.identity.dto.LogoutRequest;
+import com.ims.identity.dto.LoginRequestDto;
+import com.ims.identity.dto.LoginResponseDto;
+import com.ims.identity.dto.LogoutRequestDto;
 import com.ims.identity.dto.RefreshTokenRequest;
 import com.ims.identity.dto.RefreshTokenResponse;
 import com.ims.identity.services.AuthenticationService;
@@ -39,11 +39,11 @@ class AuthControllerTest {
 	@Test
 	void login_ShouldReturn200() throws Exception {
 
-		LoginRequest request = new LoginRequest(
+		LoginRequestDto request = new LoginRequestDto(
 				"admin@test.com",
 				"password");
 
-		LoginResponse response = new LoginResponse(
+		LoginResponseDto response = new LoginResponseDto(
 				"access-token",
 				"refresh-token",
 				"Bearer");
@@ -51,7 +51,7 @@ class AuthControllerTest {
 		when(authenticationService.login(any()))
 				.thenReturn(response);
 
-		mockMvc.perform(post("/api/auth/login")
+		mockMvc.perform(post("/identity/api/v1/auth/login")
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isOk());
@@ -70,7 +70,7 @@ class AuthControllerTest {
 		when(authenticationService.refresh(any()))
 				.thenReturn(response);
 
-		mockMvc.perform(post("/api/auth/refresh")
+		mockMvc.perform(post("/identity/api/v1/auth/refresh")
 				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
@@ -80,12 +80,12 @@ class AuthControllerTest {
 	@Test
 	void logout_ShouldReturn204() throws Exception {
 
-		LogoutRequest request = new LogoutRequest("refresh-token");
+		LogoutRequestDto request = new LogoutRequestDto("refresh-token");
 
 		doNothing().when(authenticationService)
 				.logout(any());
 
-		mockMvc.perform(post("/api/auth/logout")
+		mockMvc.perform(post("/identity/api/v1/auth/logout")
 				.with(csrf())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))

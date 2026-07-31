@@ -6,9 +6,9 @@ import {
 } from "@heroicons/react/24/outline";
 
 import DashboardLayout from "../pages/dashboard/Dashboard";
-import { PolicyStatus } from "../pages/policies/Policy";
 import ActionButton, { type ActionButtonProps } from "./ActionButton";
 import { type UsePaginationReturn } from "./common/usePagination";
+import { ClaimStatus } from "../pages/claims/Claims";
 
 export type CustomTable<T extends object> = {
     title: string;
@@ -65,27 +65,27 @@ export default function CustomTableComponent<T extends object>({
 
     // Helper to render badges automatically if a column value matches a status
     const renderCellValue = (value: unknown) => {
-        if (value === PolicyStatus.ACTIVE) {
+        if (value === ClaimStatus.ACCEPTED) {
             return (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                <span className="capitalize inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">
                     <ShieldCheckIcon className="size-3.5 text-emerald-500" />
-                    Active
+                    {ClaimStatus.ACCEPTED}
                 </span>
             );
         }
-        if (value === PolicyStatus.PENDING_APPROVAL) {
+        if (value === ClaimStatus.PENDING) {
             return (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-700 dark:text-amber-400">
+                <span className="capitalize inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-700 dark:text-amber-400">
                     <ClockIcon className="size-3.5 text-amber-500" />
-                    {PolicyStatus.PENDING_APPROVAL}
+                    {ClaimStatus.PENDING}
                 </span>
             );
         }
-        if (value === PolicyStatus.OVERRIDE) {
+        if (value === ClaimStatus.REJECTED) {
             return (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-2.5 py-1 text-xs font-medium text-rose-700 dark:text-rose-400">
+                <span className="capitalize inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-2.5 py-1 text-xs font-medium text-rose-700 dark:text-rose-400">
                     <ExclamationCircleIcon className="size-3.5 text-rose-500" />
-                    Overdue
+                    {ClaimStatus.REJECTED}
                 </span>
             );
         }

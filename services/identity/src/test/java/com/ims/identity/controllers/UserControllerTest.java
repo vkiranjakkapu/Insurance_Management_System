@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,10 +30,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ims.identity.dto.CreateUserRequest;
+import com.ims.identity.dto.AddressDto;
+import com.ims.identity.dto.CreateUserRequestDto;
+import com.ims.identity.dto.FetchUsersRequestDto;
 import com.ims.identity.dto.UpdateUserRequest;
 import com.ims.identity.dto.UserResponse;
-import com.ims.identity.entities.Address;
 import com.ims.identity.entities.RoleType;
 import com.ims.identity.services.UserService;
 import com.ims.platform.security.context.AuthenticationContext;
@@ -59,6 +61,7 @@ class UserControllerTest {
 	void setup() {
 
 		AuthenticatedUser authenticatedUser = new DefaultAuthenticatedUser(
+				UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3").toString(),
 				"john@test.com",
 				"admin",
 				List.of("ROLE_ADMIN"));
@@ -70,10 +73,12 @@ class UserControllerTest {
 	@Test
 	void me_ShouldReturn200() throws Exception {
 
-		when(userService.getUserByEmail("john@test.com"))
+		UUID id = UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3");
+
+		when(userService.getUserById(id))
 				.thenReturn(response());
 
-		mockMvc.perform(get("/api/users/me")
+		mockMvc.perform(get("/identity/api/v1/users/me")
 				.with(adminJwt()))
 				.andExpect(status().isOk());
 	}
@@ -84,7 +89,7 @@ class UserControllerTest {
 		when(userService.createUser(any()))
 				.thenReturn(response());
 
-		mockMvc.perform(post("/api/users")
+		mockMvc.perform(post("/identity/api/v1/users/")
 				.with(adminJwt())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(createRequest())))
@@ -97,7 +102,7 @@ class UserControllerTest {
 		when(userService.getAllUsers())
 				.thenReturn(List.of(response()));
 
-		mockMvc.perform(get("/api/users")
+		mockMvc.perform(get("/identity/api/v1/users/")
 				.with(adminJwt()))
 				.andExpect(status().isOk());
 	}
@@ -105,10 +110,10 @@ class UserControllerTest {
 	@Test
 	void getUserById_ShouldReturn200() throws Exception {
 
-		when(userService.getUserById(1L))
+		when(userService.getUserById(UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3")))
 				.thenReturn(response());
 
-		mockMvc.perform(get("/api/users/1")
+		mockMvc.perform(get("/identity/api/v1/users/" + UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"))
 				.with(adminJwt()))
 				.andExpect(status().isOk());
 	}
@@ -116,10 +121,10 @@ class UserControllerTest {
 	@Test
 	void updateUser_ShouldReturn200() throws Exception {
 
-		when(userService.updateUser(eq(1L), any()))
+		when(userService.updateUser(eq(UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3")), any()))
 				.thenReturn(response());
 
-		mockMvc.perform(put("/api/users/1")
+		mockMvc.perform(put("/identity/api/v1/users/" + UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"))
 				.with(adminJwt())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(updateRequest())))
@@ -129,9 +134,9 @@ class UserControllerTest {
 	@Test
 	void deleteUser_ShouldReturn204() throws Exception {
 
-		doNothing().when(userService).deleteUser(1L);
+		doNothing().when(userService).deleteUser(UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"));
 
-		mockMvc.perform(delete("/api/users/1")
+		mockMvc.perform(delete("/identity/api/v1/users/" + UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"))
 				.with(adminJwt()))
 				.andExpect(status().isNoContent());
 	}
@@ -139,7 +144,7 @@ class UserControllerTest {
 	@Test
 	void createUser_InvalidRequest_ShouldReturn400() throws Exception {
 
-		CreateUserRequest request = new CreateUserRequest(
+		CreateUserRequestDto request = new CreateUserRequestDto(
 				"",
 				"",
 				"invalid-email",
@@ -149,29 +154,63 @@ class UserControllerTest {
 				null,
 				null);
 
-		mockMvc.perform(post("/api/users")
+		mockMvc.perform(post("/identity/api/v1/users/")
 				.with(adminJwt())
 				.contentType(MediaType.APPLICATION_JSON)
 				.content(objectMapper.writeValueAsString(request)))
 				.andExpect(status().isBadRequest());
 	}
 
-	private CreateUserRequest createRequest() {
+	@Test
+	void getAllUsersWithIds_ShouldReturn200() throws Exception {
 
-		return new CreateUserRequest(
+		UUID id = UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3");
+
+		FetchUsersRequestDto request = new FetchUsersRequestDto(List.of(id));
+
+		when(userService.getAllUsersWithIds(List.of(id)))
+				.thenReturn(List.of(response()));
+
+		mockMvc.perform(post("/identity/api/v1/users/search")
+				.with(adminJwt())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isOk());
+	}
+
+	@Test
+	void updateUser_InvalidRequest_ShouldReturn400() throws Exception {
+
+		UpdateUserRequest request = new UpdateUserRequest(
+				"",
+				"",
+				"",
+				null,
+				null,
+				true);
+
+		mockMvc.perform(put("/identity/api/v1/users/" +
+				UUID.fromString("c0186249-1111-4927-97b3-a08a21febfe3"))
+				.with(adminJwt())
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(request)))
+				.andExpect(status().isBadRequest());
+	}
+
+	private CreateUserRequestDto createRequest() {
+
+		return new CreateUserRequestDto(
+				"john@test.com",
 				"John",
 				"Doe",
-				"john@test.com",
 				"password",
 				LocalDate.of(2000, 1, 1),
 				"9999999999",
-				new Address(
-						null,
+				new AddressDto(
 						"Street",
 						"534237",
 						"AP",
-						"India",
-						false),
+						"India"),
 				RoleType.CUSTOMER);
 	}
 
@@ -181,13 +220,12 @@ class UserControllerTest {
 				"John",
 				"Doe",
 				"8888888888",
-				new Address(
-						null,
-						"New Street",
-						"534237",
-						"AP",
-						"India",
-						false),
+				AddressDto.builder()
+						.street("New Street")
+						.pinCode("534237")
+						.state("AP")
+						.country("India")
+						.build(),
 				LocalDate.of(2000, 1, 1),
 				true);
 	}
@@ -195,7 +233,7 @@ class UserControllerTest {
 	private UserResponse response() {
 
 		return new UserResponse(
-				1L,
+				UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"),
 				"John",
 				"Doe",
 				"john@test.com",
@@ -212,8 +250,9 @@ class UserControllerTest {
 
 		return jwt()
 				.jwt(jwt -> jwt
-						.subject("1")
-						.claim("username", "admin"))
+						.subject(UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3").toString())
+						.claim("username", "admin")
+						.claim("email", "admin@email.com"))
 				.authorities(new SimpleGrantedAuthority("ROLE_ADMIN"));
 	}
 }

@@ -32,6 +32,7 @@ public class Address {
 
     private String country;
 
-    private boolean deleted;
+    @Builder.Default()
+    private boolean deleted = false;
 
 }
