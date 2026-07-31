@@ -4,3 +4,44 @@ platform:
       enabled: true
       allowed-origin-patterns:
         - http://localhost:5173
+
+spring:
+  cloud:
+    gateway:
+      server:
+        webmvc:
+          routes:
+            - id: ims-identity-service
+              uri: lb://ims-identity-service
+              predicates:
+                - Path=/identity/**
+
+            - id: ims-customers-service
+              uri: lb://ims-customers-service
+              predicates:
+                - Path=/customers/**
+
+            - id: ims-policies-service
+              uri: lb://ims-policies-service
+              predicates:
+                - Path=/policies/**
+
+            - id: ims-premiums-service
+              uri: lb://ims-premiums-service
+              predicates:
+                - Path=/premiums/**
+
+            - id: ims-claims-service
+              uri: lb://ims-claims-service
+              predicates:
+                - Path=/claims/**
+
+            - id: ims-documents-service
+              uri: lb://ims-documents-service
+              predicates:
+                - Path=/documents/**
+
+            - id: ims-reports-service
+              uri: lb://ims-reports-service
+              predicates:
+                - Path=/reports/**

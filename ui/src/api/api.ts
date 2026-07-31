@@ -21,6 +21,12 @@ export type ErrorResponse = {
     timestamp: string;
 };
 
+export type APIResponse = {
+    status: string;
+    body: object;
+    timestamp: string;
+}
+
 export type ValidationErrors = {
     field: string;
     rejectedValue: object;

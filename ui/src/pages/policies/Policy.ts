@@ -6,10 +6,19 @@ export const PolicyStatus = {
 export type PolicyStatus = (typeof PolicyStatus)[keyof typeof PolicyStatus];
 
 export interface Policy {
-    id: string | number;
+    id: number;
+    policyId: string;
     customerName: string;
     email: string;
     policyType: string;
     status: PolicyStatus;
     premium: string;
+    description: string;
+    coverageAmount: number;
+    coverageDuration: string;
+    premiumsDuration: string;
+    isLatest: boolean;
+    createdAt: string;
+    updatedAt: string;
+    //  Document document;
 }

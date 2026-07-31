@@ -6,12 +6,3 @@ spring:
     name: ims-api-gateway
   config:
     import: configserver:http://localhost:8888
-  cloud:
-    gateway:
-      server:
-        webmvc:
-          routes:
-            - id: ims-identity-service
-              uri: lb://ims-identity-service
-              predicates:
-                - Path=/identity/**
