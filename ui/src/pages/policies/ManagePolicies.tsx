@@ -30,6 +30,11 @@ import DocumentsService, {
     type Document,
 } from "../../services/DocumentsService";
 import PolicyService from "../../services/PolicyService";
+import {
+    formatIsoDuration,
+    isIsoDuration,
+    isNumericString,
+} from "../../components/common/util";
 
 const POLICY_TABLE_HEADERS: string[] = [
     "policyId",
@@ -65,6 +70,8 @@ export default function ManagePolicies() {
     const [docUploadProgress, setDocUploadProgress] = useState(false);
     const [showNewDoc, setShowNewDoc] = useState(false);
     const [docRefreshProgress] = useState(false);
+    const [dataFetchProgress, setDataFetchProgress] = useState(true);
+    const [secondsLeft, setSecondsLeft] = useState<number>(0);
 
     const [formErrors, setFormErrors] = useState<{
         type: string;
@@ -83,6 +90,7 @@ export default function ManagePolicies() {
                 } else {
                     setHeaders(["No Policies Available To Display"]);
                 }
+                setDataFetchProgress(false);
             }
         });
     }, []);
@@ -189,10 +197,24 @@ export default function ManagePolicies() {
                     type: "success",
                     errors: [`Policy [${resp.policyId}] has been created.`],
                 }));
+                refreshPolicies();
+                setSecondsLeft(5);
             }
         });
 
-        // setIsModalOpen(false); // Close on execution success
+        const intervalId = setInterval(() => {
+            setSecondsLeft((prev) => {
+                if (prev <= 1) {
+                    clearInterval(intervalId);
+                    setIsModalOpen(false);
+                    setFormErrors(null);
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(intervalId);
     }
 
     const renderCellValue = (value: unknown) => {
@@ -219,6 +241,14 @@ export default function ManagePolicies() {
                     {PolicyStatus.TERMINATED}
                 </span>
             );
+        }
+
+        if (isNumericString(String(value))) {
+            return "₹ " + value + " /-";
+        }
+
+        if (isIsoDuration(value)) {
+            return formatIsoDuration(value);
         }
 
         return String(value ?? "");
@@ -518,11 +548,11 @@ export default function ManagePolicies() {
                                                 <ActionButton
                                                     type="button"
                                                     onClick={uploadFile}
-                                                    text="Confirm Upload"
+                                                    text="Confirm"
                                                     icon={
                                                         QuestionMarkCircleIcon
                                                     }
-                                                    className="rounded-full px-2"
+                                                    className="rounded-full px-1.5 text-sm"
                                                     disabled={docUploadProgress}
                                                 />
                                             )}
@@ -561,7 +591,7 @@ export default function ManagePolicies() {
                                     allDocuments.map((document, idx) => (
                                         <div
                                             key={idx}
-                                            className="px-3 py-0.5 w-full flex items-center border-b border-slate-200 dark:border-slate-800 bg-transparent hover:bg-slate-100/80 dark:hover:bg-slate-800/80 text-sm text-slate-900 dark:text-slate-100 focus-within:ring-2 focus-within:ring-indigo-500 transition-colors duration-200"
+                                            className="px-3 py-0.5 truncate w-full flex items-center border-b border-slate-200 dark:border-slate-800 bg-transparent hover:bg-slate-100/80 dark:hover:bg-slate-800/80 text-sm text-slate-900 dark:text-slate-100 focus-within:ring-2 focus-within:ring-indigo-500 transition-colors duration-200"
                                         >
                                             <input
                                                 type="checkbox"
@@ -619,9 +649,10 @@ export default function ManagePolicies() {
                             className="p-1.5 flex flex-row items-center gap-2 cursor-pointer border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                         />
                         <ActionButton
-                            text="Create"
+                            text={`${secondsLeft > 0 ? "Closing in " + secondsLeft + " S" : "Create"} `}
                             onClick={() => {}}
                             icon={DocumentPlusIcon}
+                            disabled={secondsLeft != 0}
                             className="rounded-lg outline-1 outline-offset-1 outline-indigo-600"
                         />
                     </div>
@@ -650,6 +681,7 @@ export default function ManagePolicies() {
                         },
                     },
                 ]}
+                dataFetchProgress={dataFetchProgress}
                 headers={headers}
                 pagination={pagination}
                 body={filteredPolicies}

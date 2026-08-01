@@ -34,6 +34,7 @@ interface CustomTableProps<T extends object> {
         matchInfo?: string;
         handleSearch: (input: string) => void;
     };
+    dataFetchProgress?: boolean;
     renderCellValue?: (value: unknown) => ReactNode;
     onActionClick?: (item: T) => void;
 }
@@ -47,6 +48,7 @@ export default function CustomTableComponent<T extends object>({
     headers,
     body,
     footer,
+    dataFetchProgress,
     renderCellValue,
     onActionClick,
 }: CustomTableProps<T>) {
@@ -65,6 +67,7 @@ export default function CustomTableComponent<T extends object>({
             <DashboardLayout
                 title={title}
                 description={description}
+                dataFetchProgress={dataFetchProgress}
                 searchField={
                     searchField
                         ? {
@@ -151,16 +154,17 @@ export default function CustomTableComponent<T extends object>({
                                             )}
                                         </tr>
                                     ))}
-                                {tableBody.length == 0 && headers.length > 1 && (
-                                    <tr>
-                                        <td
-                                            colSpan={headers.length}
-                                            className="px-6 py-4"
-                                        >
-                                            No Records Available.
-                                        </td>
-                                    </tr>
-                                )}
+                                {tableBody.length == 0 &&
+                                    headers.length > 1 && (
+                                        <tr>
+                                            <td
+                                                colSpan={headers.length}
+                                                className="px-6 py-4"
+                                            >
+                                                No Records Available.
+                                            </td>
+                                        </tr>
+                                    )}
                             </tbody>
                             {footer && (
                                 <footer>

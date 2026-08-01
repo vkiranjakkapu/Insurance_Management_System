@@ -7,11 +7,11 @@ management:
 
 services:
     uri:
-        documents: http://ims-documents-service/documents/api/v1
+        identity: http://ims-identity-service/identity/api/v1
         policies: http://ims-policies-service/policies/api/v1
-        claims: http://ims-claims-service/claims/api/v1
-        customers: http://ims-customers-service/customers/api/v1
         premiums: http://ims-premiums-service/premiums/api/v1
+        claims: http://ims-claims-service/claims/api/v1
+        documents: http://ims-documents-service/documents/api/v1
 
 eureka:
     props:

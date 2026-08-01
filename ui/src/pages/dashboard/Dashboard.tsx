@@ -8,6 +8,7 @@ import SearchInputComponent from "../../components/SearchInputComponent";
 
 type DashboardLayoutProps<T> = {
     children: ReactNode;
+    dataFetchProgress?: boolean;
     title: string;
     breadCrumbs?: { anchors: { text: string; uri: string }[] };
     description: string;
@@ -23,6 +24,7 @@ type DashboardLayoutProps<T> = {
 
 export default function DashboardLayout<T>({
     children,
+    dataFetchProgress,
     title,
     breadCrumbs,
     description,
@@ -154,7 +156,15 @@ export default function DashboardLayout<T>({
                         )}
                     </div>
                 )}
-                <div className="px-6 py-4">{children}</div>
+                <div className="px-6 py-4">
+                    {dataFetchProgress ? (
+                        <div className="inline-flex items-center gap-2 justify-center w-full">
+                            <div className="size-4 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-600"></div> Fetching Data..
+                        </div>
+                    ) : (
+                        children
+                    )}
+                </div>
             </div>
         </>
     );

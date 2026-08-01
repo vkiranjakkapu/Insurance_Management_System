@@ -22,6 +22,7 @@
         <module>identity</module>
         <module>policies</module>
         <module>documents</module>
+        <module>premiums</module>
     </modules>
 
     <dependencies>
