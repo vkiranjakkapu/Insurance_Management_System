@@ -58,7 +58,7 @@ public class PolicyServiceImp implements PolicyService {
         policy.setCoverageAmount(request.coverageAmount());
         policy.setCoverageDuration(request.coverageDuration());
         policy.setPremiumsDuration(request.premiumsDuration());
-        policy.setDocument(documentService.getDocumentById(request.documentId()));
+        policy.setDocument(documentService.getPolicyDocumentById(request.documentId()).getId());
 
         Policy newPolicy = policyRepository.save(policy);
 
@@ -79,7 +79,7 @@ public class PolicyServiceImp implements PolicyService {
         newPolicy.setCoverageAmount(request.coverageAmount());
         newPolicy.setCoverageDuration(request.coverageDuration());
         newPolicy.setPremiumsDuration(request.premiumsDuration());
-        newPolicy.setDocument(documentService.getDocumentById(request.documentId()));
+        newPolicy.setDocument(documentService.getPolicyDocumentById(request.documentId()).getId());
         newPolicy.setPolicyType(request.policyType());
         oldPolicy.setLatest(false);
 

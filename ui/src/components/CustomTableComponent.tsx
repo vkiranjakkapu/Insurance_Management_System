@@ -21,7 +21,6 @@ export type CustomTableData<T extends object> = {
 };
 
 interface CustomTableProps<T extends object> {
-    children: ReactNode;
     title: string;
     description: string;
     actionButtons?: ActionButtonProps[];
@@ -40,7 +39,6 @@ interface CustomTableProps<T extends object> {
 }
 
 export default function CustomTableComponent<T extends object>({
-    children,
     title,
     description,
     actionButtons,
@@ -81,7 +79,6 @@ export default function CustomTableComponent<T extends object>({
             >
                 {/* Table */}
                 <div className="overflow-x-auto">
-                    {headers.length < 2 && children}
                     {headers.length != 0 && (
                         <table className="w-full text-left text-sm text-slate-600 dark:text-slate-300">
                             {headers && (
@@ -98,14 +95,15 @@ export default function CustomTableComponent<T extends object>({
                                                 </th>
                                             );
                                         })}
-                                        {onActionClick && (
-                                            <th
-                                                scope="col"
-                                                className="px-6 py-3.5 text-right"
-                                            >
-                                                Action
-                                            </th>
-                                        )}
+                                        {headers.length > 1 &&
+                                            onActionClick && (
+                                                <th
+                                                    scope="col"
+                                                    className="px-6 py-3.5 text-right"
+                                                >
+                                                    Action
+                                                </th>
+                                            )}
                                     </tr>
                                 </thead>
                             )}
@@ -153,13 +151,13 @@ export default function CustomTableComponent<T extends object>({
                                             )}
                                         </tr>
                                     ))}
-                                {tableBody.length == 0 && (
+                                {tableBody.length == 0 && headers.length > 1 && (
                                     <tr>
                                         <td
                                             colSpan={headers.length}
                                             className="px-6 py-4"
                                         >
-                                            No Records Available
+                                            No Records Available.
                                         </td>
                                     </tr>
                                 )}

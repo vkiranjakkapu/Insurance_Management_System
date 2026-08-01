@@ -21,6 +21,7 @@
     <modules>
         <module>identity</module>
         <module>policies</module>
+        <module>documents</module>
     </modules>
 
     <dependencies>

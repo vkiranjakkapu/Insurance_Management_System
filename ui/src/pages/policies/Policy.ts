@@ -1,6 +1,6 @@
 export const PolicyStatus = {
-    ACTIVE: "Active",
-    TERMINATED: "Terminated",
+    ACTIVE: "ACTIVE",
+    TERMINATED: "TERMINATED",
 } as const;
 
 export type PolicyStatus = (typeof PolicyStatus)[keyof typeof PolicyStatus];
@@ -12,7 +12,6 @@ export interface Policy {
     email: string;
     policyType: string;
     status: PolicyStatus;
-    premium: string;
     description: string;
     coverageAmount: number;
     coverageDuration: string;
