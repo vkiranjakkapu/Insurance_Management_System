@@ -2,13 +2,12 @@ import type { AxiosError } from "axios";
 import api, { type ErrorResponse } from "../api/api";
 import { AppConfig } from "../config/AppConfig";
 import type { Policy } from "../pages/policies/Policy";
+import { handleErrorResponse } from "./ErrorRsponseHandling";
 
 class PolicyService {
     async getAllPolicies(): Promise<Policy[] | ErrorResponse> {
         try {
-            const response = await api.get(
-                AppConfig.POLICY_SERVICE_URL + "/12",
-            );
+            const response = await api.get(AppConfig.POLICY_SERVICE_URL + "/");
             const policies = response.data as {
                 status: string;
                 body: Policy[];
@@ -35,9 +34,7 @@ class PolicyService {
             };
             return policy.body;
         } catch (er) {
-            console.log(er);
-            const error = er as AxiosError;
-            return error.response?.data as ErrorResponse;
+            return handleErrorResponse(er);
         }
     }
 }

@@ -1,7 +1,9 @@
 import {
+    CloudArrowUpIcon,
     DocumentPlusIcon,
     ExclamationCircleIcon,
     PlusIcon,
+    QuestionMarkCircleIcon,
     ShieldCheckIcon,
     XMarkIcon,
 } from "@heroicons/react/24/outline";
@@ -10,8 +12,10 @@ import { RoutePaths } from "../../routes/RoutePaths";
 import { PolicyStatus, type Policy } from "./Policy";
 
 import {
+    useCallback,
     useEffect,
     useMemo,
+    useRef,
     useState,
     type ChangeEvent,
     type SubmitEvent,
@@ -21,35 +25,46 @@ import usePagination from "../../components/common/usePagination";
 import CustomTableComponent from "../../components/CustomTableComponent";
 import LoadingPortalComponent from "../../components/LoadingPortalComponent";
 import ModalComponent from "../../components/ModalComponent";
-import samplePolicies from "../../data/samplePolicies.json";
+import DocumentsService, {
+    DocumentType,
+    type Document,
+} from "../../services/DocumentsService";
 import PolicyService from "../../services/PolicyService";
 
-const CLAIM_KEYS_MAP = samplePolicies[0]
-    ? Object.keys(samplePolicies[0]).reduce<Record<string, string>>(
-          (acc, key) => {
-              acc[key.toLowerCase()] = key;
-              return acc;
-          },
-          {},
-      )
-    : {};
+const POLICY_TABLE_HEADERS: string[] = [
+    "policyId",
+    "policyType",
+    "description",
+    "coverageAmount",
+    "coverageDuration",
+    "premiumsDuration",
+    "status",
+];
+
+const POLICY_KEYS_MAP = POLICY_TABLE_HEADERS.reduce<Record<string, string>>(
+    (acc, key) => {
+        acc[key.toLowerCase()] = key;
+        return acc;
+    },
+    {},
+);
 
 export default function ManagePolicies() {
     const navigate = useNavigate();
-    // const [showToast, setShowToast] = useState<boolean>(false);
-    // const [toast, setToast] = useState<ToastProps>({
-    //     message: "",
-    //     onClose: () => {},
-    // });
-
+    const uploadFileRef = useRef<HTMLInputElement>(null);
     const [allPolicies, setAllPolicies] = useState<Policy[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
+    const [headers, setHeaders] = useState<string[]>([]);
+
+    const [allDocuments, setAllDocs] = useState<Document[]>([]);
+    const [selectedDocuments, setSelectedDocuments] = useState<number[]>([]);
+
+    const [uploadedFile, setUploadedFile] = useState<File | null>(null);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    // Safely check for headers fallback
-    const [headers, setHeaders] = useState<string[]>([]);
-    // 1. Initialise the list state to hold numbers
-    const [selectedDocuments, setSelectedDocuments] = useState<number[]>([]);
+    const [docUploadProgress, setDocUploadProgress] = useState(false);
+    const [showNewDoc, setShowNewDoc] = useState(false);
+    const [docRefreshProgress] = useState(false);
 
     const [formErrors, setFormErrors] = useState<{
         type: string;
@@ -59,25 +74,36 @@ export default function ManagePolicies() {
         errors: [],
     });
 
-    useEffect(() => {
+    const refreshPolicies = useCallback(() => {
         PolicyService.getAllPolicies().then((resp) => {
-            if ("errorMessage" in resp) {
-                // setShowToast(true);
-                // setToast({
-                //     message: resp.errorMessage,
-                //     type: "error",
-                //     onClose: () => setShowToast(true),
-                // });
-            } else {
+            if (resp && !("errorMessage" in resp)) {
                 setAllPolicies(resp);
-                if (resp.length != 0) {
-                    setHeaders(Object.keys(resp[0]));
+                if (resp.length !== 0) {
+                    setHeaders(POLICY_TABLE_HEADERS);
                 } else {
                     setHeaders(["No Policies Available To Display"]);
                 }
             }
         });
     }, []);
+
+    const refreshDocuments = useCallback(() => {
+        DocumentsService.getAllDocumentsByType(
+            DocumentType.POLICY_DOCUMENT,
+        ).then((resp) => {
+            if (resp && !("errorMessage" in resp)) {
+                setAllDocs(resp);
+            } else {
+                setAllDocs([]);
+                console.log(resp);
+            }
+        });
+    }, []);
+
+    useEffect(() => {
+        refreshPolicies();
+        refreshDocuments();
+    }, [refreshPolicies, refreshDocuments]);
 
     const filteredPolicies = useMemo(() => {
         const query = searchQuery.trim();
@@ -91,7 +117,7 @@ export default function ManagePolicies() {
             if (!section.includes(":")) continue;
 
             const [rawKey, rawValues] = section.split(":");
-            const matchedRealKey = CLAIM_KEYS_MAP[rawKey.trim().toLowerCase()];
+            const matchedRealKey = POLICY_KEYS_MAP[rawKey.trim().toLowerCase()];
 
             if (!matchedRealKey) continue;
 
@@ -124,8 +150,8 @@ export default function ManagePolicies() {
 
     const pagination = usePagination<Policy>(filteredPolicies, 10);
 
-    function fetchPolicy(claim: Policy) {
-        navigate(`${RoutePaths.POLICIES}/${claim.id}`);
+    function fetchPolicy(policy: Policy) {
+        navigate(`${RoutePaths.POLICIES}/${policy.policyId}`);
     }
 
     function addPolicy(e: SubmitEvent<HTMLFormElement>) {
@@ -133,7 +159,7 @@ export default function ManagePolicies() {
         setFormErrors(null);
         if (selectedDocuments.length == 0) {
             setFormErrors((prev) => ({
-                type: "error", // fallback safely if prev is null
+                type: "error",
                 errors: [
                     ...(prev?.errors ?? []),
                     "Policy Document Not Selected!",
@@ -146,8 +172,8 @@ export default function ManagePolicies() {
         const formFields = Object.fromEntries(policyData.entries());
         const payload = {
             ...formFields,
-            coverageDuration: `P${policyData.get("coverageDuration")}${policyData.get("coverageDurationType") == "month" ? "M" : "Y"}`,
-            premiumsDuration: `P${policyData.get("premiumDuration")}${policyData.get("premiumDurationType") == "month" ? "M" : "Y"}`,
+            coverageDuration: `P${policyData.get("coverageDur")}${policyData.get("coverageDurationType") == "month" ? "M" : "Y"}`,
+            premiumsDuration: `P${policyData.get("premiumDur")}${policyData.get("premiumDurationType") == "month" ? "M" : "Y"}`,
             documentId: selectedDocuments[0], // Passes your numeric array state cleanly
         };
         console.log(payload);
@@ -155,12 +181,12 @@ export default function ManagePolicies() {
         PolicyService.createPolicy(payload).then((resp) => {
             if ("errorMessage" in resp) {
                 setFormErrors((prev) => ({
-                    type: "error", // fallback safely if prev is null
+                    type: "error",
                     errors: [...(prev?.errors ?? []), resp.errorMessage],
                 }));
             } else {
                 setFormErrors(() => ({
-                    type: "success", // fallback safely if prev is null
+                    type: "success",
                     errors: [`Policy [${resp.policyId}] has been created.`],
                 }));
             }
@@ -170,7 +196,7 @@ export default function ManagePolicies() {
     }
 
     const renderCellValue = (value: unknown) => {
-        if (value === PolicyStatus.ACTIVE) {
+        if (value == PolicyStatus.ACTIVE) {
             return (
                 <span className="capitalize inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">
                     <ShieldCheckIcon className="size-3.5 text-emerald-500" />
@@ -198,7 +224,6 @@ export default function ManagePolicies() {
         return String(value ?? "");
     };
 
-    // 2. The handler function that adds or removes the ID
     const handleDocumentCheckbox = (e: ChangeEvent<HTMLInputElement>) => {
         const docId = Number(e.target.value); // Convert string value to a number
         const isChecked = e.target.checked; // Get the current checked status
@@ -214,6 +239,45 @@ export default function ManagePolicies() {
         }
     };
 
+    const uploadFile = () => {
+        setDocUploadProgress(true);
+
+        if (!uploadedFile) {
+            console.error("No file selected!");
+            return;
+        }
+
+        // 1. Create the native FormData instance container
+        const payload = new FormData();
+
+        // 2. Append text key-value pairs matching backend fields
+        payload.append("fileName", String(uploadedFile.name));
+        payload.append("documentType", DocumentType.POLICY_DOCUMENT);
+
+        // 3. Append the raw file binary payload
+        payload.append("file", uploadedFile);
+
+        DocumentsService.uploadDocument(payload).then((resp) => {
+            if ("error" in resp) {
+                setFormErrors(() => ({
+                    type: "error",
+                    errors: ["Error Uploading file"],
+                }));
+            }
+            if ("errorMessage" in resp) {
+                setFormErrors(() => ({
+                    type: "error",
+                    errors: [resp.errorMessage],
+                }));
+            } else {
+                setAllDocs((prev) => [resp, ...prev]);
+                setUploadedFile(null);
+                setShowNewDoc(true);
+            }
+            setDocUploadProgress(false);
+        });
+    };
+
     return (
         <>
             <LoadingPortalComponent
@@ -226,22 +290,24 @@ export default function ManagePolicies() {
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 title="Create Policy"
-                maxWidthClass="max-w-4xl"
+                maxWidthClass="max-w-6xl"
             >
                 <form
                     onSubmit={addPolicy}
-                    className="space-y-4 px-2 grid grid-cols-1 md:grid-cols-2 gap-3"
+                    className="space-y-4 px-2 grid grid-cols-1 md:grid-cols-3 gap-3"
                 >
                     {formErrors && formErrors?.errors.length > 0 && (
                         <div
                             className={`p-2.5 col-span-full flex flex-row gap-2 dark:text-white text-sm rounded-lg 
                                 ${
                                     formErrors.type == "success"
-                                        ? " bg-green-600/10 dark:bg-green-600/20 text-green-800/70"
-                                        : " bg-red-600/10 dark:bg-red-600/20 text-red-800/70"
+                                        ? " bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                                        : " bg-rose-500/10 text-rose-700 dark:text-rose-400"
                                 }`}
                         >
-                            <ExclamationCircleIcon className="size-5" />
+                            <ExclamationCircleIcon
+                                className={`size-5 ${formErrors.type == "success" ? "text-emerald-500" : "text-rose-500"}`}
+                            />
                             <span>{formErrors.errors.join(", ")}</span>
                         </div>
                     )}
@@ -261,8 +327,90 @@ export default function ManagePolicies() {
                                 </option>
                                 <option value="HEALTH">Health</option>
                                 <option value="LIFE">Life</option>
-                                <option value="HOME">Home</option>
+                                <option value="HOME">House</option>
                                 <option value="VEHICLE">Vehicle</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className="">
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            Coverage Duration
+                        </label>
+                        <div className="w-full inline-flex rounded-lg border border-slate-200 dark:border-slate-800 ps-3 pe-1.5 py-1.5 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <input
+                                type="number"
+                                onWheel={(e) =>
+                                    (e.target as HTMLInputElement).blur()
+                                }
+                                onKeyDown={(e) => {
+                                    if (
+                                        ["e", "E", "-", "+", ".", ","].includes(
+                                            e.key,
+                                        )
+                                    )
+                                        e.preventDefault();
+                                }}
+                                name="coverageDur"
+                                pattern="\d*"
+                                min="1"
+                                step="1"
+                                placeholder="eg: 16 M | 2 Y"
+                                className="w-3/5 py-0.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                required
+                            />
+                            <select
+                                name="coverageDurationType"
+                                id="duration"
+                                className="w-2/5 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg"
+                                defaultValue={""}
+                                required
+                            >
+                                <option value="" disabled>
+                                    period
+                                </option>
+                                <option value="month">Months</option>
+                                <option value="year">Years</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div className="">
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            Premium Duration
+                        </label>
+                        <div className="w-full inline-flex rounded-lg border border-slate-200 dark:border-slate-800 ps-3 pe-1.5 py-1.5 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <input
+                                type="number"
+                                onWheel={(e) =>
+                                    (e.target as HTMLInputElement).blur()
+                                }
+                                onKeyDown={(e) => {
+                                    if (
+                                        ["e", "E", "-", "+", ".", ","].includes(
+                                            e.key,
+                                        )
+                                    )
+                                        e.preventDefault();
+                                }}
+                                name="premiumDur"
+                                pattern="\d*"
+                                min="1"
+                                step="1"
+                                placeholder="eg: 16 M | 2 Y"
+                                className="w-3/5 py-0.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                required
+                            />
+                            <select
+                                name="premiumDurationType"
+                                id="duration"
+                                className="w-2/5 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg"
+                                defaultValue={""}
+                                required
+                            >
+                                <option value="" disabled>
+                                    period
+                                </option>
+                                <option value="month">Months</option>
+                                <option value="year">Years</option>
                             </select>
                         </div>
                     </div>
@@ -288,137 +436,172 @@ export default function ManagePolicies() {
                                     )
                                         e.preventDefault();
                                 }}
-                                placeholder="amount"
+                                placeholder="coverage amount"
                                 className="w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none shadow-smtext-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 required
                             />
                         </div>
                     </div>
-                    <div className="grid grid-cols-1 gap-6 w-full md:grid-cols-2">
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                Coverage Duration
+                    <div>
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            Premium Amount
+                        </label>
+                        <div className="inline-flex items-center w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-transparent px-3 py-1.5 ">
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 px-0.5 me-2">
+                                ₹
                             </label>
-                            <div className="w-full inline-flex rounded-lg border border-slate-200 dark:border-slate-800 ps-3 pe-1.5 py-1.5 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <input
-                                    type="number"
-                                    onWheel={(e) =>
-                                        (e.target as HTMLInputElement).blur()
-                                    }
-                                    onKeyDown={(e) => {
-                                        if (
-                                            ["e", "E", "-", "+", ".", ","].includes(
-                                                e.key,
-                                            )
+                            <input
+                                name="premiumAmount"
+                                type="number"
+                                onWheel={(e) =>
+                                    (e.target as HTMLInputElement).blur()
+                                }
+                                onKeyDown={(e) => {
+                                    if (
+                                        ["e", "E", "-", "+", ".", ","].includes(
+                                            e.key,
                                         )
-                                            e.preventDefault();
-                                    }}
-                                    name="coverageDuration"
-                                    pattern="\d*"
-                                    min="1"
-                                    step="1"
-                                    placeholder="eg: 16 M | 2 Y"
-                                    className="w-3/5 py-0.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                    required
-                                />
-                                <select
-                                    name="coverageDurationType"
-                                    id="duration"
-                                    className="w-2/5 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg"
-                                    defaultValue={""}
-                                    required
-                                >
-                                    <option value="" disabled>
-                                        period
-                                    </option>
-                                    <option value="month">Months</option>
-                                    <option value="year">Years</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                                Premium Duration
-                            </label>
-                            <div className="w-full inline-flex rounded-lg border border-slate-200 dark:border-slate-800 ps-3 pe-1.5 py-1.5 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                                <input
-                                    type="number"
-                                    onWheel={(e) =>
-                                        (e.target as HTMLInputElement).blur()
-                                    }
-                                    onKeyDown={(e) => {
-                                        if (
-                                            ["e", "E", "-", "+", ".", ","].includes(
-                                                e.key,
-                                            )
-                                        )
-                                            e.preventDefault();
-                                    }}
-                                    name="premiumDuration"
-                                    pattern="\d*"
-                                    min="1"
-                                    step="1"
-                                    placeholder="eg: 16 M | 2 Y"
-                                    className="w-3/5 py-0.5 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                    required
-                                />
-                                <select
-                                    name="premiumDurationType"
-                                    id="duration"
-                                    className="w-2/5 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-lg"
-                                    defaultValue={""}
-                                    required
-                                >
-                                    <option value="" disabled>
-                                        period
-                                    </option>
-                                    <option value="month">Months</option>
-                                    <option value="year">Years</option>
-                                </select>
-                            </div>
+                                    )
+                                        e.preventDefault();
+                                }}
+                                placeholder="premium amount"
+                                className="w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none shadow-smtext-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                required
+                            />
                         </div>
                     </div>
-                    <div className="row-span-2">
+                    <div className="md:row-span-2">
                         <div className="relative shadow-sm border border-slate-200 dark:border-slate-800 rounded-lg">
-                            <div className="sticky h-2/6 px-2 py-2.5 text-sm text-slate-700 dark:text-slate-300 capitalize bg-slate-100/60 dark:bg-slate-700/20 border-b border-b-slate-200 dark:border-slate-800 w-full">
-                                Select Policy Document
+                            <div className="sticky inline-flex gap-4 items-center justify-between h-2/6 px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300 capitalize bg-slate-100/60 dark:bg-slate-700/20 border-b border-b-slate-200 dark:border-slate-800 w-full">
+                                <span>Select Policy Document</span>
+                                <span className="hidden md:block">(OR)</span>
+                                <ActionButton
+                                    text="Upload"
+                                    type="button"
+                                    icon={CloudArrowUpIcon}
+                                    onClick={() => {
+                                        uploadFileRef.current?.click();
+                                    }}
+                                    className="p-0.5 rounded-lg outline-1 outline-indigo-500 outline-offset-1"
+                                />
+                                <input
+                                    type="file"
+                                    ref={uploadFileRef}
+                                    onChange={(event) => {
+                                        setUploadedFile(
+                                            event.target.files != null
+                                                ? event.target.files[0]
+                                                : null,
+                                        );
+                                    }}
+                                    name="upload"
+                                    id="upload"
+                                    className="hidden"
+                                />
                             </div>
                             <div className="h-32 overflow-scroll">
-                                {[1, 2, 3, 4].map((el, idx) => (
-                                    <div
-                                        key={idx}
-                                        className="px-3 py-0.5 w-full flex items-center border-b border-slate-200 dark:border-slate-800 bg-transparent hover:bg-slate-100/80 dark:hover:bg-slate-800/80 text-sm text-slate-900 dark:text-slate-100 focus-within:ring-2 focus-within:ring-indigo-500 transition-colors duration-200"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            name="document"
-                                            id={`file-${el}`}
-                                            value={el} // Stays numeric in your code, but comes out as a string in the event
-                                            className="me-2 cursor-pointer h-4 w-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 disabled:bg-red-400"
-                                            // Bind change listener
-                                            onChange={handleDocumentCheckbox}
-                                            // Controlled checkbox: returns true if the number 1 is in our array
-                                            checked={selectedDocuments.includes(
-                                                el,
+                                {uploadedFile != null && (
+                                    <div className="px-3 py-1.5 w-full flex items-center border-b border-slate-200 dark:border-slate-800 bg-slate-100/80 dark:bg-slate-800/80 text-sm text-slate-900 dark:text-slate-100 focus-within:ring-2 focus-within:ring-indigo-500 transition-colors duration-200">
+                                        <label className="cursor-pointer py-1.5 select-none w-full inline-flex items-center gap-2">
+                                            {docUploadProgress && (
+                                                <div className="size-4 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-600"></div>
                                             )}
-                                        />
-                                        <label
-                                            htmlFor={`file-${el}`}
-                                            className="cursor-pointer py-1.5 select-none w-full"
-                                        >
-                                            File Name - {el}
+                                            <p
+                                                className={`${docUploadProgress && "animate-pulse"}}`}
+                                            >
+                                                {docUploadProgress
+                                                    ? "Uploading"
+                                                    : "Selected"}{" "}
+                                                - {uploadedFile.name}
+                                            </p>
+                                            {!docUploadProgress && (
+                                                <ActionButton
+                                                    type="button"
+                                                    onClick={uploadFile}
+                                                    text="Confirm Upload"
+                                                    icon={
+                                                        QuestionMarkCircleIcon
+                                                    }
+                                                    className="rounded-full px-2"
+                                                    disabled={docUploadProgress}
+                                                />
+                                            )}
                                         </label>
                                     </div>
-                                ))}
+                                )}
+                                {allDocuments.length == 0 ? (
+                                    <div className="p-3 w-full flex items-center justify-between border-b border-slate-200 dark:border-slate-800 bg-transparent hover:bg-slate-100/80 dark:hover:bg-slate-800/80 text-sm text-slate-900 dark:text-slate-100 focus-within:ring-2 focus-within:ring-indigo-500 transition-colors duration-200">
+                                        {docRefreshProgress ? (
+                                            <span className="inline-flex gap-2 items-center">
+                                                <div className="size-4 animate-spin rounded-full border-2 border-gray-300 border-t-indigo-600"></div>
+                                                Fetching documents...
+                                            </span>
+                                        ) : (
+                                            <>
+                                                <span>
+                                                    No Policy Documents
+                                                    Available
+                                                </span>
+                                                {/* <ActionButton
+                                                    text="Refresh"
+                                                    type="button"
+                                                    className="rounded-lg"
+                                                    icon={ArrowPathIcon}
+                                                    onClick={() => {
+                                                        setDocRefreshProgress(
+                                                            true,
+                                                        );
+                                                        refreshDocuments();
+                                                    }}
+                                                /> */}
+                                            </>
+                                        )}
+                                    </div>
+                                ) : (
+                                    allDocuments.map((document, idx) => (
+                                        <div
+                                            key={idx}
+                                            className="px-3 py-0.5 w-full flex items-center border-b border-slate-200 dark:border-slate-800 bg-transparent hover:bg-slate-100/80 dark:hover:bg-slate-800/80 text-sm text-slate-900 dark:text-slate-100 focus-within:ring-2 focus-within:ring-indigo-500 transition-colors duration-200"
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                name="document"
+                                                id={`file-${document.id}`}
+                                                value={document.id} // Stays numeric in your code, but comes out as a string in the event
+                                                className="me-2 cursor-pointer h-4 w-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 disabled:bg-red-400"
+                                                // Bind change listener
+                                                onChange={
+                                                    handleDocumentCheckbox
+                                                }
+                                                // Controlled checkbox: returns true if the number 1 is in our array
+                                                checked={selectedDocuments.includes(
+                                                    document.id,
+                                                )}
+                                            />
+                                            <label
+                                                htmlFor={`file-${document.id}`}
+                                                className="cursor-pointer inline-flex justify-between py-1.5 select-none w-full truncate"
+                                            >
+                                                <span>{document.fileName}</span>
+                                                {showNewDoc && idx == 0 && (
+                                                    <span className="capitalize inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium bg-emerald-500/10 text-emerald-700 dark:text-emerald-400">
+                                                        <ExclamationCircleIcon className="size-3.5 text-emerald-500" />
+                                                        new
+                                                    </span>
+                                                )}
+                                            </label>
+                                        </div>
+                                    ))
+                                )}
                             </div>
                         </div>
                     </div>
-                    <div>
+                    <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                             Description
                         </label>
                         <textarea
-                            rows={2}
+                            rows={3}
                             name="description"
                             placeholder="Short Description"
                             className="w-full shadow-sm rounded-lg border border-slate-200 dark:border-slate-800 bg-transparent px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -478,9 +661,7 @@ export default function ManagePolicies() {
                         ? `Matches: ${filteredPolicies.length}`
                         : "",
                 }}
-            >
-                <div>No data available to display</div>
-            </CustomTableComponent>
+            />
         </>
     );
 }

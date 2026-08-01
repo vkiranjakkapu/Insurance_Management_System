@@ -1,5 +1,8 @@
 server:
     port: 8082
+app:
+    file-storage:
+        base-path: ./uploads
 spring:
     application:
         name: ims-documents-service

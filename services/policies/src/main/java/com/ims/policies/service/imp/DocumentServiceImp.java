@@ -1,41 +1,31 @@
 package com.ims.policies.service.imp;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestClient;
 
-import com.ims.policies.exception.ResourceNotFoundException;
 import com.ims.policies.models.Document;
-import com.ims.policies.repository.DocumentRepository;
 import com.ims.policies.service.DocumentService;
 
 @Service
 public class DocumentServiceImp implements DocumentService {
 
-    private DocumentRepository documentRepository;
+    private final RestClient restClient;
 
-    public DocumentServiceImp(DocumentRepository documentRepository) {
-        this.documentRepository = documentRepository;
+    @Value("${services.uri.documents}")
+    private String DOCUMENTS_SERVICE_URL;
+
+    public DocumentServiceImp(@LoadBalanced RestClient.Builder builder) {
+        this.restClient = builder.build();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Document getDocumentById(Long id) {
-        return documentRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No Document With Given Id."));
-    }
-
-    @Override
-    @Transactional
-    public Document createDocument(Document document) {
-        return documentRepository.save(document);
-    }
-
-    @Override
-    @Transactional
-    public boolean deleteDocument(Document document) {
-        document.setDeleted(true);
-        documentRepository.save(document);
-        return true;
+    public Document getPolicyDocumentById(Long id) {
+        return restClient.get().uri(DOCUMENTS_SERVICE_URL + "/policies/" + id).retrieve()
+                .body(Document.class);
     }
 
 }

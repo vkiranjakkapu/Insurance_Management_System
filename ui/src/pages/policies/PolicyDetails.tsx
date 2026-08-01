@@ -15,7 +15,7 @@ export default function PolicyDetails() {
                         uri: RoutePaths.POLICIES,
                     },
                     {
-                        text: `Policy: ${id}`,
+                        text: `${id}`,
                         uri: "#",
                     },
                 ],

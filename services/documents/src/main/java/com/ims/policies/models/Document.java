@@ -5,14 +5,18 @@ import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 
+import com.ims.policies.enums.DocumentType;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -23,6 +27,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class Document {
 
     @Id
@@ -36,13 +41,15 @@ public class Document {
 
     private String filePath;
 
+    @Builder.Default()
+    @Enumerated(EnumType.STRING)
+    private DocumentType documentType = DocumentType.KYC;
+
+    @Builder.Default()
     @Column(name = "deleted")
-    private boolean isDeleted;
+    private boolean isDeleted = false;
 
     @CreationTimestamp
     private LocalDateTime createdAt;
-
-    @Transient
-    private User customer;
 
 }
