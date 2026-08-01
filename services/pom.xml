@@ -23,6 +23,7 @@
         <module>policies</module>
         <module>documents</module>
         <module>premiums</module>
+        <module>claims</module>
     </modules>
 
     <dependencies>

@@ -1,0 +1,21 @@
+package com.ims.claims.repository;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Component;
+
+import com.ims.claims.enums.ClaimStatus;
+import com.ims.claims.models.Claim;
+
+@Component
+public interface ClaimRepository extends JpaRepository<Claim, Long> {
+
+    List<Claim> findAllByCustomerId(UUID customerId);
+
+    List<Claim> findAllByStatus(ClaimStatus status);
+
+    List<Claim> findAllByAgentId(UUID id);
+    
+}
