@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import com.ims.identity.entities.Address;
 import com.ims.identity.entities.RoleType;
+import com.ims.identity.enums.UserGender;
 
 import lombok.Builder;
 
@@ -16,6 +17,7 @@ public record UserResponse(UUID id,
 		String lastName,
 		String email,
 		String phone,
+		UserGender gender,
 		Address address,
 		LocalDate dob,
 		boolean enabled,

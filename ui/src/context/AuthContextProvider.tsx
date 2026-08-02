@@ -1,4 +1,6 @@
+import type { AxiosError } from "axios";
 import { useEffect, useState, type ReactNode } from "react";
+import type { ErrorResponse } from "../api/api";
 import { RoutePaths } from "../routes/RoutePaths";
 import AuthService, {
     type LoginRequest,
@@ -7,8 +9,6 @@ import AuthService, {
 import TokenStorage from "../storage/TokenStorage";
 import { decodedToken } from "../utils/JwtUtils";
 import { AuthContext, AuthStatus, type Principal } from "./usePrincipal";
-import type { AxiosError } from "axios";
-import type { ErrorResponse } from "../api/api";
 
 const principal: Principal = {
     id: 0,
@@ -133,19 +133,27 @@ export default function AuthContextProvider({
     }
 
     function getHomeRoute(roles: string[], uri?: string) {
-        if (roles.includes("ADMIN")) {
+        if (
+            roles.includes("ADMIN") ||
+            roles.includes("AGENT") ||
+            roles.includes("CUSTOMER")
+        ) {
             return uri && uri != RoutePaths.HOME ? uri : RoutePaths.DASHBOARD;
         }
 
-        if (roles.includes("AGENT")) {
-            return uri && uri != RoutePaths.HOME ? uri : RoutePaths.AGENT;
-        }
-
-        if (roles.includes("CUSTOMER")) {
-            return uri && uri != RoutePaths.HOME ? uri : RoutePaths.POLICIES;
-        }
-
         return RoutePaths.HOME;
+    }
+
+    function isAdmin(): boolean {
+        return authContext.roles.includes("ADMIN");
+    }
+
+    function isAgent(): boolean {
+        return authContext.roles.includes("AGENT");
+    }
+
+    function isCustomer(): boolean {
+        return authContext.roles.includes("CUSTOMER");
     }
 
     return (
@@ -154,6 +162,9 @@ export default function AuthContextProvider({
                 principal: authContext,
                 status: authStatus,
                 isLoggedIn,
+                isAdmin,
+                isAgent,
+                isCustomer,
                 authenticate,
                 logout,
                 refresh,

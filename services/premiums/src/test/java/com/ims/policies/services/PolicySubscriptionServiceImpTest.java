@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import java.time.LocalDate;
 import java.time.Period;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -201,32 +202,33 @@ class PolicySubscriptionServiceImpTest {
         PolicySubscriptionRequestDto request =
                 new PolicySubscriptionRequestDto(
                         customerId,
-                        1L,
+                        List.of(1L),
                         1000,
                         startDate);
 
         when(currentUser.userId()).thenReturn(agentId);
-        when(policyService.getPolicyById(1L)).thenReturn(policy);
+        when(policyService.getAllPolicyByIds(List.of(1L)))
+			.thenReturn(Map.of(1L, policy));
 
-        when(subscriptionRepository.save(any(PolicySubscription.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
+        when(subscriptionRepository.saveAll(any()))
+        .thenAnswer(invocation -> invocation.getArgument(0));
 
-        PolicySubscription result = service.createSubscription(request);
+        List<PolicySubscription> result = service.createSubscription(request);
 
-        assertEquals(agentId, result.getAgentId());
-        assertEquals(policy.getId(), result.getPolicyId());
-        assertEquals(startDate, result.getStartDate());
-        assertEquals(startDate.plusMonths(12), result.getExpiry());
-        assertEquals(startDate.plusMonths(12), result.getEndDate());
+        assertEquals(agentId, result.getFirst().getAgentId());
+        assertEquals(policy.getId(), result.getFirst().getPolicyId());
+        assertEquals(startDate, result.getFirst().getStartDate());
+        assertEquals(startDate.plusMonths(12), result.getFirst().getExpiry());
+        assertEquals(startDate.plusMonths(12), result.getFirst().getEndDate());
 
-        assertEquals(12, result.getPayments().size());
+        assertEquals(12, result.getFirst().getPayments().size());
 
-        PremiumPayment first = result.getPayments().get(0);
+        PremiumPayment first = result.getFirst().getPayments().get(0);
         assertEquals(customerId, first.getCustomerId());
         assertEquals(startDate, first.getDueDate());
         assertEquals(1000, first.getPremiumAmount());
 
-        verify(subscriptionRepository).save(any(PolicySubscription.class));
+        verify(subscriptionRepository).saveAll(any());
     }
 
     @Test

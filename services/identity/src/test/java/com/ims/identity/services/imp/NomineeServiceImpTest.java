@@ -65,7 +65,7 @@ class NomineeServiceImpTest {
     @Test
     void shouldGetAllNomineesByCustomer() {
 
-        when(nomineeRepository.findAllByPolicyHolder(any(User.class)))
+        when(nomineeRepository.findAllByCustomer(any(User.class)))
                 .thenReturn(List.of(nominee));
 
         List<Nominee> response = nomineeService.getAllNomineesByCustomer(customerId);
@@ -73,7 +73,7 @@ class NomineeServiceImpTest {
         assertEquals(1, response.size());
         assertEquals(nominee, response.getFirst());
 
-        verify(nomineeRepository).findAllByPolicyHolder(any(User.class));
+        verify(nomineeRepository).findAllByCustomer(any(User.class));
     }
 
     @Test

@@ -51,7 +51,7 @@ class PolicySubscriptionsControllerTest {
 
         subscriptionRequest = new PolicySubscriptionRequestDto(
                 customerId,
-                1L,
+                List.of(1L),
                 5000,
                 LocalDate.now());
 
@@ -114,13 +114,15 @@ class PolicySubscriptionsControllerTest {
     @Test
     void shouldSubscribeToPolicy() {
 
-        when(subscriptionService.createSubscription(subscriptionRequest)).thenReturn(subscription);
+        List<PolicySubscription> subs = List.of(subscription);
+
+        when(subscriptionService.createSubscription(subscriptionRequest)).thenReturn(List.of(subscription));
 
         ResponseEntity<APIResponseDto> response = controller.subscribeToPolicy(subscriptionRequest);
 
         assertEquals(200, response.getStatusCode().value());
         assertNotNull(response.getBody());
-        assertEquals(subscription, response.getBody().getBody());
+        assertEquals(subs, response.getBody().getBody());
 
         verify(subscriptionService).createSubscription(subscriptionRequest);
     }

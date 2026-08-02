@@ -1,6 +1,6 @@
 import { useParams } from "react-router-dom";
 import { RoutePaths } from "../../routes/RoutePaths";
-import DashboardLayout from "../dashboard/Dashboard";
+import DashboardLayout from "../../components/DashboardLayout";
 
 export default function PolicyDetails() {
     const { id } = useParams<{ id: string }>();

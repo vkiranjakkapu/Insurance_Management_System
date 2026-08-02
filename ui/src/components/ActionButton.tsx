@@ -22,7 +22,7 @@ export interface WithParamActionButtonProps extends Omit<
     ActionButtonProps,
     "onClick"
 > {
-    onClick: (id: number) => void;
+    onClick: (id: string) => void;
 }
 
 export default function ActionButton({

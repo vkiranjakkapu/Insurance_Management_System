@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ims.premiums.dto.APIResponseDto;
 import com.ims.premiums.dto.PolicySubscriptionRequestDto;
 import com.ims.premiums.dto.UpdateSubscriptionDto;
+import com.ims.premiums.enums.SubscriptionStatus;
 import com.ims.premiums.models.PolicySubscription;
 import com.ims.premiums.service.CurrentUserService;
 import com.ims.premiums.service.PolicySubscriptionService;
@@ -21,7 +23,7 @@ import com.ims.premiums.service.PolicySubscriptionService;
 import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
-@RequestMapping("/api/v1/policies/subscriptions")
+@RequestMapping("/premiums/api/v1/subscriptions")
 public class PolicySubscriptionsController {
 
     private PolicySubscriptionService subscriptionService;
@@ -36,14 +38,28 @@ public class PolicySubscriptionsController {
 
     @Operation(summary = "Get all subscriptions")
     @GetMapping("/")
-    @PreAuthorize("hasAnyRole('ADMIN','CUSTOMER')")
+    @PreAuthorize("hasAnyRole('ADMIN','AGENT','CUSTOMER')")
     public ResponseEntity<APIResponseDto> getAllSubscriptions() {
         List<PolicySubscription> allPolicySubscriptions;
-        if (currentUser.isCustomer())
+        if (currentUser.isCustomer()) {
             allPolicySubscriptions = subscriptionService.getAllSubscriptionsByCustomer(currentUser.userId());
-        else
+        } else if (currentUser.isAgent()) {
+            allPolicySubscriptions = subscriptionService.getAllSubscriptionsByAgent(currentUser.userId());
+        } else {
             allPolicySubscriptions = subscriptionService.getAllPolicySubscriptions();
-        return ResponseEntity.ok(APIResponseDto.builder().body(allPolicySubscriptions).build());
+        }
+        return ResponseEntity.ok(APIResponseDto.builder()
+                .body(subscriptionService.getAllPolicySubscriptionsPrepared(allPolicySubscriptions)).build());
+    }
+
+    @Operation(summary = "Get all subscriptions by status")
+    @GetMapping("/status/{status}")
+    @PreAuthorize("hasAnyRole('ADMIN')")
+    public ResponseEntity<APIResponseDto> getAllSubscriptionsByStatus(@PathVariable SubscriptionStatus status) {
+        List<PolicySubscription> allPolicySubscriptions;
+        allPolicySubscriptions = subscriptionService.getAllSubscriptionsByStatus(status);
+        return ResponseEntity.ok(APIResponseDto.builder()
+                .body(subscriptionService.getAllPolicySubscriptionsPrepared(allPolicySubscriptions)).build());
     }
 
     @Operation(summary = "Accept subscription/purchase")

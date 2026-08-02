@@ -1,5 +1,7 @@
 package com.ims.policies.controllers;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -32,6 +34,12 @@ public class PolicyController {
     @GetMapping("/")
     public ResponseEntity<APIResponseDto> getAllPolicies() {
         return ResponseEntity.ok(APIResponseDto.builder().body(policyService.getAllPolicies()).build());
+    }
+
+    @Operation(summary = "Get all policies by IDs")
+    @PostMapping("/search/")
+    public ResponseEntity<APIResponseDto> getAllPoliciesByIds(@RequestBody List<Long> ids) {
+        return ResponseEntity.ok(APIResponseDto.builder().body(policyService.getAllPoliciesByIds(ids)).build());
     }
 
     @Operation(summary = "Get policy by id")

@@ -8,11 +8,14 @@ import com.ims.identity.dto.CreateUserRequestDto;
 import com.ims.identity.dto.PasswordChangeRequestDto;
 import com.ims.identity.dto.UpdateUserRequest;
 import com.ims.identity.dto.UserResponse;
+import com.ims.identity.entities.RoleType;
 
 public interface UserService {
     UserResponse createUser(CreateUserRequestDto request);
 
     List<UserResponse> getAllUsers();
+
+    List<UserResponse> getAllUsersByRole(RoleType role);
 
     List<UserResponse> getAllUsersWithIds(Collection<UUID> ids);
 

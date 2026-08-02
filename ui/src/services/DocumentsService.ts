@@ -1,7 +1,7 @@
 import type { ErrorResponse } from "../api/api";
 import api from "../api/api";
 import { AppConfig } from "../config/AppConfig";
-import { handleErrorResponse } from "./ErrorRsponseHandling";
+import { handleErrorResponse } from "../utils/DurationHelper";
 
 class DocumentsService {
     async uploadDocument(request: FormData): Promise<Document | ErrorResponse> {

@@ -36,6 +36,12 @@ public class PolicyServiceImp implements PolicyService {
     }
 
     @Override
+    public List<Policy> getAllPoliciesByIds(List<Long> policyIds) {
+        List<Policy> allPolicies = policyRepository.findAllById(policyIds);
+        return allPolicies;
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public List<Policy> getAllPoliciesByStatus(PolicyStatus status) {
         return policyRepository.findAllByStatusAndIsLatestTrue(status);

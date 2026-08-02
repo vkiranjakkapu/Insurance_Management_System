@@ -14,6 +14,8 @@ public interface PolicyService {
 
     List<Policy> getAllPoliciesByStatus(PolicyStatus status);
 
+    List<Policy> getAllPoliciesByIds(List<Long> policyIds);
+
     Policy getPolicyById(Long id);
 
     PolicyResponseDto createPolicy(CreatePolicyRequestDto request);

@@ -9,6 +9,6 @@ import com.ims.identity.entities.User;
 
 public interface NomineeRepository extends JpaRepository<Nominee, Long> {
 
-    List<Nominee> findAllByPolicyHolder(User customer);
+    List<Nominee> findAllByCustomer(User customer);
     
 }

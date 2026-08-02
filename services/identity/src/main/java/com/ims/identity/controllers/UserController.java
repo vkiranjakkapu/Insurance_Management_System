@@ -1,5 +1,6 @@
 package com.ims.identity.controllers;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -16,12 +17,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ims.identity.dto.APIResponseDto;
 import com.ims.identity.dto.CreateUserRequestDto;
 import com.ims.identity.dto.FetchUsersRequestDto;
 import com.ims.identity.dto.FetchUsersResponseDto;
 import com.ims.identity.dto.PasswordChangeRequestDto;
 import com.ims.identity.dto.UpdateUserRequest;
 import com.ims.identity.dto.UserResponse;
+import com.ims.identity.entities.RoleType;
 import com.ims.identity.services.UserService;
 import com.ims.platform.security.context.AuthenticationContext;
 import com.ims.platform.security.model.AuthenticatedUser;
@@ -58,25 +61,48 @@ public class UserController {
     })
     @PostMapping("/")
     @PreAuthorize("hasAnyRole('ADMIN','AGENT')")
-    public ResponseEntity<UserResponse> createUser(
+    public ResponseEntity<APIResponseDto> createUser(
             @Valid @RequestBody CreateUserRequestDto request) {
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(userService.createUser(request));
+                .body(APIResponseDto.builder().body(userService.createUser(request)).build());
     }
 
     @Operation(summary = "Get all users")
     @GetMapping("/")
     @PreAuthorize("hasAnyRole('ADMIN','AGENT')")
-    public ResponseEntity<List<UserResponse>> getAllUsers() {
-        return ResponseEntity.ok(userService.getAllUsers());
+    public ResponseEntity<APIResponseDto> getAllUsers() {
+        AuthenticatedUser user = authContext.getCurrentUser().orElse(null);
+        List<UserResponse> allUsers;
+        if (user.getAuthorities().contains(RoleType.AGENT.toString())) {
+            allUsers = userService.getAllUsersByRole(RoleType.AGENT);
+        } else {
+            allUsers = userService.getAllUsers();
+        }
+
+        return ResponseEntity.ok(APIResponseDto.builder().body(allUsers).build());
+    }
+
+    @Operation(summary = "Get all users by role")
+    @GetMapping("/role/{role}")
+    @PreAuthorize("hasAnyRole('ADMIN','AGENT')")
+    public ResponseEntity<APIResponseDto> getAllUsersByRole(@PathVariable String role) {
+        List<UserResponse> allUsers;
+        if (role.equals(RoleType.CUSTOMER.toString())) {
+            allUsers = userService.getAllUsersByRole(RoleType.CUSTOMER);
+        } else if (role.equals(RoleType.AGENT.toString())) {
+            allUsers = userService.getAllUsersByRole(RoleType.AGENT);
+        } else {
+            allUsers = userService.getAllUsers();
+        }
+        return ResponseEntity.ok(APIResponseDto.builder().body(allUsers).build());
     }
 
     @Operation(summary = "Get user by id")
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','AGENT')")
-    public ResponseEntity<UserResponse> getUserById(@PathVariable UUID id) {
-        return ResponseEntity.ok(userService.getUserById(id));
+    public ResponseEntity<APIResponseDto> getUserById(@PathVariable UUID id) {
+        return ResponseEntity.ok(APIResponseDto.builder().body(userService.getUserById(id)).build());
     }
 
     @Operation(summary = "Get all users with ids")
@@ -90,29 +116,31 @@ public class UserController {
     @Operation(summary = "Update user")
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN','AGENT','CUSTOMER')")
-    public ResponseEntity<UserResponse> updateUser(
+    public ResponseEntity<APIResponseDto> updateUser(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateUserRequest request) {
 
-        return ResponseEntity.ok(userService.updateUser(id, request));
+        return ResponseEntity.ok(APIResponseDto.builder().body(userService.updateUser(id, request)).build());
     }
 
     @Operation(summary = "Change Password")
     @PatchMapping("/")
     @PreAuthorize("hasAnyRole('ADMIN','AGENT','CUSTOMER')")
-    public ResponseEntity<UserResponse> changePassword(
+    public ResponseEntity<APIResponseDto> changePassword(
             @Valid @RequestBody PasswordChangeRequestDto request) {
 
-        return ResponseEntity.ok(userService.changePassword(request));
+        return ResponseEntity.ok(APIResponseDto.builder().body(userService.changePassword(request)).build());
     }
 
     @Operation(summary = "Soft delete user")
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
+    public ResponseEntity<APIResponseDto> deleteUser(@PathVariable UUID id) {
 
         userService.deleteUser(id);
+        HashMap<String, Boolean> body = new HashMap<>();
+        body.put("status", true);
 
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(APIResponseDto.builder().body(body).build());
     }
 }

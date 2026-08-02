@@ -1,19 +1,23 @@
+import usePrincipal from "../context/usePrincipal";
 import type { WithParamActionButtonProps } from "./ActionButton";
 import ActionButton from "./ActionButton";
 
 export type UserCardData = {
-    id: number;
+    id: string;
     dp: string;
     name: string;
     email: string;
     phone: string;
     actionButtons: WithParamActionButtonProps[];
+    roles?: string;
 };
 type UserCardProps = {
     card: UserCardData;
 };
 
 export default function UserCardComponent({ card }: UserCardProps) {
+    const { principal } = usePrincipal();
+
     return (
         <div className="text-center">
             <div className="flex flex-col gap-3 p-3 bg-gray-200/50 dark:bg-gray-800/70 rounded border border-slate-200/90 dark:border-slate-600 hover:drop-shadow-xs dark:hover:drop-shadow-gray-700/20">
@@ -47,6 +51,13 @@ export default function UserCardComponent({ card }: UserCardProps) {
                                       : isLast
                                         ? "rounded-e-lg"
                                         : "";
+
+                            if (
+                                card.roles &&
+                                !card.roles.includes(principal.roles[0])
+                            ) {
+                                return;
+                            }
 
                             return (
                                 <ActionButton

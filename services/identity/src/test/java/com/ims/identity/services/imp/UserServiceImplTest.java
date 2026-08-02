@@ -32,6 +32,7 @@ import com.ims.identity.entities.Address;
 import com.ims.identity.entities.Role;
 import com.ims.identity.entities.RoleType;
 import com.ims.identity.entities.User;
+import com.ims.identity.enums.UserGender;
 import com.ims.identity.exceptions.EmailAlreadyUsedException;
 import com.ims.identity.exceptions.ForbiddenException;
 import com.ims.identity.exceptions.ResourceNotFoundException;
@@ -112,6 +113,7 @@ class UserServiceImplTest {
 				"john@test.com",
 				"John",
 				"Doe",
+				UserGender.MALE,
 				"password",
 				LocalDate.of(2000, 1, 1),
 				"9999999999",
@@ -150,9 +152,10 @@ class UserServiceImplTest {
 	void createUser_ShouldThrow_WhenEmailAlreadyExists() {
 
 		CreateUserRequestDto request = new CreateUserRequestDto(
+				"john@test.com",
 				"John",
 				"Doe",
-				"john@test.com",
+				UserGender.MALE,
 				"password",
 				LocalDate.now(),
 				"9999999999",
@@ -176,9 +179,10 @@ class UserServiceImplTest {
 	void createUser_ShouldAllowAgentToCreateUser() {
 
 		CreateUserRequestDto request = new CreateUserRequestDto(
+				"customer@test.com",
 				"Customer",
 				"One",
-				"customer@test.com",
+				null,
 				"password",
 				LocalDate.now(),
 				"9999999999",
@@ -214,9 +218,10 @@ class UserServiceImplTest {
 	void createUser_ShouldThrow_WhenCurrentUserIsCustomer() {
 
 		CreateUserRequestDto request = new CreateUserRequestDto(
+				"john@test.com",
 				"John",
 				"Doe",
-				"john@test.com",
+				null,
 				"password",
 				LocalDate.now(),
 				"9999999999",
@@ -236,15 +241,15 @@ class UserServiceImplTest {
 	@Test
 	void getAllUsers_ShouldReturnUsers() {
 
-		when(userRepository.findAll())
-				.thenReturn(List.of(admin));
+		when(userRepository.findAllByDeletedFalse())
+        .thenReturn(List.of(admin));
 
 		List<UserResponse> users = userService.getAllUsers();
 
 		assertEquals(1, users.size());
 		assertEquals("admin@test.com", users.getFirst().email());
 
-		verify(userRepository).findAll();
+		verify(userRepository).findAllByDeletedFalse();
 	}
 
 	@Test
@@ -322,7 +327,6 @@ class UserServiceImplTest {
 				"User",
 				"8888888888",
 				addressDto,
-				LocalDate.of(1998, 1, 1),
 				true);
 
 		when(userRepository.findById(USER_ID))
@@ -348,7 +352,6 @@ class UserServiceImplTest {
 				"User",
 				"9999999999",
 				addressDto,
-				LocalDate.now(),
 				true);
 
 		when(userRepository.findById(USER_ID))

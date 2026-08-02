@@ -1,41 +1,21 @@
-import type { AxiosError } from "axios";
-import api, { type ErrorResponse } from "../api/api";
-import { AppConfig } from "../config/AppConfig";
-import type { Policy } from "../pages/policies/Policy";
-import { handleErrorResponse } from "./ErrorRsponseHandling";
+import { apiClient, type ErrorResponse } from "../api/api";
 
 class PolicyService {
-    async getAllPolicies(): Promise<Policy[] | ErrorResponse> {
-        try {
-            const response = await api.get(AppConfig.POLICY_SERVICE_URL + "/");
-            const policies = response.data as {
-                status: string;
-                body: Policy[];
-                timestamp: string;
-            };
-            return policies.body;
-        } catch (er) {
-            console.log(er);
-            const error = er as AxiosError;
-            return error.response?.data as ErrorResponse;
-        }
+    async getAllPolicies<T>(): Promise<T | ErrorResponse> {
+        return apiClient<T>({
+            type: "get",
+            service: "policies",
+            uri: "/",
+        });
     }
 
-    async createPolicy(policyData: unknown): Promise<Policy | ErrorResponse> {
-        try {
-            const response = await api.post(
-                AppConfig.POLICY_SERVICE_URL + "/",
-                policyData,
-            );
-            const policy = response.data as {
-                status: string;
-                body: Policy;
-                timestamp: string;
-            };
-            return policy.body;
-        } catch (er) {
-            return handleErrorResponse(er);
-        }
+    async createPolicy<T>(payload: unknown): Promise<T | ErrorResponse> {
+        return apiClient<T>({
+            type: "post",
+            service: "policies",
+            uri: "/",
+            payload,
+        });
     }
 }
 

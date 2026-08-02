@@ -1,4 +1,9 @@
-import React, { useEffect } from "react";
+import React, {
+    useEffect,
+    type ForwardRefExoticComponent,
+    type PropsWithoutRef,
+    type SVGProps,
+} from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
 import ActionButton from "./ActionButton";
 
@@ -6,6 +11,12 @@ interface ModalProps {
     isOpen: boolean;
     onClose: () => void;
     title: string;
+    icon?: ForwardRefExoticComponent<
+        PropsWithoutRef<SVGProps<SVGSVGElement>> & {
+            title?: string;
+            titleId?: string;
+        }
+    >;
     children: React.ReactNode;
     /** Optional styling configurations */
     maxWidthClass?:
@@ -21,6 +32,7 @@ export default function ModalComponent({
     isOpen,
     onClose,
     title,
+    icon: Icon,
     children,
     maxWidthClass = "max-w-lg",
 }: ModalProps) {
@@ -62,8 +74,9 @@ export default function ModalComponent({
             >
                 {/* Header Block */}
                 <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-200 dark:border-slate-800">
-                    <h3 className="text-lg font-semibold text-slate-600 dark:text-slate-50">
-                        {title}
+                    <h3 className="flex gap-2 items-center justify-start text-lg font-semibold text-slate-600 dark:text-slate-50">
+                        {Icon && <Icon className="size-4" />}
+                        <span>{title}</span>
                     </h3>
                     <ActionButton
                         type="button"

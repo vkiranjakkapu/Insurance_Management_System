@@ -68,7 +68,7 @@ platform:
             # username-claim: username
             # email-claim: email
             secret: a-string-secret-at-least-256-bits-long
-            access-token-expiration: 15m
+            access-token-expiration: 2h
             refresh-token-expiration: 7d
             clock-skew: 60s
     web:

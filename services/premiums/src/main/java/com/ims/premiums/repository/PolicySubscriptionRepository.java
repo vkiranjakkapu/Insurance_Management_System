@@ -24,4 +24,6 @@ public interface PolicySubscriptionRepository extends JpaRepository<PolicySubscr
     List<PolicySubscription> findAllByPolicyIdAndCreatedAtBetween(Long policyId, LocalDate startDate,
             LocalDate endDate);
 
+    List<PolicySubscription> findAllByAgentId(UUID agentId);
+
 }
