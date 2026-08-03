@@ -19,7 +19,7 @@ import com.ims.premiums.service.PaymentsService;
 import io.swagger.v3.oas.annotations.Operation;
 
 @RestController
-@RequestMapping("/premiums/api/v1/")
+@RequestMapping("/premiums/api/v1/payments")
 public class PaymentsController {
 
     private PaymentsService paymentsService;
@@ -47,7 +47,7 @@ public class PaymentsController {
     }
 
     @Operation(summary = "Get all payments by subcription ID")
-    @GetMapping("/{id}")
+    @GetMapping("/{subscriptionId}")
     public ResponseEntity<APIResponseDto> getAllPaymentsBySubscription(@PathVariable UUID subscriptionId) {
         return ResponseEntity.ok(APIResponseDto.builder()
                 .body(APIResponseDto.builder().body(paymentsService.getAllPremiumPaymentsBySubscription(subscriptionId))
@@ -56,7 +56,8 @@ public class PaymentsController {
     }
 
     @Operation(summary = "Pay premium with ID")
-    @PostMapping("/{id}")
+    @PostMapping("/{paymentId}")
+    @PreAuthorize("hasRole('CUSTOMER')")
     public ResponseEntity<APIResponseDto> payPremium(@PathVariable UUID paymentId) {
         return ResponseEntity.ok(APIResponseDto.builder()
                 .body(APIResponseDto.builder().body(paymentsService.payPremium(paymentId)).build()).build());

@@ -151,21 +151,29 @@ public class ClaimServiceImp implements ClaimService {
     @Override
     @Transactional
     public Claim createClaim(CreateClaimRequestDto claimRequest) {
-        // ? customerId, subscriptionId, proofDocs
         Claim claim = new Claim();
         claim.setReason(claimRequest.reason());
         claim.setCustomerId(claimRequest.customerId());
         claim.setSubscriptionId(claimRequest.subscriptionId());
-        System.out.println(claimRequest);
-
-        claim.setProofs(claimRequest.proofs().stream()
-                .map(this::mapToProof)
-                .map(cp -> {
-                    cp.setClaim(claim);
-                    return cp;
-                })
-                .toList());
         claim.setResolverId(currentUser.userId());
+
+        // Set default initial status if required
+        claim.setStatus(ClaimStatus.INITIATED);
+
+        Long seqVal = claimRepository.getNextCalimIdSequence();
+        String formattedClaimId = (seqVal <= 9999)
+                ? String.format("CLAIM-%04d", seqVal)
+                : "CLAIM-" + seqVal;
+
+        claim.setClaimId(formattedClaimId);
+
+        if (claimRequest.proofs() != null) {
+            List<ClaimProof> proofs = claimRequest.proofs().stream()
+                    .map(this::mapToProof)
+                    .peek(cp -> cp.setClaim(claim))
+                    .toList();
+            claim.setProofs(proofs);
+        }
 
         return claimRepository.save(claim);
     }
@@ -179,9 +187,6 @@ public class ClaimServiceImp implements ClaimService {
     @Transactional
     public Claim updateClaim(UpdateClaimRequestDto request) {
         Claim claim = getClaimById(request.claimId());
-
-        if (currentUser.isAgent() && claim.getAgentId() != currentUser.userId())
-            throw new ForbiddenException("This claim is not assigned to you!.");
 
         claim.setStatus(request.status());
         claim.setResolverId(currentUser.userId());

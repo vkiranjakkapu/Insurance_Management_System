@@ -26,20 +26,21 @@ export default function ProfilePage() {
                 <div>
                     <form
                         onSubmit={updateProfile}
-                        className="w-full bg-slate-100 dark:bg-gray-800/50 border border-slate-200 dark:border-slate-800 rounded-lg"
+                        className="w-full shadow-sm dark:bg-gray-800/50 border border-slate-200 dark:border-slate-800 rounded-lg"
                     >
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-2 md:p-4">
                             <div className="col-span-full pb-3 border-b border-b-slate-200 dark:border-b-gray-600 mb-3">
                                 <h1>Edit Details</h1>
                             </div>
                             <div className="text-slate-800 dark:text-white capitalize">
-                                <label htmlFor="name">name:</label>
+                                <label htmlFor="email">email:</label>
                                 <input
                                     type="text"
-                                    name="name"
-                                    value={profile?.name}
-                                    className="shadow-sm border border-slate-200 dark:border-slate-700 p-2 w-full rounded-lg"
-                                    id={profile?.name}
+                                    name="email"
+                                    value={profile?.email}
+                                    className="shadow-sm border bg-slate-100 dark:bg-slate-700 border-slate-200 dark:border-slate-700 p-2 w-full rounded-lg cursor-not-allowed"
+                                    id={profile?.email}
+                                    disabled
                                 />
                             </div>
                             <div className="row-span-2 flex items-center-justify-center p-3">
@@ -58,6 +59,16 @@ export default function ProfilePage() {
                                         />
                                     </div>
                                 </div>
+                            </div>
+                            <div className="text-slate-800 dark:text-white capitalize">
+                                <label htmlFor="name">name:</label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={profile?.name}
+                                    className="shadow-sm border border-slate-200 dark:border-slate-700 p-2 w-full rounded-lg"
+                                    id={profile?.name}
+                                />
                             </div>
                             <div className="text-slate-800 dark:text-white capitalize">
                                 <label htmlFor="firstName">firstName:</label>
@@ -79,16 +90,6 @@ export default function ProfilePage() {
                                     id={profile?.lastName}
                                 />
                             </div>
-                            <div className="text-slate-800 dark:text-white capitalize">
-                                <label htmlFor="email">email:</label>
-                                <input
-                                    type="text"
-                                    name="email"
-                                    value={profile?.email}
-                                    className="shadow-sm border border-slate-200 dark:border-slate-700 p-2 w-full rounded-lg"
-                                    id={profile?.email}
-                                />
-                            </div>
                             <div className="col-span-full flex justify-end">
                                 <ActionButton
                                     icon={CheckCircleIcon}
@@ -102,7 +103,7 @@ export default function ProfilePage() {
                     </form>
                     <form
                         onSubmit={changePassword}
-                        className="w-full bg-slate-100 dark:bg-gray-800/50 border border-slate-200 dark:border-slate-800 rounded-lg mt-4"
+                        className="w-full shadow-sm dark:bg-gray-800/50 border border-slate-200 dark:border-slate-800 rounded-lg mt-4"
                     >
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 p-2 md:p-4">
                             <div className="col-span-full pb-3 border-b border-b-slate-200 dark:border-b-gray-600 mb-3">

@@ -456,35 +456,19 @@ export default function ManagePolicies() {
                             />
                         </div>
                     </div>
-                    <div>
+                    <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                            Premium Amount
+                            Description
                         </label>
-                        <div className="inline-flex items-center w-full rounded-lg border border-slate-200 dark:border-slate-800 bg-transparent px-3 py-1.5 ">
-                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 px-0.5 me-2">
-                                ₹
-                            </label>
-                            <input
-                                name="premiumAmount"
-                                type="number"
-                                onWheel={(e) =>
-                                    (e.target as HTMLInputElement).blur()
-                                }
-                                onKeyDown={(e) => {
-                                    if (
-                                        ["e", "E", "-", "+", ".", ","].includes(
-                                            e.key,
-                                        )
-                                    )
-                                        e.preventDefault();
-                                }}
-                                placeholder="premium amount"
-                                className="w-full [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none shadow-smtext-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                required
-                            />
-                        </div>
+                        <textarea
+                            rows={3}
+                            name="description"
+                            placeholder="Short Description"
+                            className="w-full shadow-sm rounded-lg border border-slate-200 dark:border-slate-800 bg-transparent px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            required
+                        />
                     </div>
-                    <div className="md:row-span-2">
+                    <div className="col-span-full">
                         <div className="relative shadow-sm border border-slate-200 dark:border-slate-800 rounded-lg">
                             <div className="sticky inline-flex gap-4 items-center justify-between h-2/6 px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300 capitalize bg-slate-100/60 dark:bg-slate-700/20 border-b border-b-slate-200 dark:border-slate-800 w-full">
                                 <span>Select Policy Document</span>
@@ -581,7 +565,7 @@ export default function ManagePolicies() {
                                                 type="checkbox"
                                                 name="document"
                                                 id={`file-${document.id}`}
-                                                value={document.id} // Stays numeric in your code, but comes out as a string in the event
+                                                defaultValue={document.id} // Stays numeric in your code, but comes out as a string in the event
                                                 className="me-2 cursor-pointer h-4 w-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 disabled:bg-red-400"
                                                 // Bind change listener
                                                 onChange={
@@ -609,18 +593,6 @@ export default function ManagePolicies() {
                                 )}
                             </div>
                         </div>
-                    </div>
-                    <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                            Description
-                        </label>
-                        <textarea
-                            rows={3}
-                            name="description"
-                            placeholder="Short Description"
-                            className="w-full shadow-sm rounded-lg border border-slate-200 dark:border-slate-800 bg-transparent px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            required
-                        />
                     </div>
                 </FormComponent>
             </ModalComponent>

@@ -99,11 +99,11 @@ public class DocumentsServiceImp implements DocumentsService {
 
     private String resolveOriginalName(String originalName, DocumentType type, MultipartFile file) {
         if (StringUtils.hasText(originalName)) {
-            return originalName.toString().concat("_" + type);
+            return originalName;
         }
 
         if (file != null && StringUtils.hasText(file.getOriginalFilename())) {
-            return file.getOriginalFilename().toString().concat("_" + type);
+            return file.getOriginalFilename();
         }
 
         return type.toString().concat("_" + currentUser.userId().toString());

@@ -66,7 +66,7 @@ class PolicyServiceImpTest {
         policy.setPremiumsDuration(Period.ofYears(5));
         policy.setStatus(PolicyStatus.ACTIVE);
         policy.setLatest(true);
-        policy.setDocument(document.getId());
+        policy.setDocument(10L);
 
         createRequest = new CreatePolicyRequestDto(
                 PolicyType.HEALTH,
@@ -92,12 +92,16 @@ class PolicyServiceImpTest {
         when(policyRepository.findAllByIsLatestTrue())
                 .thenReturn(List.of(policy));
 
-        List<Policy> result = service.getAllPolicies();
+        when(documentService.getPolicyDocumentById(10L))
+                .thenReturn(document);
+
+        List<PolicyResponseDto> result = service.getAllPolicies();
 
         assertEquals(1, result.size());
-        assertSame(policy, result.get(0));
+        assertEquals(policy.getPolicyId(), result.getFirst().policyId());
 
         verify(policyRepository).findAllByIsLatestTrue();
+        verify(documentService).getPolicyDocumentById(10L);
     }
 
     @Test
@@ -112,6 +116,19 @@ class PolicyServiceImpTest {
 
         verify(policyRepository)
                 .findAllByStatusAndIsLatestTrue(PolicyStatus.ACTIVE);
+    }
+
+    @Test
+    void shouldReturnPoliciesByIds() {
+
+        when(policyRepository.findAllById(List.of(1L)))
+                .thenReturn(List.of(policy));
+
+        List<Policy> result = service.getAllPoliciesByIds(List.of(1L));
+
+        assertEquals(1, result.size());
+
+        verify(policyRepository).findAllById(List.of(1L));
     }
 
     @Test
@@ -141,28 +158,42 @@ class PolicyServiceImpTest {
     }
 
     @Test
+    void shouldReturnPolicyByPolicyId() {
+
+        when(policyRepository.findByPolicyIdAndIsLatestTrue("POLICY-0001"))
+                .thenReturn(Optional.of(policy));
+
+        when(documentService.getPolicyDocumentById(10L))
+                .thenReturn(document);
+
+        PolicyResponseDto result = service.getPolicyByPolicyId("POLICY-0001");
+
+        assertEquals("POLICY-0001", result.policyId());
+
+        verify(policyRepository).findByPolicyIdAndIsLatestTrue("POLICY-0001");
+        verify(documentService).getPolicyDocumentById(10L);
+    }
+
+    @Test
     void shouldCreatePolicy() {
 
         when(documentService.getPolicyDocumentById(10L))
                 .thenReturn(document);
 
+        when(policyRepository.getNextPolicyIdSequence())
+                .thenReturn(1L);
+
         when(policyRepository.save(any(Policy.class)))
-                .thenAnswer(invocation -> {
-                    Policy p = invocation.getArgument(0);
-                    p.setId(1L);
-                    p.setPolicyId("POLICY-0001");
-                    p.setStatus(PolicyStatus.ACTIVE);
-                    return p;
-                });
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         PolicyResponseDto result = service.createPolicy(createRequest);
 
         assertNotNull(result);
         assertEquals("POLICY-0001", result.policyId());
         assertEquals(PolicyType.HEALTH, result.policyType());
-        // assertEquals(document, policy.getDocument());
 
         verify(documentService).getPolicyDocumentById(10L);
+        verify(policyRepository).getNextPolicyIdSequence();
         verify(policyRepository).save(any(Policy.class));
     }
 

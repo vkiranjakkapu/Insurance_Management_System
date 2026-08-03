@@ -1,4 +1,5 @@
 import {
+    CheckCircleIcon,
     CheckIcon,
     ClockIcon,
     CloudArrowUpIcon,
@@ -57,6 +58,11 @@ export default function SubscriptionDetails() {
     });
     const [secondsLeft, setSecondsLeft] = useState<number>(0);
 
+    const [actionErrors, setActionErrors] = useState<FormErrorsProps | null>({
+        type: "error",
+        errors: [],
+    });
+
     const uploadFileRef = useRef<HTMLInputElement>(null);
     const [allDocuments, setAllDocs] = useState<Document[]>([]);
     const [selectedDocuments, setSelectedDocuments] = useState<number[]>([]);
@@ -78,7 +84,7 @@ export default function SubscriptionDetails() {
         });
     }, []);
 
-    const fetchSubscription = useCallback(() => {
+    const refreshSubscription = useCallback(() => {
         if (!id) return;
         PremiumsService.getSubscriptionById<PolicySubscription>(id)
             .then((resp) => {
@@ -92,9 +98,9 @@ export default function SubscriptionDetails() {
     }, [id]);
 
     useEffect(() => {
-        fetchSubscription();
+        refreshSubscription();
         refreshDocuments();
-    }, [refreshDocuments, fetchSubscription]);
+    }, [refreshDocuments, refreshSubscription]);
 
     const renderCellValue = (value: unknown) => {
         if (
@@ -104,7 +110,7 @@ export default function SubscriptionDetails() {
             return (
                 <span className="capitalize inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">
                     <ShieldCheckIcon className="size-3.5 text-emerald-500" />
-                    {SubscriptionStatus.ACTIVE}
+                    {value}
                 </span>
             );
         }
@@ -115,7 +121,7 @@ export default function SubscriptionDetails() {
             return (
                 <span className="capitalize inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-700 dark:text-amber-400">
                     <ClockIcon className="size-3.5 text-amber-500" />
-                    {SubscriptionStatus.PENDING}
+                    {value}
                 </span>
             );
         }
@@ -126,7 +132,7 @@ export default function SubscriptionDetails() {
             return (
                 <span className="capitalize inline-flex items-center gap-1.5 rounded-full bg-rose-500/10 px-2.5 py-1 text-xs font-medium text-rose-700 dark:text-rose-400">
                     <ExclamationCircleIcon className="size-3.5 text-rose-500" />
-                    {SubscriptionStatus.EXPIRED}
+                    {value}
                 </span>
             );
         }
@@ -147,13 +153,52 @@ export default function SubscriptionDetails() {
             subscriptionId: id,
         }).then((resp) => {
             if (resp && !("errorMessage" in resp)) {
+                setActionErrors({
+                    type: "success",
+                    errors: ["Congrats! Your Subscription got confirmed."],
+                });
                 setSubscription(resp);
+            } else {
+                setActionErrors({
+                    type: "error",
+                    errors: [resp.errorMessage],
+                });
             }
+            const timer = setTimeout(() => {
+                setActionErrors(null);
+            }, 5000);
+
+            return () => clearTimeout(timer);
         });
     }
 
     function payPremium(prem: PremiumPayment) {
-        window.alert(prem.id);
+        if (!(profile?.id == subscription?.customer.id)) {
+            // window.alert("You are not the subscriber for this!");
+            setActionErrors({
+                type: "error",
+                errors: ["You are not the subscriber for this!"],
+            });
+            const timer = setTimeout(() => {
+                setFormErrors(null);
+            }, 5000);
+
+            return () => clearTimeout(timer);
+        }
+        PremiumsService.payPremium<PremiumPayment>(prem.id).then((resp) => {
+            if (resp && !("errorMessage" in resp)) {
+                setActionErrors({
+                    type: "success",
+                    errors: ["Payment Completed Successfully."],
+                });
+                refreshSubscription();
+            } else {
+                setActionErrors({
+                    type: "error",
+                    errors: [resp.errorMessage],
+                });
+            }
+        });
     }
 
     function raiseClaim(e: SubmitEvent<HTMLFormElement>) {
@@ -224,8 +269,8 @@ export default function SubscriptionDetails() {
                   {
                       text: "Accept",
                       icon: CheckIcon,
-                      unsetClass: true,
-                      className: "bg-emerald-400",
+                      //   unsetClass: true,
+                      //   theme: "bg-emerald-400",
                       onClick: acceptSubscription,
                   },
               ]
@@ -234,8 +279,8 @@ export default function SubscriptionDetails() {
                     {
                         text: "Claim",
                         icon: HandRaisedIcon,
-                        unsetClass: true,
-                        className: "bg-emerald-400",
+                        // unsetClass: true,
+                        // className: "bg-emerald-400",
                         onClick: () => setIsModalOpen(true),
                     },
                 ]
@@ -458,6 +503,25 @@ export default function SubscriptionDetails() {
             >
                 <div className="flex flex-col gap-3">
                     <div className="col-span-full rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 dark:bg-slate-800 p-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+                        {actionErrors && actionErrors?.errors.length > 0 && (
+                            <div
+                                className={`p-2.5 col-span-full flex flex-row gap-2 items-center dark:text-white text-sm rounded-lg 
+                                ${
+                                    actionErrors.type == "success"
+                                        ? " bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
+                                        : " bg-rose-500/10 text-rose-700 dark:text-rose-400"
+                                }`}
+                            >
+                                {actionErrors.type == "error" ? (
+                                    <ExclamationCircleIcon
+                                        className={`text-rose-500 size-4`}
+                                    />
+                                ) : (
+                                    <CheckCircleIcon className="text-emerald-500 size-4" />
+                                )}
+                                <span>{actionErrors.errors.join(", ")}</span>
+                            </div>
+                        )}
                         <div className="col-span-full flex flex-row gap-2 shadow-sm justify-center-safe py-1 bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-200 dark:border-slate-800">
                             <span className="text-slate-800 dark:text-slate-200">
                                 Subscription Status
@@ -466,8 +530,8 @@ export default function SubscriptionDetails() {
                                 {renderCellValue(subscription?.status)}
                             </span>
                         </div>
-                        <div className="col-span-full">
-                            <span className="text-slate-800 dark:text-slate-200">
+                        <div className="col-span-full flex flex-col md:flex-row gap-2 rounded-lg">
+                            <span className="text-slate-800 dark:text-slate-200 p-2 bg-slate-100 dark:bg-slate-700/70 w-full">
                                 Customer details
                             </span>
                         </div>
@@ -479,8 +543,8 @@ export default function SubscriptionDetails() {
                         <div>Phone: {subscription?.customer?.phone}</div>
                     </div>
                     <div className="col-span-full rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 dark:bg-slate-800 p-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div className="col-span-full">
-                            <span className="text-slate-800 dark:text-slate-200">
+                        <div className="col-span-full flex flex-col md:flex-row gap-2 rounded-lg">
+                            <span className="text-slate-800 dark:text-slate-200 p-2 bg-slate-100 dark:bg-slate-700/70 w-full">
                                 Agent details
                             </span>
                         </div>
@@ -491,9 +555,9 @@ export default function SubscriptionDetails() {
                         <div>Email: {subscription?.agent?.email}</div>
                         <div>Phone: {subscription?.agent?.phone}</div>
                     </div>
-                    <div className="col-span-full rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 dark:bg-slate-800 p-3 grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div className="col-span-full flex flex-col md:flex-row gap-2">
-                            <span className="text-slate-800 dark:text-slate-200">
+                    <div className="col-span-full rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 dark:bg-slate-800 p-3 flex flex-col gap-3">
+                        <div className="col-span-full flex flex-col md:flex-row gap-2 rounded-lg">
+                            <span className="text-slate-800 dark:text-slate-200 p-2 bg-slate-100 dark:bg-slate-700/70 w-full">
                                 Policy details
                             </span>
                         </div>
@@ -515,12 +579,16 @@ export default function SubscriptionDetails() {
                             {subscription?.policy.coverageAmount}
                         </div>
                         <div className="capitalize">
-                            coverageDuration:
-                            {subscription?.policy.coverageDuration}
+                            coverage Duration:
+                            {formatIsoDuration(
+                                subscription?.policy.coverageDuration ?? "",
+                            )}
                         </div>
                         <div className="capitalize">
-                            premiumsDuration:
-                            {subscription?.policy.premiumsDuration}
+                            premium Duration:
+                            {formatIsoDuration(
+                                subscription?.policy.premiumsDuration ?? "",
+                            )}
                         </div>
                     </div>
                     <CustomTableComponent
@@ -532,7 +600,7 @@ export default function SubscriptionDetails() {
                             "dueDate",
                             // "createdA",
                         ]}
-                        itemActionText="Pay"
+                        itemActionText={"Pay"}
                         onActionClick={payPremium}
                         body={subscription?.payments ?? []}
                         renderCellValue={renderCellValue}

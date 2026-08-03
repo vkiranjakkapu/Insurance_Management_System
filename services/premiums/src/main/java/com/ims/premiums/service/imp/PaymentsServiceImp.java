@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.ims.premiums.enums.PaymentStatus;
 import com.ims.premiums.exception.ResourceNotFoundException;
 import com.ims.premiums.models.PolicySubscription;
 import com.ims.premiums.models.PremiumPayment;
@@ -16,9 +17,11 @@ import com.ims.premiums.service.PaymentsService;
 public class PaymentsServiceImp implements PaymentsService {
 
     private PremiumPaymentsRepository paymentsRepository;
+    private CurrentUserServiceImp currentUser;
 
-    PaymentsServiceImp(PremiumPaymentsRepository paymentsRepository) {
+    PaymentsServiceImp(PremiumPaymentsRepository paymentsRepository, CurrentUserServiceImp currentUser) {
         this.paymentsRepository = paymentsRepository;
+        this.currentUser = currentUser;
     }
 
     @Override
@@ -50,6 +53,10 @@ public class PaymentsServiceImp implements PaymentsService {
     @Transactional
     public PremiumPayment payPremium(UUID paymentId) {
         PremiumPayment premium = getPremiumPaymentById(paymentId);
+        if (!currentUser.userId().equals(premium.getCustomerId())) {
+            throw new ResourceNotFoundException("This Payment doesn't belong to you.");
+        }
+        premium.setStatus(PaymentStatus.PAID);
         return paymentsRepository.save(premium);
     }
 

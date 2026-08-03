@@ -60,7 +60,7 @@ public class PolicySubscriptionServiceImp implements PolicySubscriptionService {
         PolicySubscription sub = getSubscriptionById(id);
         Map<UUID, User> allUsers = customersService.getAllUsersByIds(Set.of(sub.getAgentId(), sub.getCustomerId()));
         Map<Long, Policy> allPolicies = policyService.getAllPolicyByIds(List.of(sub.getPolicyId()));
-        return SubscriptionsResposneDto.builder()
+        SubscriptionsResposneDto resp = SubscriptionsResposneDto.builder()
                 .id(sub.getId())
                 .customer(allUsers.get(sub.getCustomerId()))
                 .customerName(allUsers.get(sub.getCustomerId()).getFirstName())
@@ -89,6 +89,7 @@ public class PolicySubscriptionServiceImp implements PolicySubscriptionService {
                 .updatedAt(sub.getUpdatedAt())
                 .createdAt(sub.getCreatedAt())
                 .build();
+        return resp;
     }
 
     @Override

@@ -24,6 +24,15 @@ class PolicyService {
             payload,
         });
     }
+
+    async updatePolicy<T>(payload: unknown): Promise<T | ErrorResponse> {
+        return apiClient<T>({
+            type: "put",
+            service: "policies",
+            uri: "/",
+            payload,
+        });
+    }
 }
 
 export default new PolicyService();

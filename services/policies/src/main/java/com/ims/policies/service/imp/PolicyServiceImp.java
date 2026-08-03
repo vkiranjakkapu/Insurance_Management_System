@@ -31,10 +31,19 @@ public class PolicyServiceImp implements PolicyService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Policy> getAllPolicies() {
+    public List<PolicyResponseDto> getAllPolicies() {
         return policyRepository.findAllByIsLatestTrue().stream().map(pol -> {
-            pol.setDoc(documentService.getPolicyDocumentById(pol.getDocument()));
-            return pol;
+            return PolicyResponseDto.builder()
+                    .id(pol.getId())
+                    .policyId(pol.getPolicyId())
+                    .policyType(pol.getPolicyType())
+                    .description(pol.getDescription())
+                    .coverageAmount(pol.getCoverageAmount())
+                    .coverageDuration(pol.getCoverageDuration())
+                    .premiumsDuration(pol.getPremiumsDuration())
+                    .status(pol.getStatus())
+                    .document(documentService.getPolicyDocumentById(pol.getDocument()))
+                    .build();
         }).toList();
     }
 
@@ -59,9 +68,20 @@ public class PolicyServiceImp implements PolicyService {
 
     @Override
     @Transactional(readOnly = true)
-    public Policy getPolicyByPolicyId(String id) {
-        return policyRepository.findByPolicyId(id)
+    public PolicyResponseDto getPolicyByPolicyId(String id) {
+        Policy pol = policyRepository.findByPolicyIdAndIsLatestTrue(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No Policy Found with Given ID."));
+        return PolicyResponseDto.builder()
+                .id(pol.getId())
+                .policyId(pol.getPolicyId())
+                .policyType(pol.getPolicyType())
+                .description(pol.getDescription())
+                .coverageAmount(pol.getCoverageAmount())
+                .coverageDuration(pol.getCoverageDuration())
+                .premiumsDuration(pol.getPremiumsDuration())
+                .status(pol.getStatus())
+                .document(documentService.getPolicyDocumentById(pol.getDocument()))
+                .build();
     }
 
     @Override
@@ -69,16 +89,24 @@ public class PolicyServiceImp implements PolicyService {
     public PolicyResponseDto createPolicy(CreatePolicyRequestDto request) {
 
         Policy policy = new Policy();
+
         policy.setPolicyType(request.policyType());
         policy.setDescription(request.description());
         policy.setCoverageAmount(request.coverageAmount());
         policy.setCoverageDuration(request.coverageDuration());
         policy.setPremiumsDuration(request.premiumsDuration());
         policy.setDocument(documentService.getPolicyDocumentById(request.documentId()).getId());
+        policy.setStatus(PolicyStatus.ACTIVE);
+        policy.setLatest(true);
 
-        Policy newPolicy = policyRepository.save(policy);
+        Long seqVal = policyRepository.getNextPolicyIdSequence();
+        String formattedPolicyId = (seqVal <= 9999)
+                ? String.format("POLICY-%04d", seqVal)
+                : "POLICY-" + seqVal;
 
-        return preparePolicyRespoonse(newPolicy);
+        policy.setPolicyId(formattedPolicyId);
+
+        return preparePolicyResponse(policyRepository.save(policy));
     }
 
     @Override
@@ -86,6 +114,7 @@ public class PolicyServiceImp implements PolicyService {
     public PolicyResponseDto updatePolicy(PolicyRequestDto request) {
 
         Policy oldPolicy = getPolicyById(request.policyId());
+
         oldPolicy.setStatus(PolicyStatus.TERMINATED);
         oldPolicy.setLatest(false);
 
@@ -97,11 +126,12 @@ public class PolicyServiceImp implements PolicyService {
         newPolicy.setPremiumsDuration(request.premiumsDuration());
         newPolicy.setDocument(documentService.getPolicyDocumentById(request.documentId()).getId());
         newPolicy.setPolicyType(request.policyType());
-        oldPolicy.setLatest(false);
+        newPolicy.setStatus(PolicyStatus.ACTIVE);
+        newPolicy.setLatest(true);
 
-        policyRepository.saveAll(List.of(newPolicy, oldPolicy));
+        policyRepository.saveAll(List.of(oldPolicy, newPolicy));
 
-        return preparePolicyRespoonse(newPolicy);
+        return preparePolicyResponse(newPolicy);
     }
 
     @Override
@@ -115,7 +145,7 @@ public class PolicyServiceImp implements PolicyService {
 
     }
 
-    private PolicyResponseDto preparePolicyRespoonse(Policy policy) {
+    private PolicyResponseDto preparePolicyResponse(Policy policy) {
         return PolicyResponseDto.builder()
                 .id(policy.getId())
                 .policyId(policy.getPolicyId())

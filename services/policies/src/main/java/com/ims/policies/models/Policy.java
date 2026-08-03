@@ -4,9 +4,7 @@ import java.time.LocalDateTime;
 import java.time.Period;
 
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.Generated;
 import org.hibernate.annotations.UpdateTimestamp;
-import org.hibernate.generator.EventType;
 
 import com.ims.policies.enums.PolicyStatus;
 import com.ims.policies.enums.PolicyType;
@@ -37,8 +35,7 @@ public class Policy {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(insertable = false, updatable = false)
-    @Generated(event = EventType.INSERT)
+    @Column(name = "policy_id", nullable = false, length = 50)
     private String policyId;
 
     @Enumerated(EnumType.STRING)

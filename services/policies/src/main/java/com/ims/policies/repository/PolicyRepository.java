@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Component;
 
 import com.ims.policies.enums.PolicyStatus;
@@ -14,8 +15,13 @@ public interface PolicyRepository extends JpaRepository<Policy, Long> {
 
     List<Policy> findAllByIsLatestTrue();
 
+    @Query(value = "SELECT nextval('policy_id_seq')", nativeQuery = true)
+    Long getNextPolicyIdSequence();
+
     List<Policy> findAllByStatusAndIsLatestTrue(PolicyStatus status);
 
     Optional<Policy> findByPolicyId(String id);
+
+    Optional<Policy> findByPolicyIdAndIsLatestTrue(String id);
 
 }

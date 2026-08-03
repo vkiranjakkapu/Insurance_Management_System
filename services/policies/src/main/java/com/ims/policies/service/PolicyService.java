@@ -10,7 +10,7 @@ import com.ims.policies.models.Policy;
 
 public interface PolicyService {
 
-    List<Policy> getAllPolicies();
+    List<PolicyResponseDto> getAllPolicies();
 
     List<Policy> getAllPoliciesByStatus(PolicyStatus status);
 
@@ -18,7 +18,7 @@ public interface PolicyService {
 
     Policy getPolicyById(Long id);
 
-    Policy getPolicyByPolicyId(String id);
+    PolicyResponseDto getPolicyByPolicyId(String id);
 
     PolicyResponseDto createPolicy(CreatePolicyRequestDto request);
 

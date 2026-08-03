@@ -22,127 +22,133 @@ import com.ims.premiums.exception.ResourceNotFoundException;
 import com.ims.premiums.models.PolicySubscription;
 import com.ims.premiums.models.PremiumPayment;
 import com.ims.premiums.repository.PremiumPaymentsRepository;
+import com.ims.premiums.service.imp.CurrentUserServiceImp;
 import com.ims.premiums.service.imp.PaymentsServiceImp;
 
 @ExtendWith(MockitoExtension.class)
 class PaymentsServiceImpTest {
 
-    @Mock
-    private PremiumPaymentsRepository paymentsRepository;
+	@Mock
+	private PremiumPaymentsRepository paymentsRepository;
 
-    @InjectMocks
-    private PaymentsServiceImp service;
+	@Mock
+	private CurrentUserServiceImp currentUser;
 
-    private UUID paymentId;
-    private UUID customerId;
-    private UUID subscriptionId;
+	@InjectMocks
+	private PaymentsServiceImp service;
 
-    private PremiumPayment payment;
+	private UUID paymentId;
+	private UUID customerId;
+	private UUID subscriptionId;
 
-    @BeforeEach
-    void setUp() {
+	private PremiumPayment payment;
 
-        paymentId = UUID.randomUUID();
-        customerId = UUID.randomUUID();
-        subscriptionId = UUID.randomUUID();
+	@BeforeEach
+	void setUp() {
 
-        payment = new PremiumPayment();
-        payment.setId(paymentId);
-        payment.setCustomerId(customerId);
-        payment.setSubscription(
-                PolicySubscription.builder()
-                        .id(subscriptionId)
-                        .build());
-    }
+		paymentId = UUID.randomUUID();
+		customerId = UUID.randomUUID();
+		subscriptionId = UUID.randomUUID();
 
-    @Test
-    void shouldReturnPremiumPaymentById() {
+		payment = new PremiumPayment();
+		payment.setId(paymentId);
+		payment.setCustomerId(customerId);
+		payment.setSubscription(
+				PolicySubscription.builder()
+						.id(subscriptionId)
+						.build());
+	}
 
-        when(paymentsRepository.findById(paymentId))
-                .thenReturn(Optional.of(payment));
+	@Test
+	void shouldReturnPremiumPaymentById() {
 
-        PremiumPayment result = service.getPremiumPaymentById(paymentId);
+		when(paymentsRepository.findById(paymentId))
+				.thenReturn(Optional.of(payment));
 
-        assertSame(payment, result);
+		PremiumPayment result = service.getPremiumPaymentById(paymentId);
 
-        verify(paymentsRepository).findById(paymentId);
-    }
+		assertSame(payment, result);
 
-    @Test
-    void shouldThrowWhenPaymentNotFound() {
+		verify(paymentsRepository).findById(paymentId);
+	}
 
-        when(paymentsRepository.findById(paymentId))
-                .thenReturn(Optional.empty());
+	@Test
+	void shouldThrowWhenPaymentNotFound() {
 
-        assertThrows(
-                ResourceNotFoundException.class,
-                () -> service.getPremiumPaymentById(paymentId));
+		when(paymentsRepository.findById(paymentId))
+				.thenReturn(Optional.empty());
 
-        verify(paymentsRepository).findById(paymentId);
-    }
+		assertThrows(
+				ResourceNotFoundException.class,
+				() -> service.getPremiumPaymentById(paymentId));
 
-    @Test
-    void shouldReturnAllPremiumPayments() {
+		verify(paymentsRepository).findById(paymentId);
+	}
 
-        List<PremiumPayment> payments = List.of(payment);
+	@Test
+	void shouldReturnAllPremiumPayments() {
 
-        when(paymentsRepository.findAll())
-                .thenReturn(payments);
+		List<PremiumPayment> payments = List.of(payment);
 
-        List<PremiumPayment> result = service.getAllPremiumPayments();
+		when(paymentsRepository.findAll())
+				.thenReturn(payments);
 
-        assertEquals(payments, result);
+		List<PremiumPayment> result = service.getAllPremiumPayments();
 
-        verify(paymentsRepository).findAll();
-    }
+		assertEquals(payments, result);
 
-    @Test
-    void shouldReturnPaymentsByCustomer() {
+		verify(paymentsRepository).findAll();
+	}
 
-        List<PremiumPayment> payments = List.of(payment);
+	@Test
+	void shouldReturnPaymentsByCustomer() {
 
-        when(paymentsRepository.findAllByCustomerId(customerId))
-                .thenReturn(payments);
+		List<PremiumPayment> payments = List.of(payment);
 
-        List<PremiumPayment> result =
-                service.getAllPremiumPaymentsByCustomer(customerId);
+		when(paymentsRepository.findAllByCustomerId(customerId))
+				.thenReturn(payments);
 
-        assertEquals(payments, result);
+		List<PremiumPayment> result = service.getAllPremiumPaymentsByCustomer(customerId);
 
-        verify(paymentsRepository).findAllByCustomerId(customerId);
-    }
+		assertEquals(payments, result);
 
-    @Test
-    void shouldReturnPaymentsBySubscription() {
+		verify(paymentsRepository).findAllByCustomerId(customerId);
+	}
 
-        List<PremiumPayment> payments = List.of(payment);
+	@Test
+	void shouldReturnPaymentsBySubscription() {
 
-        when(paymentsRepository.findAllBySubscription(any(PolicySubscription.class)))
-                .thenReturn(payments);
+		List<PremiumPayment> payments = List.of(payment);
 
-        List<PremiumPayment> result =
-                service.getAllPremiumPaymentsBySubscription(subscriptionId);
+		when(paymentsRepository.findAllBySubscription(any(PolicySubscription.class)))
+				.thenReturn(payments);
 
-        assertEquals(payments, result);
+		List<PremiumPayment> result = service.getAllPremiumPaymentsBySubscription(subscriptionId);
 
-        verify(paymentsRepository)
-                .findAllBySubscription(any(PolicySubscription.class));
-    }
+		assertEquals(payments, result);
 
-    @Test
-    void shouldPayPremium() {
+		verify(paymentsRepository)
+				.findAllBySubscription(any(PolicySubscription.class));
+	}
 
-        when(paymentsRepository.findById(paymentId))
-                .thenReturn(Optional.of(payment));
+	@Test
+	void shouldPayPremium() {
 
-        when(paymentsRepository.save(payment))
-                .thenReturn(payment);
+		when(paymentsRepository.findById(paymentId))
+				.thenReturn(Optional.of(payment));
 
-        PremiumPayment result = service.payPremium(paymentId);
+		when(currentUser.userId())
+				.thenReturn(customerId);
 
-        assertSame(payment, result);
+		when(paymentsRepository.save(payment))
+				.thenReturn(payment);
 
-        verify(paymentsRepository).findById(paymentId);
-        verify(paymentsRepository).save(payment);
-    }
+		PremiumPayment result = service.payPremium(paymentId);
+
+		assertSame(payment, result);
+
+		verify(currentUser).userId();
+		verify(paymentsRepository).findById(paymentId);
+		verify(paymentsRepository).save(payment);
+	}
 }
