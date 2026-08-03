@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ims.identity.dto.APIResponseDto;
 import com.ims.identity.dto.CreateUserRequestDto;
 import com.ims.identity.dto.FetchUsersRequestDto;
-import com.ims.identity.dto.FetchUsersResponseDto;
 import com.ims.identity.dto.PasswordChangeRequestDto;
 import com.ims.identity.dto.UpdateUserRequest;
 import com.ims.identity.dto.UserResponse;
@@ -108,9 +107,9 @@ public class UserController {
     @Operation(summary = "Get all users with ids")
     @PostMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN','AGENT','CUSTOMER')")
-    public ResponseEntity<FetchUsersResponseDto> getAllUsersWithIds(@RequestBody FetchUsersRequestDto request) {
+    public ResponseEntity<APIResponseDto> getAllUsersWithIds(@RequestBody FetchUsersRequestDto request) {
         return ResponseEntity
-                .ok(FetchUsersResponseDto.builder().users(userService.getAllUsersWithIds(request.ids())).build());
+                .ok(APIResponseDto.builder().body(userService.getAllUsersWithIds(request.ids())).build());
     }
 
     @Operation(summary = "Update user")

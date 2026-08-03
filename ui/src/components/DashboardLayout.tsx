@@ -105,6 +105,8 @@ export default function DashboardLayout<T>({
                                             icon={btn.icon}
                                             onClick={btn.onClick}
                                             key={idx}
+                                            theme={btn.theme}
+                                            unsetClass={btn.unsetClass}
                                             className={`${roundedClass} px-3.5 py-2`}
                                         />
                                     );

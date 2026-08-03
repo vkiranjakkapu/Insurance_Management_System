@@ -19,10 +19,26 @@ class PremiumsService {
             uri: "/subscriptions/",
         });
     }
+
+    async getSubscriptionById<T>(id?: string): Promise<T | ErrorResponse> {
+        return apiClient({
+            type: "get",
+            service: "premiums",
+            uri: "/subscriptions/" + id,
+        });
+    }
+
+    async acceptSubscription<T>(payload: unknown): Promise<T | ErrorResponse> {
+        return apiClient({
+            type: "patch",
+            service: "premiums",
+            uri: "/subscriptions/",
+            payload,
+        });
+    }
 }
 
 export default new PremiumsService();
-
 
 export type PolicySubscription = {
     id: number;

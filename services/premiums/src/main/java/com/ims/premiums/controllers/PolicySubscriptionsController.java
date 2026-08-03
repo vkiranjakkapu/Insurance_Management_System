@@ -1,6 +1,7 @@
 package com.ims.premiums.controllers;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -52,8 +53,16 @@ public class PolicySubscriptionsController {
                 .body(subscriptionService.getAllPolicySubscriptionsPrepared(allPolicySubscriptions)).build());
     }
 
+    @Operation(summary = "Get subscription by ID")
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN','AGENT','CUSTOMER')")
+    public ResponseEntity<APIResponseDto> getSubscriptionById(@PathVariable UUID id) {
+        return ResponseEntity.ok(APIResponseDto.builder()
+                .body(subscriptionService.getSubscriptionResponse(id)).build());
+    }
+
     @Operation(summary = "Get all subscriptions by status")
-    @GetMapping("/status/{status}")
+    @GetMapping("/search/{status}")
     @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<APIResponseDto> getAllSubscriptionsByStatus(@PathVariable SubscriptionStatus status) {
         List<PolicySubscription> allPolicySubscriptions;
@@ -67,7 +76,10 @@ public class PolicySubscriptionsController {
     @PreAuthorize("hasAnyRole('CUSTOMER')")
     public ResponseEntity<APIResponseDto> acceptSubscription(@RequestBody UpdateSubscriptionDto request) {
         return ResponseEntity
-                .ok(APIResponseDto.builder().body(subscriptionService.updateSubscription(request)).build());
+                .ok(APIResponseDto.builder()
+                        .body(subscriptionService
+                                .getSubscriptionResponse(subscriptionService.updateSubscription(request).getId()))
+                        .build());
     }
 
     @Operation(summary = "Make policy subscription/purchase")

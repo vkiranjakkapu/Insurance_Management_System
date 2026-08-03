@@ -21,18 +21,17 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import com.ims.claims.dto.AssignClaimRequestDto;
 import com.ims.claims.dto.ClaimProofDto;
 import com.ims.claims.dto.CreateClaimRequestDto;
+import com.ims.claims.dto.SubscriptionsResposneDto;
 import com.ims.claims.dto.UpdateClaimRequestDto;
 import com.ims.claims.enums.ClaimStatus;
 import com.ims.claims.exception.ForbiddenException;
 import com.ims.claims.exception.ResourceNotFoundException;
-import com.ims.claims.exception.SubscriptionNotFound;
 import com.ims.claims.models.Claim;
 import com.ims.claims.models.Document;
-import com.ims.claims.models.PolicySubscription;
+import com.ims.claims.models.User;
 import com.ims.claims.repository.ClaimRepository;
 import com.ims.claims.service.CurrentUserService;
 import com.ims.claims.service.DocumentService;
-import com.ims.claims.service.PremiumsService;
 import com.ims.claims.service.imp.ClaimServiceImp;
 
 @ExtendWith(MockitoExtension.class)
@@ -45,9 +44,6 @@ class ClaimServiceImpTest {
 	private DocumentService documentService;
 
 	@Mock
-	private PremiumsService subscriptionService;
-
-	@Mock
 	private CurrentUserService currentUser;
 
 	@InjectMocks
@@ -58,7 +54,7 @@ class ClaimServiceImpTest {
 	private UUID resolverId;
 
 	private Claim claim;
-	private PolicySubscription subscription;
+	private SubscriptionsResposneDto subscription;
 	private Document document;
 
 	private CreateClaimRequestDto createRequest;
@@ -75,9 +71,9 @@ class ClaimServiceImpTest {
 		document = new Document();
 		document.setId(10L);
 
-		subscription = PolicySubscription.builder()
+		subscription = SubscriptionsResposneDto.builder()
 				.id(UUID.randomUUID())
-				.customerId(customerId)
+				.customer(User.builder().id(customerId).build())
 				.build();
 
 		claim = new Claim();
@@ -89,13 +85,13 @@ class ClaimServiceImpTest {
 		claim.setProofs(List.of());
 
 		createRequest = new CreateClaimRequestDto(
-				subscription.getId(),
+				subscription.id(),
+				customerId,
 				"Medical emergency",
 				List.of(
 						ClaimProofDto.builder()
 								.docId(10L)
-								.build()),
-				ClaimStatus.INITIATED);
+								.build()));
 
 		assignRequest = new AssignClaimRequestDto(
 				1L,
@@ -285,9 +281,6 @@ class ClaimServiceImpTest {
 
 		when(currentUser.userId()).thenReturn(customerId);
 
-		when(subscriptionService.getSubscriptionById(subscription.getId()))
-				.thenReturn(subscription);
-
 		when(documentService.getDocumentById(10L))
 				.thenReturn(document);
 
@@ -297,30 +290,15 @@ class ClaimServiceImpTest {
 		Claim result = service.createClaim(createRequest);
 
 		assertNotNull(result);
-		assertEquals(subscription.getId(), result.getSubscriptionId());
+		assertEquals(subscription.id(), result.getSubscriptionId());
 		assertEquals(customerId, result.getResolverId());
 		assertEquals(1, result.getProofs().size());
 		assertEquals(document.getId(), result.getProofs().get(0).getDocumentId());
 
-		verify(subscriptionService).getSubscriptionById(subscription.getId());
 		verify(documentService).getDocumentById(10L);
 		verify(claimRepository).save(org.mockito.ArgumentMatchers.any(Claim.class));
 	}
 
-	@Test
-	void shouldThrowWhenSubscriptionDoesNotBelongToCurrentUser() {
-
-		when(currentUser.userId()).thenReturn(UUID.randomUUID());
-
-		when(subscriptionService.getSubscriptionById(subscription.getId()))
-				.thenReturn(subscription);
-
-		assertThrows(
-				SubscriptionNotFound.class,
-				() -> service.createClaim(createRequest));
-
-		verify(subscriptionService).getSubscriptionById(subscription.getId());
-	}
 
 	@Test
 	void shouldMapEveryProofDocument() {
@@ -334,10 +312,10 @@ class ClaimServiceImpTest {
 				.build();
 
 		CreateClaimRequestDto request = new CreateClaimRequestDto(
-				subscription.getId(),
+				subscription.id(),
+				customerId,
 				"Reason",
-				List.of(proof1, proof2),
-				ClaimStatus.INITIATED);
+				List.of(proof1, proof2));
 
 		Document doc1 = new Document();
 		doc1.setId(10L);
@@ -346,9 +324,6 @@ class ClaimServiceImpTest {
 		doc2.setId(20L);
 
 		when(currentUser.userId()).thenReturn(customerId);
-
-		when(subscriptionService.getSubscriptionById(subscription.getId()))
-				.thenReturn(subscription);
 
 		when(documentService.getDocumentById(10L)).thenReturn(doc1);
 		when(documentService.getDocumentById(20L)).thenReturn(doc2);

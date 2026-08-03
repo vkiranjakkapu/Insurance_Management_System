@@ -2,10 +2,10 @@ package com.ims.claims.service;
 
 import java.util.UUID;
 
-import com.ims.claims.models.PolicySubscription;
+import com.ims.claims.dto.SubscriptionsResposneDto;
 
 public interface PremiumsService {
 
-    PolicySubscription getSubscriptionById(UUID id);
+    SubscriptionsResposneDto getSubscriptionById(UUID id);
 
 }

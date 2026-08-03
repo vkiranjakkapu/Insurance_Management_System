@@ -1,4 +1,4 @@
-package com.ims.premiums.service.imp;
+package com.ims.claims.service.imp;
 
 import java.util.List;
 import java.util.Map;
@@ -13,12 +13,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClient;
 
-import com.ims.premiums.dto.FetchUsersRequestDto;
-import com.ims.premiums.dto.RestResponseDto;
-import com.ims.premiums.dto.UserResponse;
-import com.ims.premiums.exception.InternalCommunicationException;
-import com.ims.premiums.exception.ResourceNotFoundException;
-import com.ims.premiums.models.User;
+import com.ims.claims.dto.FetchUsersRequestDto;
+import com.ims.claims.dto.RestResponseDto;
+import com.ims.claims.dto.UserResponse;
+import com.ims.claims.exception.InternalCommunicationException;
+import com.ims.claims.models.User;
 
 @Service
 public class CustomersServiceImp {
@@ -29,7 +28,6 @@ public class CustomersServiceImp {
     private String IDENTITY_SERVICE_URL;
 
     public CustomersServiceImp(@LoadBalanced RestClient.Builder builder) {
-
         this.restClient = builder.build();
     }
 
@@ -60,14 +58,14 @@ public class CustomersServiceImp {
                     .retrieve().body(new ParameterizedTypeReference<RestResponseDto<List<UserResponse>>>() {
 
                     });
-
+            System.out.println(body.getBody());
             return body.getBody();
         } catch (HttpStatusCodeException e) {
             String rawJsonResponseBody = e.getResponseBodyAsString();
             throw new InternalCommunicationException(rawJsonResponseBody);
         } catch (Exception e) {
             e.printStackTrace();
-            throw new ResourceNotFoundException(e.getMessage());
+            throw new InternalCommunicationException(e.getMessage());
         }
     }
 }

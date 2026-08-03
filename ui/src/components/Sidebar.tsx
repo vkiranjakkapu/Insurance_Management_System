@@ -108,7 +108,7 @@ export default function Sidebar({ children }: SidebarLayoutProps): JSX.Element {
             roles: ["ADMIN", "AGENT", "CUSTOMER"],
         },
         {
-            label: "Clients",
+            label: "Personnel",
             route: RoutePaths.CUSTOMERS,
             icon: UsersIcon,
             active: false,

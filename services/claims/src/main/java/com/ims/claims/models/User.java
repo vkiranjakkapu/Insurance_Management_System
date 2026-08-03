@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.Set;
 import java.util.UUID;
 
+import com.ims.claims.enums.UserGender;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,6 +24,8 @@ public class User {
     private String email;
 
     private String password;
+
+    private UserGender gender;
 
     private String firstName;
 

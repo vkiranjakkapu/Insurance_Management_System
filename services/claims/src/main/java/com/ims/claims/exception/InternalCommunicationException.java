@@ -1,4 +1,4 @@
-package com.ims.premiums.exception;
+package com.ims.claims.exception;
 
 public class InternalCommunicationException extends RuntimeException {
 
