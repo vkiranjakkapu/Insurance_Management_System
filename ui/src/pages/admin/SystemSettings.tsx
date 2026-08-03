@@ -1,4 +1,4 @@
-import DashboardLayout from "../dashboard/Dashboard";
+import DashboardLayout from "../../components/DashboardLayout";
 
 export default function SystemSettings() {
     return (

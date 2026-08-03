@@ -23,7 +23,7 @@ public class NomineeServiceImp implements NomineeService {
 
     @Override
     public List<Nominee> getAllNomineesByCustomer(UUID customerId) {
-        return nomineeRepository.findAllByPolicyHolder(User.builder().id(customerId).build());
+        return nomineeRepository.findAllByCustomer(User.builder().id(customerId).build());
     }
 
     @Override

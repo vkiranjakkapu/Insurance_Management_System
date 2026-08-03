@@ -5,10 +5,18 @@ type ProfileContextType = {
     isLoaded: boolean;
 };
 
+export const UserGender = {
+    MALE: "MALE",
+    FEMALE: "FEMALE",
+    NON_DISCLOSED: "NON_DISCLOSED",
+} as const;
+export type UserGender = (typeof UserGender)[keyof typeof UserGender];
+
 export type UserProfile = {
-    id: number;
+    id: string;
     email: string;
     name: string;
+    gender: UserGender;
     firstName: string;
     lastName: string;
     phone: string;

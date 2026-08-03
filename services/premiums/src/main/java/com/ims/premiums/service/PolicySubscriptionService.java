@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import com.ims.premiums.dto.PolicySubscriptionRequestDto;
+import com.ims.premiums.dto.SubscriptionsResposneDto;
 import com.ims.premiums.dto.UpdateSubscriptionDto;
 import com.ims.premiums.enums.SubscriptionStatus;
 import com.ims.premiums.models.PolicySubscription;
@@ -13,9 +14,15 @@ public interface PolicySubscriptionService {
 
     PolicySubscription getSubscriptionById(UUID id);
 
+    public SubscriptionsResposneDto getSubscriptionResponse(UUID id);
+
     List<PolicySubscription> getAllSubscriptionsByCustomer(UUID custId);
 
+    public List<PolicySubscription> getAllSubscriptionsByAgent(UUID agentId);
+
     List<PolicySubscription> getAllPolicySubscriptions();
+
+    public List<SubscriptionsResposneDto> getAllPolicySubscriptionsPrepared(List<PolicySubscription> allSubscriptions);
 
     List<PolicySubscription> getAllSubscriptionsByPolicyId(Long policyId);
 
@@ -26,7 +33,7 @@ public interface PolicySubscriptionService {
 
     List<PolicySubscription> getAllSubscriptionsByStatus(SubscriptionStatus status);
 
-    PolicySubscription createSubscription(PolicySubscriptionRequestDto policySubscriptionRequest);
+    List<PolicySubscription> createSubscription(PolicySubscriptionRequestDto policySubscriptionRequest);
 
     PolicySubscription updateSubscription(UpdateSubscriptionDto request);
 

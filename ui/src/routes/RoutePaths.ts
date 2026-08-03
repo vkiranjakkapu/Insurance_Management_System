@@ -1,14 +1,16 @@
 export const RoutePaths = {
     HOME: "/",
     DASHBOARD: "/dashboard",
-    AGENT: "/agent",
     CUSTOMERS: "/customers",
-    EMPLOYEES: "/employees",
+    USERS: "/users",
+    SUBSCIPRTIONS: "/subscriptions",
+    SUBSCIPRTION_DETAILS: "/subscriptions/:id",
 
     AGENT_DETAILS: "/agent/:id",
     EMPLOYEE_DETAILS: "/employees/:id",
     CUSTOMER_DETAILS: "/customers/:id",
 
+    PROFILE: "/profile",
     POLICIES: "/policies",
     POLICY_DETAILS: "/policies/:id",
 

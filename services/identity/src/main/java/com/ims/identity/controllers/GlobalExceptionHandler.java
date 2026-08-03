@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(EmailAlreadyUsedException.class)
     public ResponseEntity<ErrorResponse> handleDuplicateResourceException(EmailAlreadyUsedException e) {
-        return ResponseEntity.status(HttpStatus.IM_USED)
+        return ResponseEntity.status(HttpStatus.CONFLICT)
                 .body(new ErrorResponse(IdentityExceptions.DUPLICATE_RESOURCE_FOUND, e.getMessage()));
     }
 

@@ -2,6 +2,7 @@ package com.ims.identity.services.imp;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -17,6 +18,7 @@ import com.ims.identity.dto.UpdateUserRequest;
 import com.ims.identity.dto.UserResponse;
 import com.ims.identity.entities.Address;
 import com.ims.identity.entities.Role;
+import com.ims.identity.entities.RoleType;
 import com.ims.identity.entities.User;
 import com.ims.identity.exceptions.EmailAlreadyUsedException;
 import com.ims.identity.exceptions.ForbiddenException;
@@ -58,9 +60,10 @@ public class UserServiceImpl implements UserService {
 				.firstName(request.firstName())
 				.lastName(request.lastName())
 				.email(request.email())
-				.password(passwordEncoder.encode(request.password()))
+				.password(passwordEncoder.encode(Optional.ofNullable(request.password()).orElse("password")))
 				.dob(request.dob())
 				.phone(request.phone())
+				.gender(request.gender())
 				.address(Address.builder()
 						.street(request.address().street())
 						.pinCode(request.address().pinCode())
@@ -86,10 +89,21 @@ public class UserServiceImpl implements UserService {
 	@Transactional(readOnly = true)
 	public List<UserResponse> getAllUsers() {
 
-		return userRepository.findAll()
+		return userRepository.findAllByDeletedFalse()
 				.stream()
 				.map(this::mapToResponse)
 				.toList();
+	}
+
+	@Override
+	public List<UserResponse> getAllUsersByRole(RoleType type) {
+		Role role = roleRepository.findByName(type)
+				.orElseThrow(() -> new ResourceNotFoundException("Role not found: " + type));
+		// 2. Pass the managed entity to your repository method
+		// List<User> users =
+		// userRepository.findAllByRolesAndDeletedFalse(Set.of(role));
+		// Set<Role> roles = Set.of(Role.builder().name(role).build());
+		return userRepository.findAllByRolesAndDeletedFalse(Set.of(role)).stream().map(this::mapToResponse).toList();
 	}
 
 	@Override
@@ -135,7 +149,7 @@ public class UserServiceImpl implements UserService {
 		address.setId(user.getAddress().getId());
 		address.setDeleted(false);
 		user.setAddress(address);
-		user.setDob(request.dob());
+		user.setDob(user.getDob());
 		user.setEnabled(request.enabled());
 
 		return mapToResponse(userRepository.save(user));
@@ -181,6 +195,7 @@ public class UserServiceImpl implements UserService {
 				.lastName(user.getLastName())
 				.email(user.getEmail())
 				.phone(user.getPhone())
+				.gender(user.getGender())
 				.address(user.getAddress())
 				.dob(user.getDob())
 				.enabled(user.isEnabled())
@@ -201,6 +216,7 @@ public class UserServiceImpl implements UserService {
 				.lastName(user.getLastName())
 				.email(user.getEmail())
 				.phone(user.getPhone())
+				.gender(user.getGender())
 				.address(user.getAddress())
 				.dob(user.getDob())
 				.enabled(user.isEnabled())

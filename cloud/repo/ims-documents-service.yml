@@ -2,3 +2,10 @@ database:
     host: localhost
     port: 5432
     name: ims_documents
+
+spring:
+    servlet:
+        multipart:
+            enabled: true
+            max-file-size: 10MB      # Max size allowed for a single file
+            max-request-size: 10MB   # Max total size allowed for a multipart request

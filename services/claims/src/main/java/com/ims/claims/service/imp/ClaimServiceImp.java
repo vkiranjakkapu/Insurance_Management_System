@@ -1,22 +1,27 @@
 package com.ims.claims.service.imp;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.ims.claims.dto.AssignClaimRequestDto;
 import com.ims.claims.dto.ClaimProofDto;
+import com.ims.claims.dto.ClaimResponseDto;
 import com.ims.claims.dto.CreateClaimRequestDto;
 import com.ims.claims.dto.UpdateClaimRequestDto;
 import com.ims.claims.enums.ClaimStatus;
 import com.ims.claims.exception.ForbiddenException;
 import com.ims.claims.exception.ResourceNotFoundException;
-import com.ims.claims.exception.SubscriptionNotFound;
 import com.ims.claims.models.Claim;
 import com.ims.claims.models.ClaimProof;
-import com.ims.claims.models.PolicySubscription;
+import com.ims.claims.models.User;
 import com.ims.claims.repository.ClaimRepository;
 import com.ims.claims.service.ClaimService;
 import com.ims.claims.service.CurrentUserService;
@@ -29,10 +34,11 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ClaimServiceImp implements ClaimService {
 
+    private final CustomersServiceImp customersService;
     private final ClaimRepository claimRepository;
     private final DocumentService documentService;
-    private final PremiumsService premiumsService;
     private final CurrentUserService currentUser;
+    private final PremiumsService premiumsService;
 
     @Override
     @Transactional(readOnly = true)
@@ -47,6 +53,63 @@ public class ClaimServiceImp implements ClaimService {
             }
         }
         return claim;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Claim getClaimByClaimId(String claimId) {
+        Claim claim = claimRepository.findByClaimId(claimId)
+                .orElseThrow(() -> new ResourceNotFoundException("Claim not found"));
+        if (!currentUser.isAdmin()) {
+            if (currentUser.isCustomer() && !claim.getCustomerId().equals(currentUser.userId())) {
+                throw new ForbiddenException("Forbidden Access Attempted!");
+            } else if (currentUser.isAgent() && !claim.getAgentId().equals(currentUser.userId())) {
+                throw new ForbiddenException("Claim not assigned to you.");
+            }
+        }
+
+        return claim;
+    }
+
+    @Override
+    public ClaimResponseDto mapClaimResponse(Claim claim) {
+
+        Set<UUID> userIds = Stream.of(claim.getCustomerId(), claim.getAgentId(), claim.getResolverId())
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+
+        Map<UUID, User> allUsers = customersService.getAllUsersByIds(userIds);
+
+        return ClaimResponseDto.builder()
+                .id(claim.getId())
+                .subscription(premiumsService.getSubscriptionById(claim.getSubscriptionId()))
+                .claimId(claim.getClaimId())
+                .reason(claim.getReason())
+                .proofs(claim.getProofs().stream().map(ClaimProof::getDocumentId).toList().stream()
+                        .map(docId -> documentService.getDocumentById(docId)).toList())
+                .status(claim.getStatus())
+                .agent(allUsers.get(claim.getAgentId()))
+                .resolver(allUsers.get(claim.getResolverId()))
+                .updatedAt(claim.getUpdatedAt())
+                .createdAt(claim.getCreatedAt())
+                .build();
+    }
+
+    @Override
+    public ClaimResponseDto mapClaimResponse(Claim claim, Map<UUID, User> allUsers) {
+        return ClaimResponseDto.builder()
+                .id(claim.getId())
+                .subscription(premiumsService.getSubscriptionById(claim.getSubscriptionId()))
+                .claimId(claim.getClaimId())
+                .reason(claim.getReason())
+                .proofs(claim.getProofs().stream().map(ClaimProof::getDocumentId).toList().stream()
+                        .map(docId -> documentService.getDocumentById(docId)).toList())
+                .status(claim.getStatus())
+                .agent(allUsers.get(claim.getAgentId()))
+                .resolver(allUsers.get(claim.getResolverId()))
+                .updatedAt(claim.getUpdatedAt())
+                .createdAt(claim.getCreatedAt())
+                .build();
     }
 
     @Override
@@ -89,23 +152,21 @@ public class ClaimServiceImp implements ClaimService {
     @Transactional
     public Claim createClaim(CreateClaimRequestDto claimRequest) {
         // ? customerId, subscriptionId, proofDocs
-
         Claim claim = new Claim();
         claim.setReason(claimRequest.reason());
-        claim.setStatus(claimRequest.status());
-
-        PolicySubscription subscription = premiumsService.getSubscriptionById(claimRequest.subscriptionId());
-
-        if (!subscription.getCustomerId().equals(currentUser.userId()))
-            throw new SubscriptionNotFound("Subscription Not Found!");
-
-        claim.setSubscriptionId(subscription.getId());
+        claim.setCustomerId(claimRequest.customerId());
+        claim.setSubscriptionId(claimRequest.subscriptionId());
+        System.out.println(claimRequest);
 
         claim.setProofs(claimRequest.proofs().stream()
                 .map(this::mapToProof)
+                .map(cp -> {
+                    cp.setClaim(claim);
+                    return cp;
+                })
                 .toList());
-
         claim.setResolverId(currentUser.userId());
+
         return claimRepository.save(claim);
     }
 

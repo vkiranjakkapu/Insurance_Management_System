@@ -16,14 +16,13 @@ import {
     ArrowLeftEndOnRectangleIcon,
     Bars3Icon,
     Cog6ToothIcon,
-    IdentificationIcon,
     InboxArrowDownIcon,
     MoonIcon,
     PresentationChartLineIcon,
     SunIcon,
     UsersIcon,
     WalletIcon,
-    XMarkIcon,
+    XMarkIcon
 } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import usePrincipal from "../context/usePrincipal";
@@ -45,10 +44,11 @@ interface NavItem {
         }
     >;
     active: boolean;
+    roles: string[];
 }
 
 export default function Sidebar({ children }: SidebarLayoutProps): JSX.Element {
-    const auth = usePrincipal();
+    const { principal, logout } = usePrincipal();
     const { profile } = useProfile();
     const navigate = useNavigate();
 
@@ -84,36 +84,42 @@ export default function Sidebar({ children }: SidebarLayoutProps): JSX.Element {
             route: RoutePaths.DASHBOARD,
             icon: PresentationChartLineIcon,
             active: true,
+            roles: ["ADMIN", "AGENT", "CUSTOMER"],
         },
         {
             label: "Policies",
             route: RoutePaths.POLICIES,
             icon: WalletIcon,
             active: false,
+            roles: ["ADMIN", "AGENT", "CUSTOMER"],
+        },
+        {
+            label: "Subscriptions",
+            route: RoutePaths.SUBSCIPRTIONS,
+            icon: InboxArrowDownIcon,
+            active: false,
+            roles: ["ADMIN", "AGENT", "CUSTOMER"],
         },
         {
             label: "Claims",
             route: RoutePaths.CLAIMS,
             icon: InboxArrowDownIcon,
             active: false,
+            roles: ["ADMIN", "AGENT", "CUSTOMER"],
         },
         {
-            label: "Agents",
-            route: RoutePaths.EMPLOYEES,
-            icon: IdentificationIcon,
-            active: false,
-        },
-        {
-            label: "Customers",
+            label: "Personnel",
             route: RoutePaths.CUSTOMERS,
             icon: UsersIcon,
             active: false,
+            roles: ["ADMIN", "AGENT"],
         },
         {
             label: "Settings",
             route: RoutePaths.SYSTEM_SETTINGS,
             icon: Cog6ToothIcon,
             active: false,
+            roles: ["ADMIN"],
         },
     ];
 
@@ -173,6 +179,11 @@ export default function Sidebar({ children }: SidebarLayoutProps): JSX.Element {
                         const isActive =
                             location.pathname === item.route ||
                             location.pathname.startsWith(`${item.route}/`);
+
+                        if (!item.roles.includes(principal.roles[0])) {
+                            return;
+                        }
+
                         return (
                             <button
                                 key={idx}
@@ -222,8 +233,16 @@ export default function Sidebar({ children }: SidebarLayoutProps): JSX.Element {
                     </button>
 
                     {/* Profile Summary Slot */}
-                    <div className="flex items-center justify-between px-2 pt-1">
-                        <div className="flex items-center gap-3 min-w-0">
+                    <div
+                        className={`flex items-center justify-between cursor-pointer p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-gray-800 transition-colors duration-100 
+                                ${location.pathname == RoutePaths.PROFILE ? "bg-slate-200 dark:bg-slate-800/80" : ""}`}
+                    >
+                        <div
+                            className="flex items-center gap-3 min-w-0"
+                            onClick={() => {
+                                navigate(RoutePaths.PROFILE);
+                            }}
+                        >
                             <img
                                 src={ProfileIcon}
                                 alt="Avatar"
@@ -241,7 +260,7 @@ export default function Sidebar({ children }: SidebarLayoutProps): JSX.Element {
                         <button
                             className="text-gray-400 hover:text-red-500 dark:text-gray-500 dark:hover:text-red-400 p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-900 transition-colors"
                             aria-label="Log out"
-                            onClick={() => auth.logout()}
+                            onClick={() => logout()}
                         >
                             <ArrowLeftEndOnRectangleIcon className="h-5 w-5" />
                         </button>

@@ -1,7 +1,7 @@
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
 
-import type { ReactNode } from "react";
-import DashboardLayout from "../pages/dashboard/Dashboard";
+import type { ChangeEvent, ReactNode } from "react";
+import DashboardLayout from "./DashboardLayout";
 import ActionButton, { type ActionButtonProps } from "./ActionButton";
 import { type UsePaginationReturn } from "./common/usePagination";
 
@@ -21,9 +21,13 @@ export type CustomTableData<T extends object> = {
 };
 
 interface CustomTableProps<T extends object> {
-    title: string;
-    description: string;
+    title?: string;
+    description?: string;
     actionButtons?: ActionButtonProps[];
+    selectOptions?: {
+        selectedItems: T[];
+        handleCheckbox: (e: ChangeEvent<HTMLInputElement>, item: T) => void;
+    };
     headers: (keyof T | string)[];
     pagination?: UsePaginationReturn<T>;
     perPage?: number;
@@ -36,6 +40,7 @@ interface CustomTableProps<T extends object> {
     };
     dataFetchProgress?: boolean;
     renderCellValue?: (value: unknown) => ReactNode;
+    itemActionText?: string;
     onActionClick?: (item: T) => void;
 }
 
@@ -44,11 +49,13 @@ export default function CustomTableComponent<T extends object>({
     description,
     actionButtons,
     searchField,
+    selectOptions,
     pagination,
     headers,
     body,
     footer,
     dataFetchProgress,
+    itemActionText,
     renderCellValue,
     onActionClick,
 }: CustomTableProps<T>) {
@@ -87,6 +94,7 @@ export default function CustomTableComponent<T extends object>({
                             {headers && (
                                 <thead className="border-b border-slate-200 bg-slate-50/50 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:border-slate-800 dark:bg-slate-800/40 dark:text-slate-400">
                                     <tr>
+                                        {selectOptions && <th>Select</th>}
                                         {headers.map((headerKey) => {
                                             return (
                                                 <th
@@ -117,6 +125,28 @@ export default function CustomTableComponent<T extends object>({
                                             key={idx}
                                             className="hover:bg-slate-50/80 transition-colors dark:hover:bg-slate-800/40"
                                         >
+                                            {/* Optional Checkbox Action Column */}
+                                            {selectOptions && (
+                                                <td className="px-6 py-4 text-right">
+                                                    <input
+                                                        type="checkbox"
+                                                        name="document"
+                                                        id={`item-${idx}`}
+                                                        className="me-2 cursor-pointer h-4 w-4 text-indigo-600 border-slate-300 rounded focus:ring-indigo-500 disabled:bg-red-400"
+                                                        // Bind change listener
+                                                        onChange={(e) =>
+                                                            selectOptions.handleCheckbox(
+                                                                e,
+                                                                item,
+                                                            )
+                                                        }
+                                                        // Controlled checkbox: returns true if the number 1 is in our array
+                                                        checked={selectOptions.selectedItems.includes(
+                                                            item,
+                                                        )}
+                                                    />
+                                                </td>
+                                            )}
                                             {/* Dynamically Map Object Keys to Table Cells */}
                                             {headers.map((headerKey) => {
                                                 const keyName = String(
@@ -146,7 +176,10 @@ export default function CustomTableComponent<T extends object>({
                                                         }
                                                         icon={ChevronRightIcon}
                                                         iconAfter={true}
-                                                        text="Manage"
+                                                        text={
+                                                            itemActionText ??
+                                                            "Manage"
+                                                        }
                                                         unsetClass={true}
                                                         className={`inline-flex items-center gap-1 font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors`}
                                                     />

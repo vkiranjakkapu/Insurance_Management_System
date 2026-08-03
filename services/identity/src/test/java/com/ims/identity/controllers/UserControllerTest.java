@@ -36,6 +36,7 @@ import com.ims.identity.dto.FetchUsersRequestDto;
 import com.ims.identity.dto.UpdateUserRequest;
 import com.ims.identity.dto.UserResponse;
 import com.ims.identity.entities.RoleType;
+import com.ims.identity.enums.UserGender;
 import com.ims.identity.services.UserService;
 import com.ims.platform.security.context.AuthenticationContext;
 import com.ims.platform.security.model.AuthenticatedUser;
@@ -145,9 +146,10 @@ class UserControllerTest {
 	void createUser_InvalidRequest_ShouldReturn400() throws Exception {
 
 		CreateUserRequestDto request = new CreateUserRequestDto(
-				"",
-				"",
 				"invalid-email",
+				"",
+				"",
+				UserGender.MALE,
 				"",
 				null,
 				"",
@@ -184,7 +186,6 @@ class UserControllerTest {
 		UpdateUserRequest request = new UpdateUserRequest(
 				"",
 				"",
-				"",
 				null,
 				null,
 				true);
@@ -203,6 +204,7 @@ class UserControllerTest {
 				"john@test.com",
 				"John",
 				"Doe",
+				UserGender.MALE,
 				"password",
 				LocalDate.of(2000, 1, 1),
 				"9999999999",
@@ -226,7 +228,6 @@ class UserControllerTest {
 						.state("AP")
 						.country("India")
 						.build(),
-				LocalDate.of(2000, 1, 1),
 				true);
 	}
 
@@ -234,10 +235,11 @@ class UserControllerTest {
 
 		return new UserResponse(
 				UUID.fromString("c0186249-9fc1-4927-97b3-a08a21febfe3"),
+				"john@test.com",
 				"John",
 				"Doe",
-				"john@test.com",
 				"9999999999",
+				UserGender.NON_DISCLOSED,
 				null,
 				LocalDate.of(2000, 1, 1),
 				true,

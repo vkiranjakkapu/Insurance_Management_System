@@ -5,7 +5,6 @@ import {
     PlusIcon,
     QuestionMarkCircleIcon,
     ShieldCheckIcon,
-    XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { RoutePaths } from "../../routes/RoutePaths";
@@ -23,7 +22,9 @@ import {
 import ActionButton from "../../components/ActionButton";
 import usePagination from "../../components/common/usePagination";
 import CustomTableComponent from "../../components/CustomTableComponent";
-import LoadingPortalComponent from "../../components/LoadingPortalComponent";
+import FormComponent, {
+    type FormErrorsProps,
+} from "../../components/FormComponent";
 import ModalComponent from "../../components/ModalComponent";
 import DocumentsService, {
     DocumentType,
@@ -34,7 +35,8 @@ import {
     formatIsoDuration,
     isIsoDuration,
     isNumericString,
-} from "../../components/common/util";
+} from "../../utils/ResponseHandlingUtils";
+import usePrincipal from "../../context/usePrincipal";
 
 const POLICY_TABLE_HEADERS: string[] = [
     "policyId",
@@ -42,7 +44,7 @@ const POLICY_TABLE_HEADERS: string[] = [
     "description",
     "coverageAmount",
     "coverageDuration",
-    "premiumsDuration",
+    // "premiumsDuration",
     "status",
 ];
 
@@ -56,33 +58,30 @@ const POLICY_KEYS_MAP = POLICY_TABLE_HEADERS.reduce<Record<string, string>>(
 
 export default function ManagePolicies() {
     const navigate = useNavigate();
-    const uploadFileRef = useRef<HTMLInputElement>(null);
+    const { isCustomer } = usePrincipal();
+    const [dataFetchProgress, setDataFetchProgress] = useState(true);
     const [allPolicies, setAllPolicies] = useState<Policy[]>([]);
-    const [searchQuery, setSearchQuery] = useState("");
     const [headers, setHeaders] = useState<string[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
 
-    const [allDocuments, setAllDocs] = useState<Document[]>([]);
-    const [selectedDocuments, setSelectedDocuments] = useState<number[]>([]);
-
-    const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+    const uploadFileRef = useRef<HTMLInputElement>(null);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [docUploadProgress, setDocUploadProgress] = useState(false);
-    const [showNewDoc, setShowNewDoc] = useState(false);
-    const [docRefreshProgress] = useState(false);
-    const [dataFetchProgress, setDataFetchProgress] = useState(true);
-    const [secondsLeft, setSecondsLeft] = useState<number>(0);
-
-    const [formErrors, setFormErrors] = useState<{
-        type: string;
-        errors: string[];
-    } | null>({
+    const [formErrors, setFormErrors] = useState<FormErrorsProps | null>({
         type: "error",
         errors: [],
     });
+    const [secondsLeft, setSecondsLeft] = useState<number>(0);
+
+    const [allDocuments, setAllDocs] = useState<Document[]>([]);
+    const [selectedDocuments, setSelectedDocuments] = useState<number[]>([]);
+    const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+    const [docUploadProgress, setDocUploadProgress] = useState(false);
+    const [showNewDoc, setShowNewDoc] = useState(false);
+    const [docRefreshProgress] = useState(false);
 
     const refreshPolicies = useCallback(() => {
-        PolicyService.getAllPolicies().then((resp) => {
+        PolicyService.getAllPolicies<Policy[]>().then((resp) => {
             if (resp && !("errorMessage" in resp)) {
                 setAllPolicies(resp);
                 if (resp.length !== 0) {
@@ -96,7 +95,7 @@ export default function ManagePolicies() {
     }, []);
 
     const refreshDocuments = useCallback(() => {
-        DocumentsService.getAllDocumentsByType(
+        DocumentsService.getAllDocumentsByType<Document[]>(
             DocumentType.POLICY_DOCUMENT,
         ).then((resp) => {
             if (resp && !("errorMessage" in resp)) {
@@ -110,8 +109,10 @@ export default function ManagePolicies() {
 
     useEffect(() => {
         refreshPolicies();
-        refreshDocuments();
-    }, [refreshPolicies, refreshDocuments]);
+        if (!isCustomer()) {
+            refreshDocuments();
+        }
+    }, [refreshPolicies, refreshDocuments, isCustomer]);
 
     const filteredPolicies = useMemo(() => {
         const query = searchQuery.trim();
@@ -184,9 +185,8 @@ export default function ManagePolicies() {
             premiumsDuration: `P${policyData.get("premiumDur")}${policyData.get("premiumDurationType") == "month" ? "M" : "Y"}`,
             documentId: selectedDocuments[0], // Passes your numeric array state cleanly
         };
-        console.log(payload);
 
-        PolicyService.createPolicy(payload).then((resp) => {
+        PolicyService.createPolicy<Policy>(payload).then((resp) => {
             if ("errorMessage" in resp) {
                 setFormErrors((prev) => ({
                     type: "error",
@@ -265,7 +265,7 @@ export default function ManagePolicies() {
         } else {
             // Filter out the ID to remove it from the list
             setSelectedDocuments([]);
-            // setSelectedDocuments((prev) => prev.filter((id) => id !== docId));
+            setSelectedDocuments((prev) => prev.filter((id) => id !== docId));
         }
     };
 
@@ -287,7 +287,7 @@ export default function ManagePolicies() {
         // 3. Append the raw file binary payload
         payload.append("file", uploadedFile);
 
-        DocumentsService.uploadDocument(payload).then((resp) => {
+        DocumentsService.uploadDocument<Document>(payload).then((resp) => {
             if ("error" in resp) {
                 setFormErrors(() => ({
                     type: "error",
@@ -310,37 +310,21 @@ export default function ManagePolicies() {
 
     return (
         <>
-            <LoadingPortalComponent
-                isLoading={false}
-                message="Loading Policies"
-                subMessage="please wait"
-            />
-            {/* Reusable Form Modal Wrapper */}
             <ModalComponent
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
                 title="Create Policy"
                 maxWidthClass="max-w-6xl"
             >
-                <form
-                    onSubmit={addPolicy}
-                    className="space-y-4 px-2 grid grid-cols-1 md:grid-cols-3 gap-3"
+                <FormComponent
+                    handleSubmit={addPolicy}
+                    formErrors={formErrors}
+                    actionText="Create"
+                    icon={DocumentPlusIcon}
+                    secondsLeft={secondsLeft}
+                    closeModal={() => setIsModalOpen(false)}
+                    showFooter
                 >
-                    {formErrors && formErrors?.errors.length > 0 && (
-                        <div
-                            className={`p-2.5 col-span-full flex flex-row gap-2 dark:text-white text-sm rounded-lg 
-                                ${
-                                    formErrors.type == "success"
-                                        ? " bg-emerald-500/10 text-emerald-700 dark:text-emerald-400"
-                                        : " bg-rose-500/10 text-rose-700 dark:text-rose-400"
-                                }`}
-                        >
-                            <ExclamationCircleIcon
-                                className={`size-5 ${formErrors.type == "success" ? "text-emerald-500" : "text-rose-500"}`}
-                            />
-                            <span>{formErrors.errors.join(", ")}</span>
-                        </div>
-                    )}
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                             Policy Type
@@ -638,49 +622,24 @@ export default function ManagePolicies() {
                             required
                         />
                     </div>
-
-                    {/* Bottom Action Drawer buttons */}
-                    <div className="col-span-full py-2 flex items-center justify-end space-x-3 pt-4 mt-6 border-t border-slate-200 dark:border-slate-800">
-                        <ActionButton
-                            text="Cancel"
-                            onClick={() => setIsModalOpen(false)}
-                            icon={XMarkIcon}
-                            unsetClass={true}
-                            className="p-1.5 flex flex-row items-center gap-2 cursor-pointer border border-slate-200 dark:border-slate-800 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
-                        />
-                        <ActionButton
-                            text={`${secondsLeft > 0 ? "Closing in " + secondsLeft + " S" : "Create"} `}
-                            onClick={() => {}}
-                            icon={DocumentPlusIcon}
-                            disabled={secondsLeft != 0}
-                            className="rounded-lg outline-1 outline-offset-1 outline-indigo-600"
-                        />
-                    </div>
-                </form>
+                </FormComponent>
             </ModalComponent>
-
-            {/* {showToast != false && (
-                <Toast
-                    message={toast.message}
-                    type={toast.type}
-                    duration={toast.duration}
-                    onClose={() => {
-                        setShowToast(false);
-                    }}
-                />
-            )} */}
             <CustomTableComponent
                 title="Our Policies"
                 description="Manage recent enrollments and active coverage."
-                actionButtons={[
-                    {
-                        text: "New Policy",
-                        icon: PlusIcon,
-                        onClick: () => {
-                            setIsModalOpen(!isModalOpen);
-                        },
-                    },
-                ]}
+                actionButtons={
+                    !isCustomer()
+                        ? [
+                              {
+                                  text: "New Policy",
+                                  icon: PlusIcon,
+                                  onClick: () => {
+                                      setIsModalOpen(!isModalOpen);
+                                  },
+                              },
+                          ]
+                        : []
+                }
                 dataFetchProgress={dataFetchProgress}
                 headers={headers}
                 pagination={pagination}

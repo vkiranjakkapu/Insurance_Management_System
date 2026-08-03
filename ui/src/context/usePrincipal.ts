@@ -18,9 +18,19 @@ export const AuthStatus = {
 } as const;
 export type AuthStatus = (typeof AuthStatus)[keyof typeof AuthStatus];
 
+export const RoleType = {
+    ADMIN: "ADMIN",
+    AGENT: "AGENT",
+    CUSTOMER: "CUSTOMER",
+} as const;
+export type RoleType = (typeof RoleType)[keyof typeof RoleType];
+
 export type Authentication = {
     principal: Principal;
     status: AuthStatus;
+    isAdmin: () => boolean,
+    isAgent: () => boolean,
+    isCustomer: () => boolean,
     isLoggedIn: () => boolean;
     authenticate: (
         user: LoginRequest,

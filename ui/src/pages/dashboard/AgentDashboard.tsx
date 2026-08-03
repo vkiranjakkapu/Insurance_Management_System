@@ -1,7 +1,7 @@
 export default function AgentDashboard() {
     return (
         <>
-            <p>Manage Agents</p>
+            <p>Welcome Agent</p>
         </>
     );
 }

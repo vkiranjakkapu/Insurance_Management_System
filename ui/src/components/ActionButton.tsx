@@ -14,6 +14,7 @@ export interface ActionButtonProps extends ButtonHTMLAttributes<HTMLButtonElemen
         }
     >;
     className?: string;
+    theme?: string;
     unsetClass?: boolean;
     iconAfter?: boolean;
     onClick: () => void;
@@ -22,13 +23,14 @@ export interface WithParamActionButtonProps extends Omit<
     ActionButtonProps,
     "onClick"
 > {
-    onClick: (id: number) => void;
+    onClick: (id: string) => void;
 }
 
 export default function ActionButton({
     text,
     icon: Icon,
     iconAfter,
+    theme,
     className,
     unsetClass = false,
     onClick,
@@ -40,7 +42,7 @@ export default function ActionButton({
             className={
                 unsetClass
                     ? (className ?? "")
-                    : `flex flex-row gap-1.5 items-center justify-center text-sm font-medium p-1.5 text-white shadow-xs dark:text-white bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:z-10 focus:ring-2 focus:ring-indigo-500/40 cursor-pointer transition-colors dark:disabled:opacity-40 disabled:opacity-80 disabled:cursor-not-allowed ${className}`
+                    : `flex flex-row gap-1.5 items-center justify-center text-sm font-medium p-1.5 text-white shadow-xs dark:text-white focus:z-10 focus:ring-2 cursor-pointer transition-colors dark:disabled:opacity-40 disabled:opacity-80 disabled:cursor-not-allowed ${theme ? "bg-" + theme + "-600 hover:bg-" + theme + "-700 dark:bg-" + theme + "-500 dark:hover:bg-" + theme + "-600 focus:ring-" + theme + "-500/40" : "bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 focus:ring-indigo-500/40"} ${className}`
             }
             {...props}
         >

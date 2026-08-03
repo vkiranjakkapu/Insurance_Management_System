@@ -12,9 +12,13 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.ims.identity.enums.UserGender;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -57,11 +61,14 @@ public class User implements UserDetails {
 
     private LocalDate dob;
 
+    @Enumerated(EnumType.STRING)
+    private UserGender gender;
+
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "address_id")
     private Address address;
 
-    @OneToMany(mappedBy = "policyHolder", cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST,
+    @OneToMany(mappedBy = "customer", cascade = { CascadeType.DETACH, CascadeType.MERGE, CascadeType.PERSIST,
             CascadeType.REFRESH }, orphanRemoval = false)
     private Set<Nominee> nominees;
 
