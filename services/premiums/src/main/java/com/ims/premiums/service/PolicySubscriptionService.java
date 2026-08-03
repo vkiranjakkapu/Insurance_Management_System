@@ -14,6 +14,8 @@ public interface PolicySubscriptionService {
 
     PolicySubscription getSubscriptionById(UUID id);
 
+    public SubscriptionsResposneDto getSubscriptionResponse(UUID id);
+
     List<PolicySubscription> getAllSubscriptionsByCustomer(UUID custId);
 
     public List<PolicySubscription> getAllSubscriptionsByAgent(UUID agentId);

@@ -25,7 +25,6 @@ import CustomTableComponent from "../../components/CustomTableComponent";
 import FormComponent, {
     type FormErrorsProps,
 } from "../../components/FormComponent";
-import LoadingPortalComponent from "../../components/LoadingPortalComponent";
 import ModalComponent from "../../components/ModalComponent";
 import DocumentsService, {
     DocumentType,
@@ -37,6 +36,7 @@ import {
     isIsoDuration,
     isNumericString,
 } from "../../utils/ResponseHandlingUtils";
+import usePrincipal from "../../context/usePrincipal";
 
 const POLICY_TABLE_HEADERS: string[] = [
     "policyId",
@@ -44,7 +44,7 @@ const POLICY_TABLE_HEADERS: string[] = [
     "description",
     "coverageAmount",
     "coverageDuration",
-    "premiumsDuration",
+    // "premiumsDuration",
     "status",
 ];
 
@@ -58,27 +58,27 @@ const POLICY_KEYS_MAP = POLICY_TABLE_HEADERS.reduce<Record<string, string>>(
 
 export default function ManagePolicies() {
     const navigate = useNavigate();
-    const uploadFileRef = useRef<HTMLInputElement>(null);
+    const { isCustomer } = usePrincipal();
+    const [dataFetchProgress, setDataFetchProgress] = useState(true);
     const [allPolicies, setAllPolicies] = useState<Policy[]>([]);
-    const [searchQuery, setSearchQuery] = useState("");
     const [headers, setHeaders] = useState<string[]>([]);
+    const [searchQuery, setSearchQuery] = useState("");
 
-    const [allDocuments, setAllDocs] = useState<Document[]>([]);
-    const [selectedDocuments, setSelectedDocuments] = useState<number[]>([]);
-
-    const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+    const uploadFileRef = useRef<HTMLInputElement>(null);
 
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [docUploadProgress, setDocUploadProgress] = useState(false);
-    const [showNewDoc, setShowNewDoc] = useState(false);
-    const [docRefreshProgress] = useState(false);
-    const [dataFetchProgress, setDataFetchProgress] = useState(true);
-    const [secondsLeft, setSecondsLeft] = useState<number>(0);
-
     const [formErrors, setFormErrors] = useState<FormErrorsProps | null>({
         type: "error",
         errors: [],
     });
+    const [secondsLeft, setSecondsLeft] = useState<number>(0);
+
+    const [allDocuments, setAllDocs] = useState<Document[]>([]);
+    const [selectedDocuments, setSelectedDocuments] = useState<number[]>([]);
+    const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+    const [docUploadProgress, setDocUploadProgress] = useState(false);
+    const [showNewDoc, setShowNewDoc] = useState(false);
+    const [docRefreshProgress] = useState(false);
 
     const refreshPolicies = useCallback(() => {
         PolicyService.getAllPolicies<Policy[]>().then((resp) => {
@@ -95,7 +95,7 @@ export default function ManagePolicies() {
     }, []);
 
     const refreshDocuments = useCallback(() => {
-        DocumentsService.getAllDocumentsByType(
+        DocumentsService.getAllDocumentsByType<Document[]>(
             DocumentType.POLICY_DOCUMENT,
         ).then((resp) => {
             if (resp && !("errorMessage" in resp)) {
@@ -109,8 +109,10 @@ export default function ManagePolicies() {
 
     useEffect(() => {
         refreshPolicies();
-        refreshDocuments();
-    }, [refreshPolicies, refreshDocuments]);
+        if (!isCustomer()) {
+            refreshDocuments();
+        }
+    }, [refreshPolicies, refreshDocuments, isCustomer]);
 
     const filteredPolicies = useMemo(() => {
         const query = searchQuery.trim();
@@ -285,7 +287,7 @@ export default function ManagePolicies() {
         // 3. Append the raw file binary payload
         payload.append("file", uploadedFile);
 
-        DocumentsService.uploadDocument(payload).then((resp) => {
+        DocumentsService.uploadDocument<Document>(payload).then((resp) => {
             if ("error" in resp) {
                 setFormErrors(() => ({
                     type: "error",
@@ -308,12 +310,6 @@ export default function ManagePolicies() {
 
     return (
         <>
-            <LoadingPortalComponent
-                isLoading={false}
-                message="Loading Policies"
-                subMessage="please wait"
-            />
-
             <ModalComponent
                 isOpen={isModalOpen}
                 onClose={() => setIsModalOpen(false)}
@@ -327,6 +323,7 @@ export default function ManagePolicies() {
                     icon={DocumentPlusIcon}
                     secondsLeft={secondsLeft}
                     closeModal={() => setIsModalOpen(false)}
+                    showFooter
                 >
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
@@ -630,15 +627,19 @@ export default function ManagePolicies() {
             <CustomTableComponent
                 title="Our Policies"
                 description="Manage recent enrollments and active coverage."
-                actionButtons={[
-                    {
-                        text: "New Policy",
-                        icon: PlusIcon,
-                        onClick: () => {
-                            setIsModalOpen(!isModalOpen);
-                        },
-                    },
-                ]}
+                actionButtons={
+                    !isCustomer()
+                        ? [
+                              {
+                                  text: "New Policy",
+                                  icon: PlusIcon,
+                                  onClick: () => {
+                                      setIsModalOpen(!isModalOpen);
+                                  },
+                              },
+                          ]
+                        : []
+                }
                 dataFetchProgress={dataFetchProgress}
                 headers={headers}
                 pagination={pagination}

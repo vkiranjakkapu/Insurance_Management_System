@@ -18,6 +18,7 @@ import { RoutePaths } from "./RoutePaths";
 import NonCustomerRoute from "./NonCustomersRoute";
 import ProfilePage from "../pages/profile/ProfilePage";
 import Subscriptions from "../pages/subscriptions/Subscriptions";
+import SubscriptionDetails from "../pages/subscriptions/SubscriptionDetails";
 
 export default function AppRoutes() {
     return (
@@ -61,6 +62,11 @@ export default function AppRoutes() {
                             element={<CustomerDetails />}
                         />
                     </Route>
+
+                    <Route
+                        path={RoutePaths.SUBSCIPRTION_DETAILS}
+                        element={<SubscriptionDetails />}
+                    />
 
                     <Route
                         path={RoutePaths.SUBSCIPRTIONS}

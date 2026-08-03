@@ -40,6 +40,7 @@ interface CustomTableProps<T extends object> {
     };
     dataFetchProgress?: boolean;
     renderCellValue?: (value: unknown) => ReactNode;
+    itemActionText?: string;
     onActionClick?: (item: T) => void;
 }
 
@@ -54,6 +55,7 @@ export default function CustomTableComponent<T extends object>({
     body,
     footer,
     dataFetchProgress,
+    itemActionText,
     renderCellValue,
     onActionClick,
 }: CustomTableProps<T>) {
@@ -174,7 +176,10 @@ export default function CustomTableComponent<T extends object>({
                                                         }
                                                         icon={ChevronRightIcon}
                                                         iconAfter={true}
-                                                        text="Manage"
+                                                        text={
+                                                            itemActionText ??
+                                                            "Manage"
+                                                        }
                                                         unsetClass={true}
                                                         className={`inline-flex items-center gap-1 font-medium text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 transition-colors`}
                                                     />

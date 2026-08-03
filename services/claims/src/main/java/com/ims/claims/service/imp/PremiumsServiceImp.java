@@ -4,12 +4,16 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.loadbalancer.LoadBalanced;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestClient;
 
-import com.ims.claims.dto.PolicySubscriptionRequestDto;
-import com.ims.claims.models.PolicySubscription;
+import com.ims.claims.dto.RestResponseDto;
+import com.ims.claims.dto.SubscriptionsResposneDto;
+import com.ims.claims.exception.InternalCommunicationException;
+import com.ims.claims.exception.ResourceNotFoundException;
 import com.ims.claims.service.PremiumsService;
 
 @Service
@@ -26,11 +30,22 @@ public class PremiumsServiceImp implements PremiumsService {
 
     @Override
     @Transactional(readOnly = true)
-    public PolicySubscription getSubscriptionById(UUID id) {
-        PolicySubscriptionRequestDto response = restClient.get().uri(PREMIUMS_SERVICE_URL + "/policies/" + id)
-                .retrieve()
-                .body(PolicySubscriptionRequestDto.class);
-        return response.body();
+    public SubscriptionsResposneDto getSubscriptionById(UUID id) {
+        try {
+            RestResponseDto<SubscriptionsResposneDto> response = restClient.get()
+                    .uri(PREMIUMS_SERVICE_URL + "/subscriptions/" + id)
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<RestResponseDto<SubscriptionsResposneDto>>() {
+
+                    });
+            return response.getBody();
+        } catch (HttpStatusCodeException e) {
+            String rawJsonResponseBody = e.getResponseBodyAsString();
+            throw new InternalCommunicationException(rawJsonResponseBody);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new ResourceNotFoundException(e.getMessage());
+        }
     }
 
 }

@@ -31,7 +31,7 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler({ InternalCommunicationException.class })
 	public ResponseEntity<?> handleForbiddenException(InternalCommunicationException e) {
 		return ResponseEntity
-                .status(HttpStatus.NOT_FOUND) // Or keep HttpStatus.INTERNAL_SERVER_ERROR based on your requirements
+                .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .contentType(MediaType.APPLICATION_JSON)
                 .body(e.getMessage()); 
 	}

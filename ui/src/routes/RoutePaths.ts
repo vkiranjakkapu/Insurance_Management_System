@@ -4,6 +4,7 @@ export const RoutePaths = {
     CUSTOMERS: "/customers",
     USERS: "/users",
     SUBSCIPRTIONS: "/subscriptions",
+    SUBSCIPRTION_DETAILS: "/subscriptions/:id",
 
     AGENT_DETAILS: "/agent/:id",
     EMPLOYEE_DETAILS: "/employees/:id",

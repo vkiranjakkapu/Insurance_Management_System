@@ -8,6 +8,13 @@ class PolicyService {
             uri: "/",
         });
     }
+    async getPolicyByPolicyId<T>(id: unknown): Promise<T | ErrorResponse> {
+        return apiClient<T>({
+            type: "get",
+            service: "policies",
+            uri: "/id/" + id,
+        });
+    }
 
     async createPolicy<T>(payload: unknown): Promise<T | ErrorResponse> {
         return apiClient<T>({

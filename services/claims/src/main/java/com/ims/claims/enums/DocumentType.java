@@ -1,4 +1,4 @@
-package com.ims.policies.enums;
+package com.ims.claims.enums;
 
 /**
  * 

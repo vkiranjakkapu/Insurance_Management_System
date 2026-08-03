@@ -52,7 +52,43 @@ public class PolicySubscriptionServiceImp implements PolicySubscriptionService {
     @Transactional(readOnly = true)
     public PolicySubscription getSubscriptionById(UUID id) {
         return subscriptionRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("No Subscription With Given ID!"));
+                .orElseThrow(() -> new ResourceNotFoundException("No Subscription Found With Given ID!"));
+    }
+
+    @Override
+    public SubscriptionsResposneDto getSubscriptionResponse(UUID id) {
+        PolicySubscription sub = getSubscriptionById(id);
+        Map<UUID, User> allUsers = customersService.getAllUsersByIds(Set.of(sub.getAgentId(), sub.getCustomerId()));
+        Map<Long, Policy> allPolicies = policyService.getAllPolicyByIds(List.of(sub.getPolicyId()));
+        return SubscriptionsResposneDto.builder()
+                .id(sub.getId())
+                .customer(allUsers.get(sub.getCustomerId()))
+                .customerName(allUsers.get(sub.getCustomerId()).getFirstName())
+                .policy(allPolicies.get(sub.getPolicyId()))
+                .policyId(allPolicies.get(sub.getPolicyId()).getPolicyId())
+                .policyType(allPolicies.get(sub.getPolicyId()).getPolicyType().toString())
+                .startDate(sub.getStartDate())
+                .endDate(sub.getEndDate())
+                .expiry(sub.getExpiry())
+                .payments(
+                        sub.getPayments().stream().map(prem -> PremiumPaymentResponseDto.builder()
+                                .id(prem.getId())
+                                .method(prem.getMethod())
+                                .amountPayed(prem.getAmountPayed())
+                                .premiumAmount(prem.getPremiumAmount())
+                                .status(prem.getStatus())
+                                .dueDate(prem.getDueDate())
+                                .paymentTime(prem.getPaymentTime())
+                                .createdAt(prem.getCreatedAt())
+                                .build()).toList())
+                .status(sub.getStatus())
+                .acceptanceTime(sub.getAcceptanceTime())
+                .agent(allUsers.get(sub.getAgentId()))
+                .agentEmail(Optional.ofNullable(allUsers.get(sub.getAgentId()).getEmail())
+                        .orElse("agent not assigned yet"))
+                .updatedAt(sub.getUpdatedAt())
+                .createdAt(sub.getCreatedAt())
+                .build();
     }
 
     @Override
@@ -83,42 +119,39 @@ public class PolicySubscriptionServiceImp implements PolicySubscriptionService {
                 .collect(Collectors.toSet());
 
         Map<UUID, User> allUsers = customersService.getAllUsersByIds(userIds);
-        System.out.println(allUsers);
         Map<Long, Policy> allPolicies = policyService.getAllPolicyByIds(new ArrayList<>(policyIds));
 
         return allSubscriptions.stream().map(sub -> {
-            System.out.println(sub.getCustomerId());
-            System.out.println(allUsers.get(sub.getCustomerId()));
-
             return SubscriptionsResposneDto.builder()
-                .id(sub.getId())
-                .customer(allUsers.get(sub.getCustomerId()))
-                .customerName(allUsers.get(sub.getCustomerId()).getFirstName())
-                .policy(allPolicies.get(sub.getPolicyId()))
-                .policyId(allPolicies.get(sub.getPolicyId()).getPolicyId())
-                .policyType(allPolicies.get(sub.getPolicyId()).getPolicyType().toString())
-                .startDate(sub.getStartDate())
-                .endDate(sub.getEndDate())
-                .expiry(sub.getExpiry())
-                .payments(
-                        sub.getPayments().stream().map(prem -> PremiumPaymentResponseDto.builder()
-                                .id(prem.getId())
-                                .method(prem.getMethod())
-                                .amountPayed(prem.getAmountPayed())
-                                .premiumAmount(prem.getPremiumAmount())
-                                .status(prem.getStatus())
-                                .dueDate(prem.getDueDate())
-                                .paymentTime(prem.getPaymentTime())
-                                .createdAt(prem.getCreatedAt())
-                                .build()).toList())
-                .status(sub.getStatus())
-                .acceptanceTime(sub.getAcceptanceTime())
-                .agent(allUsers.get(sub.getAgentId()))
-                .agentEmail(Optional.ofNullable(allUsers.get(sub.getAgentId()).getEmail()).orElse("agent not assigned yet"))
-                .updatedAt(sub.getUpdatedAt())
-                .createdAt(sub.getCreatedAt())
-                .build();
-            
+                    .id(sub.getId())
+                    .customer(allUsers.get(sub.getCustomerId()))
+                    .customerName(allUsers.get(sub.getCustomerId()).getFirstName())
+                    .policy(allPolicies.get(sub.getPolicyId()))
+                    .policyId(allPolicies.get(sub.getPolicyId()).getPolicyId())
+                    .policyType(allPolicies.get(sub.getPolicyId()).getPolicyType().toString())
+                    .startDate(sub.getStartDate())
+                    .endDate(sub.getEndDate())
+                    .expiry(sub.getExpiry())
+                    .payments(
+                            sub.getPayments().stream().map(prem -> PremiumPaymentResponseDto.builder()
+                                    .id(prem.getId())
+                                    .method(prem.getMethod())
+                                    .amountPayed(prem.getAmountPayed())
+                                    .premiumAmount(prem.getPremiumAmount())
+                                    .status(prem.getStatus())
+                                    .dueDate(prem.getDueDate())
+                                    .paymentTime(prem.getPaymentTime())
+                                    .createdAt(prem.getCreatedAt())
+                                    .build()).toList())
+                    .status(sub.getStatus())
+                    .acceptanceTime(sub.getAcceptanceTime())
+                    .agent(allUsers.get(sub.getAgentId()))
+                    .agentEmail(Optional.ofNullable(allUsers.get(sub.getAgentId()).getEmail())
+                            .orElse("agent not assigned yet"))
+                    .updatedAt(sub.getUpdatedAt())
+                    .createdAt(sub.getCreatedAt())
+                    .build();
+
         }).toList();
     }
 

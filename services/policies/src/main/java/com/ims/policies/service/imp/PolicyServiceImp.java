@@ -32,7 +32,10 @@ public class PolicyServiceImp implements PolicyService {
     @Override
     @Transactional(readOnly = true)
     public List<Policy> getAllPolicies() {
-        return policyRepository.findAllByIsLatestTrue();
+        return policyRepository.findAllByIsLatestTrue().stream().map(pol -> {
+            pol.setDoc(documentService.getPolicyDocumentById(pol.getDocument()));
+            return pol;
+        }).toList();
     }
 
     @Override
@@ -51,6 +54,13 @@ public class PolicyServiceImp implements PolicyService {
     @Transactional(readOnly = true)
     public Policy getPolicyById(Long id) {
         return policyRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("No Policy Found with Given ID."));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Policy getPolicyByPolicyId(String id) {
+        return policyRepository.findByPolicyId(id)
                 .orElseThrow(() -> new ResourceNotFoundException("No Policy Found with Given ID."));
     }
 

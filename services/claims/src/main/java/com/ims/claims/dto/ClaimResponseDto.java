@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.ims.claims.enums.ClaimStatus;
 import com.ims.claims.models.Document;
-import com.ims.claims.models.PolicySubscription;
 import com.ims.claims.models.User;
 
 import lombok.Builder;
@@ -13,7 +12,7 @@ import lombok.Builder;
 @Builder
 public record ClaimResponseDto(
 		Long id,
-		PolicySubscription subscription,
+		SubscriptionsResposneDto subscription,
 		String claimId,
 		String reason,
 		List<Document> proofs,

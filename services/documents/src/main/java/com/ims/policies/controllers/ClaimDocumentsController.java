@@ -17,7 +17,7 @@ import com.ims.policies.service.CurrentUserService;
 import com.ims.policies.service.DocumentsService;
 
 @RestController
-@RequestMapping("/documents/api/v1")
+@RequestMapping("/documents/api/v1/claims")
 public class ClaimDocumentsController {
 
     private DocumentsService documentService;
@@ -28,7 +28,7 @@ public class ClaimDocumentsController {
         this.currentUser = currentUser;
     }
 
-    @GetMapping({ "/claims", "/claims/" })
+    @GetMapping({ "", "/" })
     @PreAuthorize("hasAnyRole('ADMIN', 'CUSTOMER')")
     public ResponseEntity<APIResponseDto> getAllClaimDocuments() {
         List<Document> allDocuments;
@@ -41,12 +41,21 @@ public class ClaimDocumentsController {
         return ResponseEntity.ok(APIResponseDto.builder().body(allDocuments).build());
     }
 
-    @GetMapping("/claims/{customerId}")
-    @PreAuthorize("hasAnyRole('AGENT','ADMIN')")
-    public ResponseEntity<APIResponseDto> getAllClaimsDocumentsByCustomer(@PathVariable UUID customerId) {
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('AGENT','ADMIN','CUSTOMER')")
+    public ResponseEntity<APIResponseDto> getDocumentById(@PathVariable Long id) {
         return ResponseEntity
                 .ok(APIResponseDto.builder()
-                        .body(documentService.getAllDocumentsByOwnerAndType(customerId, DocumentType.CLAIM_PROOF))
+                        .body(documentService.getDocumentById(id))
+                        .build());
+    }
+
+    @GetMapping("/owner/{ownerId}")
+    @PreAuthorize("hasAnyRole('AGENT','ADMIN')")
+    public ResponseEntity<APIResponseDto> getAllDocumentsByOwner(@PathVariable UUID ownerId) {
+        return ResponseEntity
+                .ok(APIResponseDto.builder()
+                        .body(documentService.getAllDocumentsByOwnerAndType(ownerId, DocumentType.CLAIM_PROOF))
                         .build());
     }
 
