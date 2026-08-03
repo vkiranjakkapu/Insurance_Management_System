@@ -48,6 +48,12 @@ public class PolicyController {
         return ResponseEntity.ok(APIResponseDto.builder().body(policyService.getPolicyById(id)).build());
     }
 
+    @Operation(summary = "Get policy by policy id")
+    @GetMapping("/id/{policyId}")
+    public ResponseEntity<APIResponseDto> getPolicyById(@PathVariable String policyId) {
+        return ResponseEntity.ok(APIResponseDto.builder().body(policyService.getPolicyByPolicyId(policyId)).build());
+    }
+
     @Operation(summary = "Create new policy")
     @PostMapping("/")
     @PreAuthorize("hasAnyRole('ADMIN', 'AGENT')")

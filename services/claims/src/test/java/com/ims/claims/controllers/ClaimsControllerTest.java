@@ -20,18 +20,16 @@ import org.springframework.http.ResponseEntity;
 
 import com.ims.claims.dto.APIResponseDto;
 import com.ims.claims.dto.AssignClaimRequestDto;
+import com.ims.claims.dto.ClaimResponseDto;
 import com.ims.claims.dto.CreateClaimRequestDto;
 import com.ims.claims.dto.SubscriptionsResposneDto;
 import com.ims.claims.dto.UpdateClaimRequestDto;
 import com.ims.claims.enums.ClaimStatus;
 import com.ims.claims.exception.UnauthorizedException;
 import com.ims.claims.models.Claim;
-import com.ims.claims.models.ClaimProof;
-import com.ims.claims.models.Document;
 import com.ims.claims.models.User;
 import com.ims.claims.service.ClaimService;
 import com.ims.claims.service.CurrentUserService;
-import com.ims.claims.service.DocumentService;
 import com.ims.claims.service.PremiumsService;
 import com.ims.claims.service.imp.CustomersServiceImp;
 
@@ -43,9 +41,6 @@ class ClaimsControllerTest {
 
 	@Mock
 	private CurrentUserService currentUser;
-
-	@Mock
-	private DocumentService documentService;
 
 	@Mock
 	private PremiumsService premiumsService;
@@ -92,10 +87,7 @@ class ClaimsControllerTest {
 		claim.setCreatedAt(LocalDateTime.now());
 		claim.setUpdatedAt(LocalDateTime.now());
 
-		ClaimProof proof = new ClaimProof();
-		proof.setDocumentId(10L);
-
-		claim.setProofs(List.of(proof));
+		claim.setProofs(List.of());
 
 		createRequest = new CreateClaimRequestDto(
 				claim.getSubscriptionId(),
@@ -117,42 +109,58 @@ class ClaimsControllerTest {
 	@Test
 	void shouldGetClaimById() {
 
-		when(claimService.getClaimById(1L)).thenReturn(claim);
+		ClaimResponseDto dto = ClaimResponseDto.builder().build();
 
-		ResponseEntity<APIResponseDto> response = controller.getClaimById(1L);
+		when(claimService.getClaimByClaimId("CLAIM-0001"))
+				.thenReturn(claim);
+
+		when(claimService.mapClaimResponse(claim))
+				.thenReturn(dto);
+
+		ResponseEntity<APIResponseDto> response = controller.getClaimById("CLAIM-0001");
 
 		assertEquals(200, response.getStatusCode().value());
-		assertEquals(claim, response.getBody().getBody());
+		assertEquals(dto, response.getBody().getBody());
 
-		verify(claimService).getClaimById(1L);
+		verify(claimService).getClaimByClaimId("CLAIM-0001");
+		verify(claimService).mapClaimResponse(claim);
 	}
 
 	@Test
 	void shouldCreateClaim() {
+		when(premiumsService.getSubscriptionById(subscriptionId))
+				.thenReturn(subscription);
 
-		when(claimService.createClaim(createRequest)).thenReturn(claim);
+		when(claimService.createClaim(createRequest))
+				.thenReturn(claim);
 
 		ResponseEntity<APIResponseDto> response = controller.createClaim(createRequest);
 
 		assertEquals(200, response.getStatusCode().value());
 		assertEquals(claim, response.getBody().getBody());
 
+		verify(premiumsService).getSubscriptionById(subscriptionId);
 		verify(claimService).createClaim(createRequest);
 	}
 
 	@Test
-	void shouldThrowWhenSubscriptionDoesNotBelongToCurrentUser() {
+	void shouldThrowWhenSubscriptionDoesNotBelongToCustomer() {
 
-		when(currentUser.userId()).thenReturn(UUID.randomUUID());
+		SubscriptionsResposneDto invalidSubscription = SubscriptionsResposneDto.builder()
+				.id(subscriptionId)
+				.customer(User.builder()
+						.id(UUID.randomUUID())
+						.build())
+				.build();
 
-		when(premiumsService.getSubscriptionById(subscription.id()))
-				.thenReturn(subscription);
+		when(premiumsService.getSubscriptionById(subscriptionId))
+				.thenReturn(invalidSubscription);
 
 		assertThrows(
 				UnauthorizedException.class,
-				() -> claimService.createClaim(createRequest));
+				() -> controller.createClaim(createRequest));
 
-		verify(premiumsService).getSubscriptionById(subscription.id());
+		verify(premiumsService).getSubscriptionById(subscriptionId);
 	}
 
 	@Test
@@ -169,14 +177,21 @@ class ClaimsControllerTest {
 
 	@Test
 	void shouldUpdateClaim() {
+		ClaimResponseDto dto = ClaimResponseDto.builder().build();
 
-		when(claimService.updateClaim(updateRequest)).thenReturn(claim);
+		when(claimService.updateClaim(updateRequest))
+				.thenReturn(claim);
+
+		when(claimService.mapClaimResponse(claim))
+				.thenReturn(dto);
 
 		ResponseEntity<APIResponseDto> response = controller.updateClaim(updateRequest);
 
 		assertEquals(200, response.getStatusCode().value());
+		assertEquals(dto, response.getBody().getBody());
 
 		verify(claimService).updateClaim(updateRequest);
+		verify(claimService).mapClaimResponse(claim);
 	}
 
 	@Test
@@ -196,12 +211,12 @@ class ClaimsControllerTest {
 						agentId, agent,
 						resolverId, resolver));
 
-		when(documentService.getDocumentById(10L))
-				.thenReturn(new Document());
+		ClaimResponseDto dto = ClaimResponseDto.builder().build();
 
-		when(premiumsService.getSubscriptionById(claim.getSubscriptionId()))
-				.thenReturn(null);
-
+		when(claimService.mapClaimResponse(
+				org.mockito.ArgumentMatchers.eq(claim),
+				org.mockito.ArgumentMatchers.anyMap()))
+				.thenReturn(dto);
 		ResponseEntity<APIResponseDto> response = controller.getAllClaims();
 
 		assertEquals(200, response.getStatusCode().value());
@@ -230,11 +245,12 @@ class ClaimsControllerTest {
 						agentId, User.builder().id(agentId).build(),
 						resolverId, User.builder().id(resolverId).build()));
 
-		when(documentService.getDocumentById(10L))
-				.thenReturn(new Document());
+		ClaimResponseDto dto = ClaimResponseDto.builder().build();
 
-		when(premiumsService.getSubscriptionById(claim.getSubscriptionId()))
-				.thenReturn(null);
+		when(claimService.mapClaimResponse(
+				org.mockito.ArgumentMatchers.eq(claim),
+				org.mockito.ArgumentMatchers.anyMap()))
+				.thenReturn(dto);
 
 		ResponseEntity<APIResponseDto> response = controller.getAllClaims();
 
@@ -260,11 +276,12 @@ class ClaimsControllerTest {
 						agentId, User.builder().id(agentId).build(),
 						resolverId, User.builder().id(resolverId).build()));
 
-		when(documentService.getDocumentById(10L))
-				.thenReturn(new Document());
+		ClaimResponseDto dto = ClaimResponseDto.builder().build();
 
-		when(premiumsService.getSubscriptionById(claim.getSubscriptionId()))
-				.thenReturn(null);
+		when(claimService.mapClaimResponse(
+				org.mockito.ArgumentMatchers.eq(claim),
+				org.mockito.ArgumentMatchers.anyMap()))
+				.thenReturn(dto);
 
 		ResponseEntity<APIResponseDto> response = controller.getAllClaims();
 

@@ -18,6 +18,8 @@ public interface PolicyService {
 
     Policy getPolicyById(Long id);
 
+    Policy getPolicyByPolicyId(String id);
+
     PolicyResponseDto createPolicy(CreatePolicyRequestDto request);
 
     PolicyResponseDto updatePolicy(PolicyRequestDto request);

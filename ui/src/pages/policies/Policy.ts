@@ -13,6 +13,7 @@ export interface Policy {
     policyType: string;
     status: PolicyStatus;
     description: string;
+    document: Document;
     coverageAmount: number;
     coverageDuration: string;
     premiumsDuration: string;

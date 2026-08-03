@@ -323,6 +323,7 @@ export default function ManagePolicies() {
                     icon={DocumentPlusIcon}
                     secondsLeft={secondsLeft}
                     closeModal={() => setIsModalOpen(false)}
+                    showFooter
                 >
                     <div>
                         <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
