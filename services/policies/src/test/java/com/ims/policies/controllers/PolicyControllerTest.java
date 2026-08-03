@@ -27,10 +27,10 @@ class PolicyControllerTest {
     private PolicyController controller;
 
     private Policy policy;
+    private PolicyResponseDto responseDto;
 
     private CreatePolicyRequestDto createRequest;
     private PolicyRequestDto updateRequest;
-    private PolicyResponseDto responseDto;
 
     @BeforeEach
     void setUp() {
@@ -45,7 +45,7 @@ class PolicyControllerTest {
 
         createRequest = new CreatePolicyRequestDto(
                 PolicyType.HEALTH,
-                "Health",
+                "Health Insurance",
                 500000,
                 Period.ofYears(5),
                 Period.ofYears(5),
@@ -54,7 +54,7 @@ class PolicyControllerTest {
         updateRequest = new PolicyRequestDto(
                 1L,
                 PolicyType.HEALTH,
-                "Updated",
+                "Updated Policy",
                 750000,
                 Period.ofYears(10),
                 Period.ofYears(10),
@@ -64,11 +64,12 @@ class PolicyControllerTest {
                 .id(1L)
                 .policyId("POLICY-0001")
                 .policyType(PolicyType.HEALTH)
-                .description("Health")
+                .description("Health Insurance")
                 .coverageAmount(500000)
                 .coverageDuration(Period.ofYears(5))
                 .premiumsDuration(Period.ofYears(5))
                 .status(PolicyStatus.ACTIVE)
+                .document(null)
                 .build();
     }
 
@@ -76,14 +77,32 @@ class PolicyControllerTest {
     void shouldReturnAllPolicies() {
 
         when(policyService.getAllPolicies())
-                .thenReturn(List.of(policy));
+                .thenReturn(List.of(responseDto));
 
         APIResponseDto body =
                 controller.getAllPolicies().getBody();
 
         assertNotNull(body);
+        assertEquals(List.of(responseDto), body.getBody());
 
         verify(policyService).getAllPolicies();
+    }
+
+    @Test
+    void shouldReturnPoliciesByIds() {
+
+        List<Long> ids = List.of(1L, 2L);
+
+        when(policyService.getAllPoliciesByIds(ids))
+                .thenReturn(List.of(policy));
+
+        APIResponseDto body =
+                controller.getAllPoliciesByIds(ids).getBody();
+
+        assertNotNull(body);
+        assertEquals(List.of(policy), body.getBody());
+
+        verify(policyService).getAllPoliciesByIds(ids);
     }
 
     @Test
@@ -102,6 +121,21 @@ class PolicyControllerTest {
     }
 
     @Test
+    void shouldReturnPolicyByPolicyId() {
+
+        when(policyService.getPolicyByPolicyId("POLICY-0001"))
+                .thenReturn(responseDto);
+
+        APIResponseDto body =
+                controller.getPolicyById("POLICY-0001").getBody();
+
+        assertNotNull(body);
+        assertEquals(responseDto, body.getBody());
+
+        verify(policyService).getPolicyByPolicyId("POLICY-0001");
+    }
+
+    @Test
     void shouldCreatePolicy() {
 
         when(policyService.createPolicy(createRequest))
@@ -110,6 +144,7 @@ class PolicyControllerTest {
         APIResponseDto body =
                 controller.cretaePolicy(createRequest).getBody();
 
+        assertNotNull(body);
         assertEquals(responseDto, body.getBody());
 
         verify(policyService).createPolicy(createRequest);
@@ -124,6 +159,7 @@ class PolicyControllerTest {
         APIResponseDto body =
                 controller.updatePolicy(updateRequest).getBody();
 
+        assertNotNull(body);
         assertEquals(responseDto, body.getBody());
 
         verify(policyService).updatePolicy(updateRequest);
@@ -138,6 +174,7 @@ class PolicyControllerTest {
         APIResponseDto body =
                 controller.deletePolicy(updateRequest).getBody();
 
+        assertNotNull(body);
         assertEquals(true, body.getBody());
 
         verify(policyService).deletePolicy(updateRequest);

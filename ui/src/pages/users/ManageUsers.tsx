@@ -29,7 +29,10 @@ import FormComponent, {
 import ModalComponent from "../../components/ModalComponent";
 import UserCardComponent from "../../components/UserCardComponent";
 import usePrincipal, { RoleType } from "../../context/usePrincipal";
-import { UserGender, type UserProfile } from "../../context/useProfile";
+import useProfile, {
+    UserGender,
+    type UserProfile,
+} from "../../context/useProfile";
 import AccountService from "../../services/AccountService";
 import PolicyService from "../../services/PolicyService";
 import PremiumsService, {
@@ -59,7 +62,8 @@ const POLICY_KEYS_MAP = POLICY_TABLE_HEADERS.reduce<Record<string, string>>(
 );
 
 export default function ManageUsers() {
-    const { isAdmin } = usePrincipal();
+    const { isAdmin, isAgent } = usePrincipal();
+    const { profile } = useProfile();
     const [allCustomers, setAllCustomers] = useState<UserProfile[]>([]);
     const [updateProfile, setUpdateProfile] = useState<UserProfile | null>();
     const [searchQuery, setSearchQuery] = useState("");
@@ -79,11 +83,24 @@ export default function ManageUsers() {
     const refreshCustomers = useCallback(() => {
         AccountService.getAllUsers<UserProfile[]>().then((resp) => {
             if (resp && !("errorMessage" in resp)) {
-                setAllCustomers(resp);
+                if (isAgent()) {
+                    setAllCustomers(
+                        resp.filter(
+                            (u) =>
+                                !(
+                                    u.roles.includes(RoleType.ADMIN) ||
+                                    u.roles.includes(RoleType.AGENT) ||
+                                    u.id == profile?.id
+                                ),
+                        ),
+                    );
+                } else {
+                    setAllCustomers(resp.filter((u) => u.id != profile?.id));
+                }
             }
             setDataFetchProgress(false);
         });
-    }, []);
+    }, [isAgent, profile]);
 
     const refreshPolices = useCallback(() => {
         PolicyService.getAllPolicies<Policy[]>().then((resp) => {

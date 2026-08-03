@@ -1,3 +1,5 @@
+import type { Document } from "../../services/DocumentsService";
+
 export const PolicyStatus = {
     ACTIVE: "ACTIVE",
     TERMINATED: "TERMINATED",

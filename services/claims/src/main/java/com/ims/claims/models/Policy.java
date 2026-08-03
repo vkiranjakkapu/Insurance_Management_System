@@ -33,7 +33,7 @@ public class Policy {
 
     private PolicyStatus status = PolicyStatus.ACTIVE;
 
-    private Document document;
+    private Long document;
 
     private boolean isLatest = true;
 

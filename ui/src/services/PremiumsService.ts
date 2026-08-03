@@ -36,6 +36,14 @@ class PremiumsService {
             payload,
         });
     }
+
+    async payPremium<T>(id: unknown): Promise<T | ErrorResponse> {
+        return apiClient({
+            type: "post",
+            service: "premiums",
+            uri: "/payments/" + id,
+        });
+    }
 }
 
 export default new PremiumsService();

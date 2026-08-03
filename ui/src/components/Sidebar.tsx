@@ -108,18 +108,25 @@ export default function Sidebar({ children }: SidebarLayoutProps): JSX.Element {
             roles: ["ADMIN", "AGENT", "CUSTOMER"],
         },
         {
+            label: "Customers",
+            route: RoutePaths.CUSTOMERS,
+            icon: UsersIcon,
+            active: false,
+            roles: ["AGENT"],
+        },
+        {
             label: "Personnel",
             route: RoutePaths.CUSTOMERS,
             icon: UsersIcon,
             active: false,
-            roles: ["ADMIN", "AGENT"],
+            roles: ["ADMIN"],
         },
         {
             label: "Settings",
             route: RoutePaths.SYSTEM_SETTINGS,
             icon: Cog6ToothIcon,
             active: false,
-            roles: ["ADMIN"],
+            roles: [],
         },
     ];
 

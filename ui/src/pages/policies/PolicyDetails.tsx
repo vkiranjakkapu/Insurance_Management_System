@@ -3,9 +3,9 @@ import {
     CloudArrowUpIcon,
     DocumentPlusIcon,
     ExclamationCircleIcon,
+    PencilIcon,
     QuestionMarkCircleIcon,
     ShieldCheckIcon,
-    XCircleIcon,
 } from "@heroicons/react/24/outline";
 import {
     useCallback,
@@ -71,8 +71,7 @@ export default function PolicyDetails() {
         });
     }, []);
 
-    useEffect(() => {
-        if (!policyId) return;
+    const refreshPolicy = useCallback(() => {
         PolicyService.getPolicyByPolicyId<Policy>(policyId).then((resp) => {
             if (resp && !("errorMessage" in resp)) {
                 setPolicyDetails(resp);
@@ -83,31 +82,11 @@ export default function PolicyDetails() {
         });
     }, [policyId]);
 
-    const approveClaim = () => {};
-
-    const rejectClaim = () => {
-        // ClaimsService.updateClaim<PolicyClaim>({
-        //     policyId: policyDetails?.id,
-        //     status: ClaimStatus.REJECTED,
-        // }).then((resp) => {
-        //     if (resp && !("errorMessage" in resp)) {
-        //         setPolicyDetails(resp);
-        //         setFormErrors({
-        //             type: "success",
-        //             errors: ["Claim Rejected Successfully"],
-        //         });
-        //         const intervalId = setTimeout(() => {
-        //             setFormErrors(null);
-        //         }, 10000);
-        //         return () => clearTimeout(intervalId);
-        //     } else {
-        //         setFormErrors({
-        //             type: "error",
-        //             errors: [resp.errorMessage],
-        //         });
-        //     }
-        // });
-    };
+    useEffect(() => {
+        if (!policyId) return;
+        refreshPolicy();
+        refreshDocuments();
+    }, [policyId, refreshPolicy, refreshDocuments]);
 
     const renderCellValue = (value: unknown) => {
         if (value == PolicyStatus.ACTIVE) {
@@ -170,12 +149,13 @@ export default function PolicyDetails() {
         const formFields = Object.fromEntries(policyData.entries());
         const payload = {
             ...formFields,
+            policyId: policyDetails?.id,
             coverageDuration: `P${policyData.get("coverageDur")}${policyData.get("coverageDurationType") == "month" ? "M" : "Y"}`,
             premiumsDuration: `P${policyData.get("premiumDur")}${policyData.get("premiumDurationType") == "month" ? "M" : "Y"}`,
             documentId: selectedDocuments[0], // Passes your numeric array state cleanly
         };
 
-        PolicyService.createPolicy<Policy>(payload).then((resp) => {
+        PolicyService.updatePolicy<Policy>(payload).then((resp) => {
             if ("errorMessage" in resp) {
                 setFormErrors((prev) => ({
                     type: "error",
@@ -184,8 +164,9 @@ export default function PolicyDetails() {
             } else {
                 setFormErrors(() => ({
                     type: "success",
-                    errors: [`Policy [${resp.policyId}] has been created.`],
+                    errors: [`Policy [${resp.policyId}] has been updated.`],
                 }));
+
                 setSecondsLeft(5);
             }
         });
@@ -398,7 +379,7 @@ export default function PolicyDetails() {
                             </label>
                             <input
                                 name="coverageAmount"
-                                type="number"
+                                type="text"
                                 defaultValue={policyDetails?.coverageAmount}
                                 onWheel={(e) =>
                                     (e.target as HTMLInputElement).blur()
@@ -417,7 +398,20 @@ export default function PolicyDetails() {
                             />
                         </div>
                     </div>
-                    <div className="md:row-span-2">
+                    <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                            Description
+                        </label>
+                        <textarea
+                            rows={3}
+                            name="description"
+                            placeholder="Short Description"
+                            defaultValue={policyDetails?.description}
+                            className="w-full shadow-sm rounded-lg border border-slate-200 dark:border-slate-800 bg-transparent px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            required
+                        />
+                    </div>
+                    <div className="col-span-full">
                         <div className="relative shadow-sm border border-slate-200 dark:border-slate-800 rounded-lg">
                             <div className="sticky inline-flex gap-4 items-center justify-between h-2/6 px-3 py-2.5 text-sm text-slate-700 dark:text-slate-300 capitalize bg-slate-100/60 dark:bg-slate-700/20 border-b border-b-slate-200 dark:border-slate-800 w-full">
                                 <span>Select Policy Document</span>
@@ -543,18 +537,6 @@ export default function PolicyDetails() {
                             </div>
                         </div>
                     </div>
-                    <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                            Description
-                        </label>
-                        <textarea
-                            rows={3}
-                            name="description"
-                            placeholder="Short Description"
-                            className="w-full shadow-sm rounded-lg border border-slate-200 dark:border-slate-800 bg-transparent px-3 py-2 text-sm text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            required
-                        />
-                    </div>
                 </FormComponent>
             </ModalComponent>
             <DashboardLayout
@@ -576,8 +558,8 @@ export default function PolicyDetails() {
                     !isCustomer()
                         ? [
                               {
-                                  text: "Approve",
-                                  icon: CheckCircleIcon,
+                                  text: "Update",
+                                  icon: PencilIcon,
                                   onClick: () => {
                                       setIsModalOpen(true);
                                   },
@@ -642,6 +624,17 @@ export default function PolicyDetails() {
                         <div className="capitalize">
                             premiumsDuration:
                             {renderCellValue(policyDetails?.premiumsDuration)}
+                        </div>
+                        <div className="capitalize">
+                            Policy Document:
+                            <a
+                                href={`${renderCellValue(policyDetails?.document.filePath)}`}
+                                target="_blank"
+                                rel="Policy Document URL"
+                                className="underline text-indigo-500 dark:text-white"
+                            >
+                                {policyDetails?.document.fileName}
+                            </a>
                         </div>
                     </div>
                 </div>

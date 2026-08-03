@@ -58,7 +58,6 @@ public class CustomersServiceImp {
                     .retrieve().body(new ParameterizedTypeReference<RestResponseDto<List<UserResponse>>>() {
 
                     });
-            System.out.println(body.getBody());
             return body.getBody();
         } catch (HttpStatusCodeException e) {
             String rawJsonResponseBody = e.getResponseBodyAsString();

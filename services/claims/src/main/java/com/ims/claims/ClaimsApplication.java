@@ -6,10 +6,10 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 
 @SpringBootApplication
 @RefreshScope
-public class PoliciesApplication {
+public class ClaimsApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(PoliciesApplication.class, args);
+		SpringApplication.run(ClaimsApplication.class, args);
 	}
 
 }

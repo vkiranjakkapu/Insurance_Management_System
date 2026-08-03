@@ -22,7 +22,7 @@ import ClaimsService, { ClaimStatus } from "../../services/ClaimsService";
 
 export default function ClaimDetails() {
     const { id: claimId } = useParams<{ id: string }>();
-    const { isCustomer } = usePrincipal();
+    const { isCustomer, isAdmin } = usePrincipal();
 
     const [claimDetails, setClaimsDetails] = useState<PolicyClaim>();
     const [fecthProgress, setFetchProgress] = useState(true);
@@ -112,7 +112,7 @@ export default function ClaimDetails() {
                     setFormErrors({
                         type: "success",
                         errors: [
-                            `${selectedAgent.firstName}(${selectedAgent.email}) Successfully Assigned to` +
+                            `${selectedAgent.firstName}(${selectedAgent.email}) Successfully Assigned to ` +
                                 claimId,
                         ],
                     });
@@ -191,14 +191,14 @@ export default function ClaimDetails() {
               {
                   text: "Approve",
                   icon: CheckCircleIcon,
-                  theme: "emerald",
+                //   theme: "emerald",
                   className: "disabled",
                   onClick: approveClaim,
               },
               {
                   text: "Reject",
                   icon: XCircleIcon,
-                  theme: "rose",
+                //   theme: "rose",
                   className: "disabled",
                   onClick: rejectClaim,
               },
@@ -281,7 +281,7 @@ export default function ClaimDetails() {
                             </div>
                         </div>
                         {/* Assign Agent Section */}
-                        {!isCustomer() && (
+                        {isAdmin() && (
                             <div className="flex flex-col gap-3 p-2 items-start justify-center rounded-lg shadow-sm bg-slate-100 dark:bg-slate-700/60">
                                 <span className="text-slate-800 dark:text-slate-200">
                                     {claimDetails?.status ==
@@ -353,7 +353,7 @@ export default function ClaimDetails() {
                         Agent Not yet assigned.
                     </div>
                 )}
-                <div className="col-span-full rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 dark:bg-slate-800 p-3 grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="col-span-full rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 dark:bg-slate-800 p-3 flex flex-col gap-3">
                     <div className="col-span-full flex flex-col md:flex-row gap-2">
                         <span className="text-slate-800 dark:text-slate-200">
                             Policy details
